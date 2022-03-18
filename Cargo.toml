@@ -1,0 +1,20 @@
+[package]
+name = "deluge"
+version = "0.1.0"
+edition = "2021"
+
+[dev-dependencies]
+test-case = "2.0.0"
+enum-as-inner = "0.4.0"
+pretty_assertions = "1.2.0"
+test-generator = { git = "https://github.com/JamesGuthrie/test-generator" }
+
+[dependencies]
+byteorder = "1.4.3"
+num = "0.4.0"
+serde = { version = "1.0.136", features = ["derive"] }
+serde_plain = "1.0.0"
+thiserror = "1.0.30"
+xmltree = "0.10.3"
+serde_repr = "0.1.7"
+derivative = "2.2.0"
