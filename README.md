@@ -1,3 +1,3 @@
 # Deluge interchange
 
-Read edit and write Deluge patches files.
+Read, edit and write [Deluge](https://synthstrom.com/product/deluge/) patches files.
