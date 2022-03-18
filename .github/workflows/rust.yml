@@ -1,33 +1,3 @@
-Skip to content
-Search or jump to…
-Pull requests
-Issues
-Marketplace
-Explore
- 
-@IohannRabeson 
-IohannRabeson
-/
-immonitor
-Private
-Code
-Issues
-11
-Pull requests
-Actions
-Projects
-Wiki
-Security
-Insights
-Settings
-immonitor/.github/workflows/immonitor.yml
-@IohannRabeson
-IohannRabeson Cleanup git action file and fix clippy issue.
-Latest commit 257a59a on 13 Feb 2021
- History
- 1 contributor
-30 lines (27 sloc)  669 Bytes
-   
 name: Rust
 
 on:
