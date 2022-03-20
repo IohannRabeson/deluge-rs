@@ -2,6 +2,7 @@
 //!
 //! This crate provides the data structures Sound and Kit. You can read and write them using the XML deluge schema.
 //! It hides the crap from the user, like the fact there are at least 3 differents version of the XML schema.
+//! https://docs.google.com/document/d/11DUuuE1LBYOVlluPA9McT1_dT4AofZ5jnUD5eHvj7Vs/edit
 
 #[macro_use]
 extern crate derivative;
@@ -11,8 +12,7 @@ mod serialization;
 mod sound;
 mod values;
 
-use std::num::ParseIntError;
-use std::rc::Rc;
+use std::{num::ParseIntError, sync::Arc};
 
 pub use kit::{GateOutput, Kit, MidiOutput, SoundSource};
 pub use sound::{
@@ -26,7 +26,7 @@ pub use serialization::{load_kit, load_sound, save_kit, save_sound};
 #[derive(thiserror::Error, Debug, Clone)]
 pub enum Error {
     #[error("parsing XML failed: {0}")]
-    XmlParsingFailed(#[from] Rc<xmltree::ParseError>),
+    XmlParsingFailed(#[from] Arc<xmltree::ParseError>),
 
     #[error("parsing integer failed: {0}")]
     ParseIntError(#[from] ParseIntError),
@@ -74,7 +74,7 @@ pub enum Error {
     ParseI32Error(String, std::num::ParseIntError),
 
     #[error("conversion error: {0}")]
-    ConversionError(#[from] Rc<std::io::Error>),
+    ConversionError(#[from] Arc<std::io::Error>),
 
     #[error("unsupported modulation fx: {0}")]
     UnsupportedModulationFx(String),
@@ -86,4 +86,14 @@ pub enum Error {
     UnsupportedSampleType,
 }
 
-// https://docs.google.com/document/d/11DUuuE1LBYOVlluPA9McT1_dT4AofZ5jnUD5eHvj7Vs/edit
+#[cfg(test)]
+mod tests {
+    fn check_sync<T: Sync>(){
+        // Does nothing
+    }
+
+    #[test]
+    fn test_error_is_sync() {
+        check_sync::<super::Error>();
+    }
+}

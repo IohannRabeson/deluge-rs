@@ -3,6 +3,7 @@ use crate::Error;
 use serde::{Deserialize, Serialize};
 use std::{cell::RefCell, rc::Rc};
 use xmltree::{Element, EmitterConfig, XMLNode};
+use std::sync::Arc;
 
 pub fn write_xml(elements: &[Element]) -> String {
     let mut buffer: Vec<u8> = Vec::with_capacity(1024);
@@ -18,7 +19,7 @@ pub fn write_xml(elements: &[Element]) -> String {
 
 pub fn load_xml(xml: &str) -> Result<Vec<Element>, Error> {
     Ok(Element::parse_all(xml.as_bytes())
-        .map_err(|e| Error::XmlParsingFailed(Rc::new(e)))?
+        .map_err(|e| Error::XmlParsingFailed(Arc::new(e)))?
         .iter()
         .filter_map(|n| n.as_element())
         .cloned()
