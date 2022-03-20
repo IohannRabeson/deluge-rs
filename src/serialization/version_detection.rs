@@ -61,7 +61,7 @@ fn is_version_3(roots: &[Element], element_type: &str) -> bool {
     false
 }
 
-fn check_for_version(text: &Cow<str>, expected_first_char: char) -> bool {
+fn check_for_version(text: &str, expected_first_char: char) -> bool {
     match text.chars().next() {
         Some(first_char) => first_char == expected_first_char,
         None => false,

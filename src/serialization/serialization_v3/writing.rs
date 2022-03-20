@@ -314,8 +314,8 @@ fn write_sample_ranges(node: &mut Element, ranges: &[SampleRange]) -> Result<(),
     Ok(())
 }
 
-fn write_sample_one_zone(mut node: &mut Element, sample: &SampleOneZone) -> Result<(), Error> {
-    xml::insert_attribute(&mut node, keys::FILE_NAME, &sample.file_path)?;
+fn write_sample_one_zone(node: &mut Element, sample: &SampleOneZone) -> Result<(), Error> {
+    xml::insert_attribute(node, keys::FILE_NAME, &sample.file_path)?;
 
     if let Some(zone) = &sample.zone {
         xml::insert_child(node, write_sample_zone(zone)?)?;

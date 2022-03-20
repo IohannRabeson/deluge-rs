@@ -88,7 +88,7 @@ pub enum Error {
 
 #[cfg(test)]
 mod tests {
-    fn check_sync<T: Sync>(){
+    fn check_sync<T: Sync>() {
         // Does nothing
     }
 

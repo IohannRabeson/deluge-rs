@@ -38,19 +38,23 @@ pub type OctavesCount = Uint8<1, 8, 1>;
 use crate::Error;
 use byteorder::{BigEndian, ReadBytesExt};
 use std::io::Cursor;
-use std::sync::Arc;
 use std::str::FromStr;
+use std::sync::Arc;
 
 pub fn map_u32_i32(value: u32) -> Result<i32, Error> {
     let mut cursor = Cursor::new(value.to_be_bytes());
 
-    cursor.read_i32::<BigEndian>().map_err(|e| Error::ConversionError(Arc::new(e)))
+    cursor
+        .read_i32::<BigEndian>()
+        .map_err(|e| Error::ConversionError(Arc::new(e)))
 }
 
 pub fn map_i32_u32(value: i32) -> Result<u32, Error> {
     let mut cursor = Cursor::new(value.to_be_bytes());
 
-    cursor.read_u32::<BigEndian>().map_err(|e| Error::ConversionError(Arc::new(e)))
+    cursor
+        .read_u32::<BigEndian>()
+        .map_err(|e| Error::ConversionError(Arc::new(e)))
 }
 
 pub fn write_hexadecimal_u32(value: u32) -> String {

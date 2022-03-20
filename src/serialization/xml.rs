@@ -1,9 +1,9 @@
 use crate::Error;
 
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use std::{cell::RefCell, rc::Rc};
 use xmltree::{Element, EmitterConfig, XMLNode};
-use std::sync::Arc;
 
 pub fn write_xml(elements: &[Element]) -> String {
     let mut buffer: Vec<u8> = Vec::with_capacity(1024);
@@ -69,7 +69,7 @@ pub fn get_children_element_content<'a>(element: &'a Element, name: &'a str) -> 
 pub fn parse_children_element_content<'a, T: Deserialize<'a>>(element: &'a Element, name: &'a str) -> Result<T, Error> {
     let element = get_children_element(element, name)?;
 
-    parse_content(&element)
+    parse_content(element)
 }
 
 pub fn parse_opt_children_element_content<'a, T: Deserialize<'a>>(
@@ -103,8 +103,8 @@ fn get_text_impl<'a>(element: &'a Element) -> &'a str {
         .collect();
 
     // Hack: to be able to use serde_plain, I must return a reference with the lifetime 'a.
-    // Returning NULL_STRING works because its lifetime is implicitly 'static.
-    if text_nodes.len() >= 1 {
+    // Returning NULL_STRING works because its lifetime is implicitly 'static that outlives 'a.
+    if !text_nodes.is_empty() {
         text_nodes[0]
     } else {
         NULL_STRING

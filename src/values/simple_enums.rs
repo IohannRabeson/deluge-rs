@@ -44,7 +44,7 @@ impl<'de> Visitor<'de> for PolyphonyVisitor {
             "legato" => Ok(Self::Value::Legato),
             "choke" => Ok(Self::Value::Choke),
             "auto" => Ok(Self::Value::Auto),
-            _ => get_polyphony_v1(v).ok_or(E::custom(format!("unsupported polyphony value format v1 '{}'", v))),
+            _ => get_polyphony_v1(v).ok_or_else(|| E::custom(format!("unsupported polyphony value format v1 '{}'", v))),
         }
     }
 }
