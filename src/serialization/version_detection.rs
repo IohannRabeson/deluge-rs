@@ -4,7 +4,7 @@ use crate::Error;
 
 use xmltree::Element;
 
-use super::xml;
+use super::{xml, keys};
 
 /// Deluge format version
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -21,11 +21,11 @@ type VersionFunctionDetection = fn(roots: &[Element], element_type: &str) -> boo
 
 /// This version, there is no firmwareVersion element, only a kit element.
 fn is_version_1(roots: &[Element], element_type: &str) -> bool {
-    if xml::get_element(roots, "firmwareVersion").is_err() && xml::get_element(roots, element_type).is_ok() {
+    if xml::get_element(roots, keys::FIRMWARE_VERSION).is_err() && xml::get_element(roots, element_type).is_ok() {
         return true;
     }
 
-    if let Ok(firmware_version_node) = xml::get_element(roots, "firmwareVersion") {
+    if let Ok(firmware_version_node) = xml::get_element(roots, keys::FIRMWARE_VERSION) {
         if let Some(firmware_version) = firmware_version_node.get_text() {
             return check_for_version(&firmware_version, '1');
         }
@@ -40,7 +40,7 @@ fn is_version_2(roots: &[Element], element_type: &str) -> bool {
         return false;
     }
 
-    if let Ok(firmware_version_node) = xml::get_element(roots, "firmwareVersion") {
+    if let Ok(firmware_version_node) = xml::get_element(roots, keys::FIRMWARE_VERSION) {
         if let Some(firmware_version) = firmware_version_node.get_text() {
             return check_for_version(&firmware_version, '2');
         }
@@ -53,7 +53,7 @@ fn is_version_2(roots: &[Element], element_type: &str) -> bool {
 /// It seems attributes are used almost everywhere now.
 fn is_version_3(roots: &[Element], element_type: &str) -> bool {
     if let Ok(kit_node) = xml::get_element(roots, element_type) {
-        if let Ok(firmware_version) = xml::get_attribute(kit_node, "firmwareVersion") {
+        if let Ok(firmware_version) = xml::get_attribute(kit_node, keys::FIRMWARE_VERSION) {
             return check_for_version(&Cow::Borrowed(firmware_version), '3');
         }
     }
@@ -69,11 +69,11 @@ fn check_for_version(text: &str, expected_first_char: char) -> bool {
 }
 
 pub fn detect_kit_format_version(roots: &[Element]) -> Result<FormatVersion, Error> {
-    detect_format_version(roots, "kit")
+    detect_format_version(roots, keys::KIT)
 }
 
 pub fn detect_sound_format_version(roots: &[Element]) -> Result<FormatVersion, Error> {
-    detect_format_version(roots, "sound")
+    detect_format_version(roots, keys::SOUND)
 }
 
 fn detect_format_version(roots: &[Element], element_type: &str) -> Result<FormatVersion, Error> {
