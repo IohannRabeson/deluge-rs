@@ -21,7 +21,7 @@ pub use sound::{
     SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SubtractiveGenerator, Unison, WaveformOscillator,
 };
 
-pub use serialization::{load_kit, load_sound, save_kit, save_sound};
+pub use serialization::{load_kit, load_synth, save_kit, save_sound};
 
 #[derive(thiserror::Error, Debug, Clone)]
 pub enum Error {

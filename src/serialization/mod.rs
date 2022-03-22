@@ -22,7 +22,7 @@ pub fn load_kit(xml: &str) -> Result<Kit, Error> {
 }
 
 /// Load a sound from XML text
-pub fn load_sound(xml: &str) -> Result<Sound, Error> {
+pub fn load_synth(xml: &str) -> Result<Sound, Error> {
     let roots = xml::load_xml(xml)?;
     let version = version_detection::detect_sound_format_version(&roots)?;
 
@@ -52,9 +52,9 @@ mod tests {
 
     #[test]
     fn test_save_load_compare_version_3_synth() {
-        let sound = load_sound(include_str!("../data_tests/SYNTHS/SYNT184.XML")).unwrap();
+        let sound = load_synth(include_str!("../data_tests/SYNTHS/SYNT184.XML")).unwrap();
         let xml = save_sound(&sound).unwrap();
-        let reloaded_sound = load_sound(&xml).unwrap();
+        let reloaded_sound = load_synth(&xml).unwrap();
 
         assert_eq!(reloaded_sound, sound);
     }
@@ -81,9 +81,9 @@ mod tests {
     }
 
     fn test_save_load_synth_compare(input: &str) {
-        let sound = load_sound(input).unwrap();
+        let sound = load_synth(input).unwrap();
         let xml = save_sound(&sound).unwrap();
-        let reloaded_sound = load_sound(&xml).unwrap();
+        let reloaded_sound = load_synth(&xml).unwrap();
         assert_eq!(reloaded_sound, sound);
     }
 
@@ -96,7 +96,7 @@ mod tests {
 
     #[test]
     fn test_load_version_3_sound() {
-        let sound = load_sound(include_str!("../data_tests/SYNTHS/SYNT184.XML")).unwrap();
+        let sound = load_synth(include_str!("../data_tests/SYNTHS/SYNT184.XML")).unwrap();
 
         assert_eq!(&sound.firmware_version.unwrap(), "3.1.5");
         assert_eq!(&sound.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
@@ -115,9 +115,9 @@ mod tests {
     #[test]
     fn test_convert_version_2_to_actual_sound() {
         // SYNT168.XML is a factory patch using format V2
-        let sound_v2 = load_sound(include_str!("../data_tests/SYNTHS/SYNT168.XML")).unwrap();
+        let sound_v2 = load_synth(include_str!("../data_tests/SYNTHS/SYNT168.XML")).unwrap();
         // SYNT168A.XML is just a save of SYNT168.XML done with firmware 3.1.5
-        let sound_v3 = load_sound(include_str!("../data_tests/SYNTHS/SYNT168A.XML")).unwrap();
+        let sound_v3 = load_synth(include_str!("../data_tests/SYNTHS/SYNT168A.XML")).unwrap();
 
         assert_eq!(sound_v2, sound_v3);
     }
@@ -125,8 +125,8 @@ mod tests {
     /// This test require the same patch saved under different version.
     #[test]
     fn test_convert_version_2_to_actual_synt008() {
-        let sound_v2 = load_sound(include_str!("../data_tests/SYNTHS/SYNT008.XML")).unwrap();
-        let sound_v3 = load_sound(include_str!("../data_tests/SYNTHS/SYNT008A.XML")).unwrap();
+        let sound_v2 = load_synth(include_str!("../data_tests/SYNTHS/SYNT008.XML")).unwrap();
+        let sound_v3 = load_synth(include_str!("../data_tests/SYNTHS/SYNT008A.XML")).unwrap();
 
         assert_eq!(sound_v2, sound_v3);
     }
@@ -134,16 +134,16 @@ mod tests {
     #[test]
     fn test_load_write_load_sound_028() {
         let file_content = include_str!("../data_tests/SYNTHS/SYNT028.XML");
-        let sound = load_sound(&file_content).unwrap();
+        let sound = load_synth(&file_content).unwrap();
         let xml = save_sound(&sound).unwrap();
-        let reloaded_sound = load_sound(&xml).unwrap();
+        let reloaded_sound = load_synth(&xml).unwrap();
 
         assert_eq!(reloaded_sound, sound);
     }
 
     #[test]
     fn test_load_version_2_sound() {
-        let kit = load_sound(include_str!("../data_tests/SYNTHS/SYNT170.XML")).unwrap();
+        let kit = load_synth(include_str!("../data_tests/SYNTHS/SYNT170.XML")).unwrap();
 
         assert_eq!(&kit.firmware_version.unwrap(), "2.1.0");
         assert_eq!(&kit.earliest_compatible_firmware.unwrap(), "2.1.0");
