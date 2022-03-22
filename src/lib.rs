@@ -2,6 +2,12 @@
 //!
 //! This crate provides the data structures Sound and Kit. You can read and write them using the XML deluge schema.
 //! It hides the crap from the user, like the fact there are at least 3 differents version of the XML schema.
+//! 
+//! # Data structures
+//! There are 2 types of patches: synth and kit.  
+//! A synth contains one sound, a kit contains [1-n] sounds.  
+//! More precisely, a kit contains named sounds. 
+//! 
 //! https://docs.google.com/document/d/11DUuuE1LBYOVlluPA9McT1_dT4AofZ5jnUD5eHvj7Vs/edit
 
 #[macro_use]
