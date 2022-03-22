@@ -18,7 +18,7 @@ use crate::{
 use xmltree::Element;
 
 pub fn write_synth(synth: &Synth) -> Result<Element, Error> {
-    let mut sound_node = write_sound(&synth.sound)?;
+    let mut sound_node = write_sound(&synth.sound, None)?;
 
     xml::insert_attribute(&mut sound_node, keys::FIRMWARE_VERSION, &LATEST_SUPPORTED_FIRMWARE_VERSION)?;
     xml::insert_attribute(
@@ -48,7 +48,7 @@ fn write_sound_sources(rows: &[SoundSource]) -> Result<Element, Error> {
 
     for row in rows {
         let node = match row {
-            SoundSource::Sound(sound) => write_sound(sound)?,
+            SoundSource::SoundOutput(sound) => write_sound(&sound.sound, Some(&sound.name))?,
             SoundSource::GateOutput(gate) => write_gate_output(gate)?,
             SoundSource::MidiOutput(midi) => write_midi_output(midi)?,
         };
@@ -75,13 +75,16 @@ fn write_midi_output(midi_output: &MidiOutput) -> Result<Element, Error> {
     Ok(midi_output_node)
 }
 
-fn write_sound(sound: &Sound) -> Result<Element, Error> {
+fn write_sound(sound: &Sound, name: Option<&String>) -> Result<Element, Error> {
     let mut sound_node = Element::new(keys::SOUND);
     let default_params_node = Rc::new(RefCell::new(Element::new(keys::DEFAULT_PARAMS)));
 
-    if !sound.name.is_empty() {
-        xml::insert_attribute(&mut sound_node, keys::NAME, &sound.name)?;
+    if let Some(name) = name {
+        if !name.is_empty() {
+            xml::insert_attribute(&mut sound_node, keys::NAME, name)?;
+        }
     }
+
     xml::insert_attribute(&mut sound_node, keys::MODE, &sound.generator.to_sound_type())?;
     xml::insert_attribute(&mut sound_node, keys::POLYPHONIC, &sound.polyphonic)?;
     xml::insert_opt_attribute(&mut sound_node, keys::SIDECHAIN_SEND, &sound.sidechain_send)?;

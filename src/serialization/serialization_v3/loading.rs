@@ -9,7 +9,7 @@ use crate::{
     Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Error, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput,
     Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
     SampleOscillator, SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SoundSource,
-    SubtractiveGenerator, Synth, Unison, WaveformOscillator,
+    SubtractiveGenerator, Synth, Unison, WaveformOscillator, kit::SoundOutput,
 };
 
 use xmltree::Element;
@@ -68,7 +68,6 @@ fn load_sound(root: &Element) -> Result<Sound, Error> {
     };
 
     Ok(Sound {
-        name: xml::parse_opt_attribute(root, keys::NAME)?.unwrap_or_default(),
         polyphonic: xml::parse_attribute(root, keys::POLYPHONIC)?,
         voice_priority: xml::parse_attribute(root, keys::VOICE_PRIORITY)?,
         volume: xml::parse_attribute(default_params_node, keys::VOLUME)?,
@@ -282,10 +281,17 @@ fn load_gate_output(root: &Element) -> Result<GateOutput, Error> {
 
 fn load_sound_source(root: &Element) -> Result<SoundSource, Error> {
     Ok(match root.name.as_str() {
-        keys::SOUND => SoundSource::Sound(Box::new(load_sound(root)?)),
+        keys::SOUND => SoundSource::SoundOutput(load_sound_output(root)?),
         keys::MIDI_OUTPUT => SoundSource::MidiOutput(load_midi_output(root)?),
         keys::GATE_OUTPUT => SoundSource::GateOutput(load_gate_output(root)?),
         _ => return Err(Error::UnsupportedSoundSource(root.name.clone())),
+    })
+}
+
+fn load_sound_output(root: &Element) -> Result<SoundOutput, Error> {
+    Ok(SoundOutput {
+        sound: Box::new(load_sound(root)?),
+        name: xml::parse_attribute(root, keys::NAME)?
     })
 }
 
@@ -489,7 +495,9 @@ mod tests {
         assert_eq!(kit.rows.len(), 7);
 
         for i in 0..kit.rows.len() {
-            assert_eq!(kit.rows[i].as_sound().unwrap().name, expected[i]);
+            let sound = kit.rows[i].as_sound_output().unwrap();
+
+            assert_eq!(sound.name, expected[i]);
         }
     }
 

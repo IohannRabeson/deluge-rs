@@ -140,7 +140,6 @@ mod tests {
         let file_content = include_str!("../data_tests/SYNTHS/SYNT028.XML");
         let sound = load_synth(&file_content).unwrap();
         let xml = save_synth(&sound).unwrap();
-        eprintln!("{}", xml);
         let reloaded_sound = load_synth(&xml).unwrap();
 
         assert_eq!(reloaded_sound, sound);
@@ -177,6 +176,7 @@ mod tests {
         let file_content = include_str!("../data_tests/KITS/KIT002.XML");
         let kit = load_kit(&file_content).unwrap();
         let xml = save_kit(&kit).unwrap();
+        eprintln!("{}", xml);
         let reloaded_kit = load_kit(&xml).unwrap();
 
         assert_eq!(reloaded_kit, kit);

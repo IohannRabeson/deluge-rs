@@ -3,7 +3,7 @@ use crate::{
     Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Error, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput,
     Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
     SampleOscillator, SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SoundSource,
-    SubtractiveGenerator, Synth, Unison, WaveformOscillator,
+    SubtractiveGenerator, Synth, Unison, WaveformOscillator, SoundOutput,
 };
 use xmltree::Element;
 
@@ -60,7 +60,6 @@ fn load_sound(root: &Element) -> Result<Sound, Error> {
     };
 
     Ok(Sound {
-        name: xml::parse_opt_children_element_content(root, keys::NAME)?.unwrap_or_default(),
         polyphonic: xml::parse_children_element_content(root, keys::POLYPHONIC)?,
         voice_priority: xml::parse_children_element_content(root, keys::VOICE_PRIORITY)?,
         volume: xml::parse_children_element_content(default_params_node, keys::VOLUME)?,
@@ -275,9 +274,16 @@ fn load_gate_output(root: &Element) -> Result<GateOutput, Error> {
         .map(|channel| GateOutput { channel })
 }
 
+fn load_sound_output(root: &Element) -> Result<SoundOutput, Error> {
+    Ok(SoundOutput {
+        sound: Box::new(load_sound(root)?),
+        name: xml::parse_children_element_content(root, keys::NAME)?,
+    })
+}
+
 fn load_sound_source(root: &Element) -> Result<SoundSource, Error> {
     Ok(match root.name.as_str() {
-        keys::SOUND => SoundSource::Sound(Box::new(load_sound(root)?)),
+        keys::SOUND => SoundSource::SoundOutput(load_sound_output(root)?),
         keys::MIDI_OUTPUT => SoundSource::MidiOutput(load_midi_output(root)?),
         keys::GATE_OUTPUT => SoundSource::GateOutput(load_gate_output(root)?),
         _ => return Err(Error::UnsupportedSoundSource(root.name.clone())),

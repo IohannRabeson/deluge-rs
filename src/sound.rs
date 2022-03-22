@@ -8,9 +8,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Derivative, Clone, Debug)]
 #[derivative(PartialEq)]
 pub struct Sound {
-    /// Specified when the sound is part of a kit
-    pub name: String,
-
     pub generator: SoundGenerator,
     pub polyphonic: Polyphony,
     pub voice_priority: VoicePriority,

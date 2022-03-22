@@ -15,11 +15,11 @@ mod values;
 
 use std::{num::ParseIntError, sync::Arc};
 
-pub use kit::{GateOutput, Kit, MidiOutput, SoundSource};
+pub use kit::{GateOutput, Kit, MidiOutput, SoundSource, SoundOutput};
 pub use sound::{
     Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Lfo1, Lfo2,
     ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone, SampleOscillator,
-    SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SubtractiveGenerator, Unison, WaveformOscillator,
+    SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SubtractiveGenerator, Unison, WaveformOscillator, 
 };
 pub use synth::Synth;
 
