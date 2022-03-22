@@ -9,8 +9,8 @@ extern crate derivative;
 
 mod kit;
 mod serialization;
-mod synth;
 mod sound;
+mod synth;
 mod values;
 
 use std::{num::ParseIntError, sync::Arc};

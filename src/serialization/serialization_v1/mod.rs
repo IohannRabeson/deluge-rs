@@ -6,7 +6,7 @@ use crate::{
     Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Error, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput,
     Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
     SampleOscillator, SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SoundSource,
-    SubtractiveGenerator, Unison, WaveformOscillator, Synth,
+    SubtractiveGenerator, Synth, Unison, WaveformOscillator,
 };
 use xmltree::Element;
 
@@ -29,10 +29,10 @@ pub fn load_synth_nodes(root_nodes: &[Element]) -> Result<Synth, Error> {
 }
 
 pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, Error> {
-    let kit_node = xml::get_element(&roots, keys::KIT)?;
+    let kit_node = xml::get_element(roots, keys::KIT)?;
     let sound_sources_node = xml::get_children_element(kit_node, keys::SOUND_SOURCES)?;
-    let firmware_version = xml::get_opt_element(&roots, keys::FIRMWARE_VERSION).map(xml::get_text);
-    let earliest_compatible_firmware = xml::get_opt_element(&roots, keys::EARLIEST_COMPATIBLE_FIRMWARE).map(xml::get_text);
+    let firmware_version = xml::get_opt_element(roots, keys::FIRMWARE_VERSION).map(xml::get_text);
+    let earliest_compatible_firmware = xml::get_opt_element(roots, keys::EARLIEST_COMPATIBLE_FIRMWARE).map(xml::get_text);
     let sources: Vec<Result<SoundSource, Error>> = sound_sources_node
         .children
         .iter()
@@ -599,7 +599,7 @@ mod tests {
 
     #[test]
     fn load_valid_sound_fm() {
-        let xml_elements = xml::load_xml(include_str!("../../data_tests/SYNTHS/SYNT167.XML")).unwrap(); 
+        let xml_elements = xml::load_xml(include_str!("../../data_tests/SYNTHS/SYNT167.XML")).unwrap();
         let synth = load_synth_nodes(&xml_elements).unwrap();
         let sound = &synth.sound;
         let generator = sound.generator.as_fm().unwrap();

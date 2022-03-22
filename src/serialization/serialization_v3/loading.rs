@@ -8,8 +8,8 @@ use crate::{
     values::*,
     Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Error, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput,
     Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
-    SampleOscillator, SamplePosition, SampleRange, SampleZone, Sidechain, Synth, SoundGenerator, SoundSource,
-    SubtractiveGenerator, Unison, WaveformOscillator, Sound,
+    SampleOscillator, SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SoundSource,
+    SubtractiveGenerator, Synth, Unison, WaveformOscillator,
 };
 
 use xmltree::Element;
@@ -26,7 +26,7 @@ pub fn load_synth_nodes(root_nodes: &[Element]) -> Result<Synth, Error> {
 }
 
 pub fn load_kit_nodes(root_nodes: &[Element]) -> Result<Kit, Error> {
-    let kit_node = xml::get_element(&root_nodes, keys::KIT)?;
+    let kit_node = xml::get_element(root_nodes, keys::KIT)?;
     let sound_sources_node = xml::get_children_element(kit_node, keys::SOUND_SOURCES)?;
     let firmware_version = xml::parse_opt_attribute(kit_node, keys::FIRMWARE_VERSION)?;
     let earliest_compatible_firmware = xml::parse_opt_attribute(kit_node, keys::EARLIEST_COMPATIBLE_FIRMWARE)?;

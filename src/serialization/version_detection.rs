@@ -4,7 +4,7 @@ use crate::Error;
 
 use xmltree::Element;
 
-use super::{xml, keys};
+use super::{keys, xml};
 
 /// Deluge format version
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]

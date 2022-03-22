@@ -11,8 +11,8 @@ use crate::{
     values::*,
     Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Error, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput,
     Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
-    SampleOscillator, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SoundSource, SubtractiveGenerator, Unison,
-    WaveformOscillator, Synth,
+    SampleOscillator, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SoundSource, SubtractiveGenerator, Synth,
+    Unison, WaveformOscillator,
 };
 
 use xmltree::Element;

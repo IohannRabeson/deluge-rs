@@ -5,7 +5,7 @@ use crate::Sound;
 pub struct Synth {
     #[derivative(PartialEq = "ignore")]
     pub firmware_version: Option<String>,
-    
+
     #[derivative(PartialEq = "ignore")]
     pub earliest_compatible_firmware: Option<String>,
 
