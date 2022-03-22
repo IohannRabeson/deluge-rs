@@ -72,7 +72,7 @@ pub fn detect_kit_format_version(roots: &[Element]) -> Result<FormatVersion, Err
     detect_format_version(roots, keys::KIT)
 }
 
-pub fn detect_sound_format_version(roots: &[Element]) -> Result<FormatVersion, Error> {
+pub fn detect_synth_format_version(roots: &[Element]) -> Result<FormatVersion, Error> {
     detect_format_version(roots, keys::SOUND)
 }
 
@@ -101,15 +101,15 @@ mod tests {
     fn test_detect_format_version_sound() {
         assert_eq!(
             FormatVersion::Version3,
-            detect_sound_format_version(&xml::load_xml(include_str!("../data_tests/SYNTHS/SYNT184.XML")).unwrap()).unwrap()
+            detect_synth_format_version(&xml::load_xml(include_str!("../data_tests/SYNTHS/SYNT184.XML")).unwrap()).unwrap()
         );
         assert_eq!(
             FormatVersion::Version2,
-            detect_sound_format_version(&xml::load_xml(include_str!("../data_tests/SYNTHS/SYNT020.XML")).unwrap()).unwrap()
+            detect_synth_format_version(&xml::load_xml(include_str!("../data_tests/SYNTHS/SYNT020.XML")).unwrap()).unwrap()
         );
         assert_eq!(
             FormatVersion::Version1,
-            detect_sound_format_version(&xml::load_xml(include_str!("../data_tests/SYNTHS/SYNT000.XML")).unwrap()).unwrap()
+            detect_synth_format_version(&xml::load_xml(include_str!("../data_tests/SYNTHS/SYNT000.XML")).unwrap()).unwrap()
         );
     }
 
