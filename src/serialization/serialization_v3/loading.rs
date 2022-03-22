@@ -27,8 +27,7 @@ pub fn load_synth_nodes(root_nodes: &[Element]) -> Result<Sound, Error> {
     Ok(sound)
 }
 
-pub fn load_kit(xml: &str) -> Result<Kit, Error> {
-    let root_nodes: Vec<Element> = xml::load_xml(xml)?;
+pub fn load_kit_nodes(root_nodes: &[Element]) -> Result<Kit, Error> {
     let kit_node = xml::get_element(&root_nodes, keys::KIT)?;
     let sound_sources_node = xml::get_children_element(kit_node, keys::SOUND_SOURCES)?;
     let firmware_version = xml::parse_opt_attribute(kit_node, keys::FIRMWARE_VERSION)?;
@@ -451,12 +450,16 @@ mod tests {
 
     #[test]
     fn load_valid_kit_xml() {
-        assert!(load_kit(include_str!("../../data_tests/KITS/KIT057.XML")).is_ok());
+        let roots = xml::load_xml(include_str!("../../data_tests/KITS/KIT057.XML")).unwrap();
+        let kit = load_kit_nodes(&roots);
+
+        assert!(kit.is_ok());
     }
 
     #[test]
     fn load_valid_kit_xml_and_check_sounds_only() {
-        let kit = load_kit(include_str!("../../data_tests/KITS/KIT_TEST_SOUNDS_ONLY.XML")).unwrap();
+        let roots = xml::load_xml(include_str!("../../data_tests/KITS/KIT_TEST_SOUNDS_ONLY.XML")).unwrap();
+        let kit = load_kit_nodes(&roots).unwrap();
 
         assert_eq!(&kit.firmware_version.unwrap(), "3.1.5");
         assert_eq!(&kit.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
@@ -465,7 +468,8 @@ mod tests {
 
     #[test]
     fn load_valid_kit_xml_and_check_sounds_midi_and_gate() {
-        let kit = load_kit(include_str!("../../data_tests/KITS/KIT_TEST_SOUNDS_MIDI_GATE.XML")).unwrap();
+        let roots = xml::load_xml(include_str!("../../data_tests/KITS/KIT_TEST_SOUNDS_MIDI_GATE.XML")).unwrap();
+        let kit = load_kit_nodes(&roots).unwrap();
 
         assert_eq!(&kit.firmware_version.unwrap(), "3.1.5");
         assert_eq!(&kit.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
@@ -476,7 +480,8 @@ mod tests {
 
     #[test]
     fn load_kit_check_row_name() {
-        let kit = &load_kit(include_str!("../../data_tests/KITS/KIT057.XML")).unwrap();
+        let roots = xml::load_xml(include_str!("../../data_tests/KITS/KIT057.XML")).unwrap();
+        let kit = load_kit_nodes(&roots).unwrap();
         let expected = vec![
             "halftime_goodie",
             "halftime_goodie2",

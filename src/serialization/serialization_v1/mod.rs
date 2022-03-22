@@ -28,12 +28,11 @@ pub fn load_synth_nodes(root_nodes: &[Element]) -> Result<Sound, Error> {
     Ok(sound)
 }
 
-pub fn load_kit(xml: &str) -> Result<Kit, Error> {
-    let root_nodes: Vec<Element> = xml::load_xml(xml)?;
-    let kit_node = xml::get_element(&root_nodes, keys::KIT)?;
+pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, Error> {
+    let kit_node = xml::get_element(&roots, keys::KIT)?;
     let sound_sources_node = xml::get_children_element(kit_node, keys::SOUND_SOURCES)?;
-    let firmware_version = xml::get_opt_element(&root_nodes, keys::FIRMWARE_VERSION).map(xml::get_text);
-    let earliest_compatible_firmware = xml::get_opt_element(&root_nodes, keys::EARLIEST_COMPATIBLE_FIRMWARE).map(xml::get_text);
+    let firmware_version = xml::get_opt_element(&roots, keys::FIRMWARE_VERSION).map(xml::get_text);
+    let earliest_compatible_firmware = xml::get_opt_element(&roots, keys::EARLIEST_COMPATIBLE_FIRMWARE).map(xml::get_text);
     let sources: Vec<Result<SoundSource, Error>> = sound_sources_node
         .children
         .iter()
@@ -476,7 +475,10 @@ mod tests {
 
     #[test]
     fn load_valid_kit_xml() {
-        assert!(load_kit(include_str!("../../data_tests/KITS/KIT026.XML")).is_ok());
+        let xml_elements = xml::load_xml(include_str!("../../data_tests/KITS/KIT026.XML")).unwrap();
+        let kit = load_kit_nodes(&xml_elements);
+
+        assert!(kit.is_ok());
     }
 
     #[test]
