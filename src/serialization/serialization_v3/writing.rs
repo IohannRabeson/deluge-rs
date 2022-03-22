@@ -12,13 +12,13 @@ use crate::{
     Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Error, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput,
     Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
     SampleOscillator, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SoundSource, SubtractiveGenerator, Unison,
-    WaveformOscillator,
+    WaveformOscillator, Synth,
 };
 
 use xmltree::Element;
 
-pub fn write_synth(sound: &Sound) -> Result<Element, Error> {
-    let mut sound_node = write_sound(sound)?;
+pub fn write_synth(synth: &Synth) -> Result<Element, Error> {
+    let mut sound_node = write_sound(&synth.sound)?;
 
     xml::insert_attribute(&mut sound_node, keys::FIRMWARE_VERSION, &LATEST_SUPPORTED_FIRMWARE_VERSION)?;
     xml::insert_attribute(

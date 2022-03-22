@@ -3,7 +3,7 @@ use crate::{
     Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Error, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput,
     Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
     SampleOscillator, SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SoundSource,
-    SubtractiveGenerator, Unison, WaveformOscillator,
+    SubtractiveGenerator, Unison, WaveformOscillator, Synth,
 };
 use xmltree::Element;
 
@@ -15,14 +15,14 @@ use super::{
 };
 
 /// Load a deluge synth XML file
-pub fn load_synth_nodes(root_nodes: &[Element]) -> Result<Sound, Error> {
+pub fn load_synth_nodes(root_nodes: &[Element]) -> Result<Synth, Error> {
     let sound_node = xml::get_element(root_nodes, keys::SOUND)?;
-    let mut sound = load_sound(sound_node)?;
 
-    sound.firmware_version = xml::get_opt_element(root_nodes, keys::FIRMWARE_VERSION).map(xml::get_text);
-    sound.earliest_compatible_firmware = xml::get_opt_element(root_nodes, keys::EARLIEST_COMPATIBLE_FIRMWARE).map(xml::get_text);
-
-    Ok(sound)
+    Ok(Synth {
+        sound: load_sound(sound_node)?,
+        firmware_version: xml::get_opt_element(root_nodes, keys::FIRMWARE_VERSION).map(xml::get_text),
+        earliest_compatible_firmware: xml::get_opt_element(root_nodes, keys::EARLIEST_COMPATIBLE_FIRMWARE).map(xml::get_text),
+    })
 }
 
 pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, Error> {
@@ -60,8 +60,6 @@ fn load_sound(root: &Element) -> Result<Sound, Error> {
     };
 
     Ok(Sound {
-        firmware_version: None,
-        earliest_compatible_firmware: None,
         name: xml::parse_opt_children_element_content(root, keys::NAME)?.unwrap_or_default(),
         polyphonic: xml::parse_children_element_content(root, keys::POLYPHONIC)?,
         voice_priority: xml::parse_children_element_content(root, keys::VOICE_PRIORITY)?,
@@ -466,20 +464,21 @@ mod tests {
 
     #[test]
     fn load_save_load_sound_subtractive() {
-        let sound = load_synth(include_str!("../../data_tests/SYNTHS/SYNT061.XML")).unwrap();
-        let xml = save_synth(&sound).unwrap();
-        let reloaded_sound = load_synth(&xml).unwrap();
+        let synth = load_synth(include_str!("../../data_tests/SYNTHS/SYNT061.XML")).unwrap();
+        let xml = save_synth(&synth).unwrap();
+        let reloaded_synth = load_synth(&xml).unwrap();
 
-        assert_eq!(reloaded_sound, sound);
+        assert_eq!(reloaded_synth, synth);
     }
 
     #[test]
     fn load_valid_sound_subtractive() {
         let xml_elements = xml::load_xml(include_str!("../../data_tests/SYNTHS/SYNT061.XML")).unwrap();
-        let sound = load_synth_nodes(&xml_elements).unwrap();
+        let synth = load_synth_nodes(&xml_elements).unwrap();
+        let sound = &synth.sound;
 
-        assert_eq!(&sound.firmware_version.unwrap(), "2.0.0-beta");
-        assert_eq!(&sound.earliest_compatible_firmware.unwrap(), "2.0.0-beta");
+        assert_eq!(&synth.firmware_version.unwrap(), "2.0.0-beta");
+        assert_eq!(&synth.earliest_compatible_firmware.unwrap(), "2.0.0-beta");
 
         assert_eq!(sound.voice_priority, VoicePriority::Medium);
         assert_eq!(sound.polyphonic, Polyphony::Poly);
@@ -584,7 +583,8 @@ mod tests {
     #[test]
     fn load_valid_sound_fm() {
         let xml_elements = xml::load_xml(include_str!("../../data_tests/SYNTHS/SYNT167.XML")).unwrap();
-        let sound = load_synth_nodes(&xml_elements).unwrap();
+        let synth = load_synth_nodes(&xml_elements).unwrap();
+        let sound = &synth.sound;
         let generator = sound.generator.as_fm().unwrap();
 
         assert_eq!(generator.osc1.transpose, Transpose::new(0));

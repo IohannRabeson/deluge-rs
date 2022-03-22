@@ -1,4 +1,4 @@
-use crate::{Error, Kit, Sound};
+use crate::{Error, Kit, Synth};
 
 mod default_params;
 mod keys;
@@ -9,7 +9,7 @@ mod serialization_v3;
 mod version_detection;
 mod xml;
 
-/// Load a kit from XML text
+/// Load a kit patch from XML
 pub fn load_kit(xml: &str) -> Result<Kit, Error> {
     let roots = xml::load_xml(xml)?;
     let version = version_detection::detect_kit_format_version(&roots)?;
@@ -21,8 +21,8 @@ pub fn load_kit(xml: &str) -> Result<Kit, Error> {
     }
 }
 
-/// Load a sound from XML text
-pub fn load_synth(xml: &str) -> Result<Sound, Error> {
+/// Load a synth patch from XML
+pub fn load_synth(xml: &str) -> Result<Synth, Error> {
     let roots = xml::load_xml(xml)?;
     let version = version_detection::detect_sound_format_version(&roots)?;
 
@@ -33,12 +33,16 @@ pub fn load_synth(xml: &str) -> Result<Sound, Error> {
     }
 }
 
-pub fn save_synth(sound: &Sound) -> Result<String, Error> {
-    let roots = vec![serialization_v3::write_synth(sound)?];
+/// Save a synth patch as XML
+/// The patch is saved using the latest format version.
+pub fn save_synth(synth: &Synth) -> Result<String, Error> {
+    let roots = vec![serialization_v3::write_synth(synth)?];
 
     Ok(xml::write_xml(&roots))
 }
 
+/// Save a kit patch as XML
+/// The patch is saved using the latest format version.
 pub fn save_kit(kit: &Kit) -> Result<String, Error> {
     let roots = vec![serialization_v3::write_kit(kit)?];
 
@@ -136,6 +140,7 @@ mod tests {
         let file_content = include_str!("../data_tests/SYNTHS/SYNT028.XML");
         let sound = load_synth(&file_content).unwrap();
         let xml = save_synth(&sound).unwrap();
+        eprintln!("{}", xml);
         let reloaded_sound = load_synth(&xml).unwrap();
 
         assert_eq!(reloaded_sound, sound);

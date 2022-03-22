@@ -9,16 +9,16 @@ extern crate derivative;
 
 mod kit;
 mod serialization;
-mod sound;
+mod synth;
 mod values;
 
 use std::{num::ParseIntError, sync::Arc};
 
 pub use kit::{GateOutput, Kit, MidiOutput, SoundSource};
-pub use sound::{
+pub use synth::{
     Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Lfo1, Lfo2,
     ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone, SampleOscillator,
-    SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SubtractiveGenerator, Unison, WaveformOscillator,
+    SamplePosition, SampleRange, SampleZone, Sidechain, Sound, Synth, SoundGenerator, SubtractiveGenerator, Unison, WaveformOscillator,
 };
 
 pub use serialization::{load_kit, load_synth, save_kit, save_synth};
