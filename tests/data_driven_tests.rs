@@ -3,7 +3,7 @@ extern crate test_generator;
 
 use test_generator::test_resources;
 
-use deluge::{load_kit, load_synth, save_kit, save_sound};
+use deluge::{load_kit, load_synth, save_kit, save_synth};
 
 #[test_resources("tests/data_tests/KITS/*.XML")]
 fn smoke_test_load_kit(resource: &str) {
@@ -33,7 +33,7 @@ fn smoke_test_load_write_load_sound(resource: &str) {
 
     let file_content = std::fs::read_to_string(resource).unwrap();
     let sound = load_synth(&file_content).unwrap();
-    let xml = save_sound(&sound).unwrap();
+    let xml = save_synth(&sound).unwrap();
     let reloaded_sound = load_synth(&xml).unwrap();
 
     assert_eq!(reloaded_sound, sound);
@@ -57,7 +57,7 @@ fn smoke_test_load_write_load_sound_community_patches(resource: &str) {
 
     let file_content = std::fs::read_to_string(resource).unwrap();
     let sound = load_synth(&file_content).unwrap();
-    let xml = save_sound(&sound).unwrap();
+    let xml = save_synth(&sound).unwrap();
     let reloaded_sound = load_synth(&xml).unwrap();
 
     assert_eq!(reloaded_sound, sound);

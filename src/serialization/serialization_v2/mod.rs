@@ -448,7 +448,7 @@ fn load_sidechain(root: &Element, default_params_node: &Element) -> Result<Sidec
 #[cfg(test)]
 mod tests {
     use crate::{
-        load_synth, save_sound,
+        load_synth, save_synth,
         values::{
             AttackSidechain, ClippingAmount, FineTranspose, LfoShape, LpfMode, Pan, Polyphony, ReleaseSidechain, RetrigPhase,
             Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
@@ -467,7 +467,7 @@ mod tests {
     #[test]
     fn load_save_load_sound_subtractive() {
         let sound = load_synth(include_str!("../../data_tests/SYNTHS/SYNT061.XML")).unwrap();
-        let xml = save_sound(&sound).unwrap();
+        let xml = save_synth(&sound).unwrap();
         let reloaded_sound = load_synth(&xml).unwrap();
 
         assert_eq!(reloaded_sound, sound);

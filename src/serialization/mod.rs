@@ -33,7 +33,7 @@ pub fn load_synth(xml: &str) -> Result<Sound, Error> {
     }
 }
 
-pub fn save_sound(sound: &Sound) -> Result<String, Error> {
+pub fn save_synth(sound: &Sound) -> Result<String, Error> {
     let roots = vec![serialization_v3::write_synth(sound)?];
 
     Ok(xml::write_xml(&roots))
@@ -53,7 +53,7 @@ mod tests {
     #[test]
     fn test_save_load_compare_version_3_synth() {
         let sound = load_synth(include_str!("../data_tests/SYNTHS/SYNT184.XML")).unwrap();
-        let xml = save_sound(&sound).unwrap();
+        let xml = save_synth(&sound).unwrap();
         let reloaded_sound = load_synth(&xml).unwrap();
 
         assert_eq!(reloaded_sound, sound);
@@ -82,7 +82,7 @@ mod tests {
 
     fn test_save_load_synth_compare(input: &str) {
         let sound = load_synth(input).unwrap();
-        let xml = save_sound(&sound).unwrap();
+        let xml = save_synth(&sound).unwrap();
         let reloaded_sound = load_synth(&xml).unwrap();
         assert_eq!(reloaded_sound, sound);
     }
@@ -135,7 +135,7 @@ mod tests {
     fn test_load_write_load_sound_028() {
         let file_content = include_str!("../data_tests/SYNTHS/SYNT028.XML");
         let sound = load_synth(&file_content).unwrap();
-        let xml = save_sound(&sound).unwrap();
+        let xml = save_synth(&sound).unwrap();
         let reloaded_sound = load_synth(&xml).unwrap();
 
         assert_eq!(reloaded_sound, sound);
