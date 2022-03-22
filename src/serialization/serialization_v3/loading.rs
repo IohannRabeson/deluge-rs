@@ -15,7 +15,7 @@ use crate::{
 use xmltree::Element;
 
 /// Load a deluge synth XML file
-pub fn load_synth(root_nodes: &[Element]) -> Result<Sound, Error> {
+pub fn load_synth_nodes(root_nodes: &[Element]) -> Result<Sound, Error> {
     let sound_node = xml::get_element(root_nodes, keys::SOUND)?;
     let firmware_version = xml::parse_opt_attribute(sound_node, keys::FIRMWARE_VERSION)?;
     let earliest_compatible_firmware = xml::parse_opt_attribute(sound_node, keys::EARLIEST_COMPATIBLE_FIRMWARE)?;
@@ -496,7 +496,7 @@ mod tests {
     #[test]
     fn load_valid_sound_subtractive() {
         let xml_elements = xml::load_xml(include_str!("../../data_tests/SYNTHS/SYNT184.XML")).unwrap();
-        let sound = load_synth(&xml_elements).unwrap();
+        let sound = load_synth_nodes(&xml_elements).unwrap();
 
         assert_eq!(&sound.firmware_version.unwrap(), "3.1.5");
         assert_eq!(&sound.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
@@ -577,7 +577,7 @@ mod tests {
     #[test]
     fn load_valid_sound_fm() {
         let xml_elements = xml::load_xml(include_str!("../../data_tests/SYNTHS/SYNT176.XML")).unwrap();
-        let sound = load_synth(&xml_elements).unwrap();
+        let sound = load_synth_nodes(&xml_elements).unwrap();
 
         assert_eq!(&sound.firmware_version.unwrap(), "3.1.5");
         assert_eq!(&sound.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
@@ -650,7 +650,7 @@ mod tests {
     #[test]
     fn load_valid_sound_subtractive_sample() {
         let xml_elements = xml::load_xml(include_str!("../../data_tests/SYNTHS/SYNT173.XML")).unwrap();
-        let sound = load_synth(&xml_elements).unwrap();
+        let sound = load_synth_nodes(&xml_elements).unwrap();
 
         assert_eq!(&sound.firmware_version.unwrap(), "3.1.5");
         assert_eq!(&sound.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
@@ -746,7 +746,7 @@ mod tests {
     #[test]
     fn load_valid_sound_subtractive_sample_sample_ranges() {
         let xml_elements = xml::load_xml(include_str!("../../data_tests/SYNTHS/SYNT168A.XML")).unwrap();
-        let sound = load_synth(&xml_elements).unwrap();
+        let sound = load_synth_nodes(&xml_elements).unwrap();
 
         assert_eq!(&sound.firmware_version.unwrap(), "3.1.5");
         assert_eq!(&sound.earliest_compatible_firmware.unwrap(), "3.1.0-beta");

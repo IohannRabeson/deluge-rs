@@ -27,9 +27,9 @@ pub fn load_sound(xml: &str) -> Result<Sound, Error> {
     let version = version_detection::detect_sound_format_version(&roots)?;
 
     match version {
-        version_detection::FormatVersion::Version3 => serialization_v3::load_synth(&roots),
-        version_detection::FormatVersion::Version2 => serialization_v2::load_synth(&roots),
-        version_detection::FormatVersion::Version1 => serialization_v1::load_synth(&roots),
+        version_detection::FormatVersion::Version3 => serialization_v3::load_synth_nodes(&roots),
+        version_detection::FormatVersion::Version2 => serialization_v2::load_synth_nodes(&roots),
+        version_detection::FormatVersion::Version1 => serialization_v1::load_synth_nodes(&roots),
     }
 }
 
