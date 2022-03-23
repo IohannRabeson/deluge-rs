@@ -8,15 +8,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Derivative, Clone, Debug)]
 #[derivative(PartialEq)]
 pub struct Sound {
-    /// Not specified when loading a sound in a kit
-    #[derivative(PartialEq = "ignore")]
-    pub firmware_version: Option<String>,
-    /// Not specified when loading a sound in a kit
-    #[derivative(PartialEq = "ignore")]
-    pub earliest_compatible_firmware: Option<String>,
-    /// Specified when the sound is part of a kit
-    pub name: String,
-
     pub generator: SoundGenerator,
     pub polyphonic: Polyphony,
     pub voice_priority: VoicePriority,

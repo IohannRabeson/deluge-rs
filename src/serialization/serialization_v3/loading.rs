@@ -9,27 +9,24 @@ use crate::{
     Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Error, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput,
     Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
     SampleOscillator, SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SoundSource,
-    SubtractiveGenerator, Unison, WaveformOscillator,
+    SubtractiveGenerator, Synth, Unison, WaveformOscillator, kit::SoundOutput,
 };
 
 use xmltree::Element;
 
 /// Load a deluge synth XML file
-pub fn load_synth(root_nodes: &[Element]) -> Result<Sound, Error> {
+pub fn load_synth_nodes(root_nodes: &[Element]) -> Result<Synth, Error> {
     let sound_node = xml::get_element(root_nodes, keys::SOUND)?;
-    let firmware_version = xml::parse_opt_attribute(sound_node, keys::FIRMWARE_VERSION)?;
-    let earliest_compatible_firmware = xml::parse_opt_attribute(sound_node, keys::EARLIEST_COMPATIBLE_FIRMWARE)?;
-    let mut sound = load_sound(sound_node)?;
 
-    sound.firmware_version = firmware_version;
-    sound.earliest_compatible_firmware = earliest_compatible_firmware;
-
-    Ok(sound)
+    Ok(Synth {
+        sound: load_sound(sound_node)?,
+        firmware_version: xml::parse_opt_attribute(sound_node, keys::FIRMWARE_VERSION)?,
+        earliest_compatible_firmware: xml::parse_opt_attribute(sound_node, keys::EARLIEST_COMPATIBLE_FIRMWARE)?,
+    })
 }
 
-pub fn load_kit(xml: &str) -> Result<Kit, Error> {
-    let root_nodes: Vec<Element> = xml::load_xml(xml)?;
-    let kit_node = xml::get_element(&root_nodes, keys::KIT)?;
+pub fn load_kit_nodes(root_nodes: &[Element]) -> Result<Kit, Error> {
+    let kit_node = xml::get_element(root_nodes, keys::KIT)?;
     let sound_sources_node = xml::get_children_element(kit_node, keys::SOUND_SOURCES)?;
     let firmware_version = xml::parse_opt_attribute(kit_node, keys::FIRMWARE_VERSION)?;
     let earliest_compatible_firmware = xml::parse_opt_attribute(kit_node, keys::EARLIEST_COMPATIBLE_FIRMWARE)?;
@@ -71,10 +68,6 @@ fn load_sound(root: &Element) -> Result<Sound, Error> {
     };
 
     Ok(Sound {
-        name: xml::parse_opt_attribute(root, keys::NAME)?.unwrap_or_default(),
-        firmware_version: xml::parse_opt_attribute(root, keys::FIRMWARE_VERSION)?,
-        earliest_compatible_firmware: xml::parse_opt_attribute(root, keys::EARLIEST_COMPATIBLE_FIRMWARE)?,
-
         polyphonic: xml::parse_attribute(root, keys::POLYPHONIC)?,
         voice_priority: xml::parse_attribute(root, keys::VOICE_PRIORITY)?,
         volume: xml::parse_attribute(default_params_node, keys::VOLUME)?,
@@ -288,10 +281,17 @@ fn load_gate_output(root: &Element) -> Result<GateOutput, Error> {
 
 fn load_sound_source(root: &Element) -> Result<SoundSource, Error> {
     Ok(match root.name.as_str() {
-        keys::SOUND => SoundSource::Sound(Box::new(load_sound(root)?)),
+        keys::SOUND => SoundSource::SoundOutput(load_sound_output(root)?),
         keys::MIDI_OUTPUT => SoundSource::MidiOutput(load_midi_output(root)?),
         keys::GATE_OUTPUT => SoundSource::GateOutput(load_gate_output(root)?),
         _ => return Err(Error::UnsupportedSoundSource(root.name.clone())),
+    })
+}
+
+fn load_sound_output(root: &Element) -> Result<SoundOutput, Error> {
+    Ok(SoundOutput {
+        sound: Box::new(load_sound(root)?),
+        name: xml::parse_attribute(root, keys::NAME)?
     })
 }
 
@@ -451,12 +451,16 @@ mod tests {
 
     #[test]
     fn load_valid_kit_xml() {
-        assert!(load_kit(include_str!("../../data_tests/KITS/KIT057.XML")).is_ok());
+        let roots = xml::load_xml(include_str!("../../data_tests/KITS/KIT057.XML")).unwrap();
+        let kit = load_kit_nodes(&roots);
+
+        assert!(kit.is_ok());
     }
 
     #[test]
     fn load_valid_kit_xml_and_check_sounds_only() {
-        let kit = load_kit(include_str!("../../data_tests/KITS/KIT_TEST_SOUNDS_ONLY.XML")).unwrap();
+        let roots = xml::load_xml(include_str!("../../data_tests/KITS/KIT_TEST_SOUNDS_ONLY.XML")).unwrap();
+        let kit = load_kit_nodes(&roots).unwrap();
 
         assert_eq!(&kit.firmware_version.unwrap(), "3.1.5");
         assert_eq!(&kit.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
@@ -465,7 +469,8 @@ mod tests {
 
     #[test]
     fn load_valid_kit_xml_and_check_sounds_midi_and_gate() {
-        let kit = load_kit(include_str!("../../data_tests/KITS/KIT_TEST_SOUNDS_MIDI_GATE.XML")).unwrap();
+        let roots = xml::load_xml(include_str!("../../data_tests/KITS/KIT_TEST_SOUNDS_MIDI_GATE.XML")).unwrap();
+        let kit = load_kit_nodes(&roots).unwrap();
 
         assert_eq!(&kit.firmware_version.unwrap(), "3.1.5");
         assert_eq!(&kit.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
@@ -476,7 +481,8 @@ mod tests {
 
     #[test]
     fn load_kit_check_row_name() {
-        let kit = &load_kit(include_str!("../../data_tests/KITS/KIT057.XML")).unwrap();
+        let roots = xml::load_xml(include_str!("../../data_tests/KITS/KIT057.XML")).unwrap();
+        let kit = load_kit_nodes(&roots).unwrap();
         let expected = vec![
             "halftime_goodie",
             "halftime_goodie2",
@@ -489,17 +495,20 @@ mod tests {
         assert_eq!(kit.rows.len(), 7);
 
         for i in 0..kit.rows.len() {
-            assert_eq!(kit.rows[i].as_sound().unwrap().name, expected[i]);
+            let sound = kit.rows[i].as_sound_output().unwrap();
+
+            assert_eq!(sound.name, expected[i]);
         }
     }
 
     #[test]
     fn load_valid_sound_subtractive() {
         let xml_elements = xml::load_xml(include_str!("../../data_tests/SYNTHS/SYNT184.XML")).unwrap();
-        let sound = load_synth(&xml_elements).unwrap();
+        let synth = load_synth_nodes(&xml_elements).unwrap();
+        let sound = &synth.sound;
 
-        assert_eq!(&sound.firmware_version.unwrap(), "3.1.5");
-        assert_eq!(&sound.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
+        assert_eq!(&synth.firmware_version.unwrap(), "3.1.5");
+        assert_eq!(&synth.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
 
         assert_eq!(sound.voice_priority, VoicePriority::Medium);
         assert_eq!(sound.polyphonic, Polyphony::Poly);
@@ -577,10 +586,11 @@ mod tests {
     #[test]
     fn load_valid_sound_fm() {
         let xml_elements = xml::load_xml(include_str!("../../data_tests/SYNTHS/SYNT176.XML")).unwrap();
-        let sound = load_synth(&xml_elements).unwrap();
+        let synth = load_synth_nodes(&xml_elements).unwrap();
+        let sound = &synth.sound;
 
-        assert_eq!(&sound.firmware_version.unwrap(), "3.1.5");
-        assert_eq!(&sound.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
+        assert_eq!(&synth.firmware_version.unwrap(), "3.1.5");
+        assert_eq!(&synth.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
 
         assert_eq!(sound.voice_priority, VoicePriority::Medium);
         assert_eq!(sound.polyphonic, Polyphony::Poly);
@@ -650,10 +660,11 @@ mod tests {
     #[test]
     fn load_valid_sound_subtractive_sample() {
         let xml_elements = xml::load_xml(include_str!("../../data_tests/SYNTHS/SYNT173.XML")).unwrap();
-        let sound = load_synth(&xml_elements).unwrap();
+        let synth = load_synth_nodes(&xml_elements).unwrap();
+        let sound = &synth.sound;
 
-        assert_eq!(&sound.firmware_version.unwrap(), "3.1.5");
-        assert_eq!(&sound.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
+        assert_eq!(&synth.firmware_version.unwrap(), "3.1.5");
+        assert_eq!(&synth.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
 
         assert_eq!(sound.voice_priority, VoicePriority::High);
         assert_eq!(sound.polyphonic, Polyphony::Mono);
@@ -746,10 +757,11 @@ mod tests {
     #[test]
     fn load_valid_sound_subtractive_sample_sample_ranges() {
         let xml_elements = xml::load_xml(include_str!("../../data_tests/SYNTHS/SYNT168A.XML")).unwrap();
-        let sound = load_synth(&xml_elements).unwrap();
+        let synth = load_synth_nodes(&xml_elements).unwrap();
+        let sound = &synth.sound;
 
-        assert_eq!(&sound.firmware_version.unwrap(), "3.1.5");
-        assert_eq!(&sound.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
+        assert_eq!(&synth.firmware_version.unwrap(), "3.1.5");
+        assert_eq!(&synth.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
 
         assert_eq!(sound.voice_priority, VoicePriority::Medium);
         assert_eq!(sound.polyphonic, Polyphony::Poly);
