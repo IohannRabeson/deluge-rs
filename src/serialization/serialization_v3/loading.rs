@@ -1,4 +1,5 @@
 use crate::{
+    kit::SoundOutput,
     serialization::{
         default_params::{DefaultParams, TwinSelector},
         keys,
@@ -9,7 +10,7 @@ use crate::{
     Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Error, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput,
     Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
     SampleOscillator, SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SoundSource,
-    SubtractiveGenerator, Synth, Unison, WaveformOscillator, kit::SoundOutput,
+    SubtractiveGenerator, Synth, Unison, WaveformOscillator,
 };
 
 use xmltree::Element;
@@ -120,6 +121,7 @@ fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, Error> {
         osc1: load_oscillator(osc1_node, &DefaultParams::new(TwinSelector::A, default_params_node))?,
         osc2: load_oscillator(osc2_node, &DefaultParams::new(TwinSelector::B, default_params_node))?,
         osc2_sync: xml::parse_opt_attribute::<OnOff>(osc2_node, keys::OSCILLATOR_SYNC)?.unwrap_or(OnOff::Off),
+        noise: xml::parse_attribute(default_params_node, keys::NOISE_VOLUME)?,
     }))
 }
 
@@ -291,7 +293,7 @@ fn load_sound_source(root: &Element) -> Result<SoundSource, Error> {
 fn load_sound_output(root: &Element) -> Result<SoundOutput, Error> {
     Ok(SoundOutput {
         sound: Box::new(load_sound(root)?),
-        name: xml::parse_attribute(root, keys::NAME)?
+        name: xml::parse_attribute(root, keys::NAME)?,
     })
 }
 
