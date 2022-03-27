@@ -381,6 +381,7 @@ fn write_ringmod_sound(
     xml::insert_attribute(&mut osc2_node, keys::OSCILLATOR_SYNC, &generator.osc2_sync)?;
     xml::insert_child(sound_node, write_oscillator(&generator.osc1, &default_params_a)?)?;
     xml::insert_child(sound_node, osc2_node)?;
+    xml::insert_attribute_rc(default_params_node, keys::NOISE_VOLUME, &generator.noise)?;
 
     Ok(())
 }

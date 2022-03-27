@@ -2,8 +2,8 @@ use crate::{
     values::{ArpeggiatorMode, HexU50, OctavesCount, OnOff, OscType, RetrigPhase, SoundType, SyncLevel},
     Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Error, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput,
     Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
-    SampleOscillator, SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SoundSource,
-    SubtractiveGenerator, Synth, Unison, WaveformOscillator, SoundOutput,
+    SampleOscillator, SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SoundOutput, SoundSource,
+    SubtractiveGenerator, Synth, Unison, WaveformOscillator,
 };
 use xmltree::Element;
 
@@ -112,6 +112,7 @@ fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, Error> {
         osc1: load_oscillator(osc1_node, &DefaultParams::new(TwinSelector::A, default_params_node))?,
         osc2: load_oscillator(osc2_node, &DefaultParams::new(TwinSelector::B, default_params_node))?,
         osc2_sync: xml::parse_opt_children_element_content::<OnOff>(osc2_node, keys::OSCILLATOR_SYNC)?.unwrap_or(OnOff::Off),
+        noise: xml::parse_children_element_content(default_params_node, keys::NOISE_VOLUME)?,
     }))
 }
 

@@ -162,6 +162,7 @@ pub struct RingModGenerator {
     pub osc1: Oscillator,
     pub osc2: Oscillator,
     pub osc2_sync: OnOff,
+    pub noise: HexU50,
 }
 
 #[derive(Clone, Debug, PartialEq)]
