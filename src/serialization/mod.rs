@@ -1,36 +1,51 @@
 use crate::{Error, Kit, Synth};
 
+use self::version_info::VersionInfo;
+
 mod default_params;
+mod format_version;
 mod keys;
 mod serialization_common;
 mod serialization_v1;
 mod serialization_v2;
 mod serialization_v3;
-mod version_detection;
+mod version_info;
 mod xml;
 
 /// Load a kit patch from XML
 pub fn load_kit(xml: &str) -> Result<Kit, Error> {
-    let roots = xml::load_xml(xml)?;
-    let version = version_detection::detect_kit_format_version(&roots)?;
+    Ok(load_kit_with_version(xml)?.0)
+}
 
-    match version {
-        version_detection::FormatVersion::Version3 => serialization_v3::load_kit_nodes(&roots),
-        version_detection::FormatVersion::Version2 => serialization_v2::load_kit_nodes(&roots),
-        version_detection::FormatVersion::Version1 => serialization_v1::load_kit_nodes(&roots),
-    }
+pub fn load_kit_with_version(xml: &str) -> Result<(Kit, VersionInfo), Error> {
+    let roots = xml::load_xml(xml)?;
+    let version_info = version_info::load_version_info(&roots, keys::KIT);
+    let kit = match version_info.format_version {
+        format_version::FormatVersion::Version3 => serialization_v3::load_kit_nodes(&roots)?,
+        format_version::FormatVersion::Version2 => serialization_v2::load_kit_nodes(&roots)?,
+        format_version::FormatVersion::Version1 => serialization_v1::load_kit_nodes(&roots)?,
+        format_version::FormatVersion::Unknown => return Err(Error::InvalidVersionFormat),
+    };
+
+    Ok((kit, version_info))
 }
 
 /// Load a synth patch from XML
 pub fn load_synth(xml: &str) -> Result<Synth, Error> {
-    let roots = xml::load_xml(xml)?;
-    let version = version_detection::detect_synth_format_version(&roots)?;
+    Ok(load_synth_with_version(xml)?.0)
+}
 
-    match version {
-        version_detection::FormatVersion::Version3 => serialization_v3::load_synth_nodes(&roots),
-        version_detection::FormatVersion::Version2 => serialization_v2::load_synth_nodes(&roots),
-        version_detection::FormatVersion::Version1 => serialization_v1::load_synth_nodes(&roots),
-    }
+pub fn load_synth_with_version(xml: &str) -> Result<(Synth, VersionInfo), Error> {
+    let roots = xml::load_xml(xml)?;
+    let version_info = version_info::load_version_info(&roots, keys::SOUND);
+    let synth = match version_info.format_version {
+        format_version::FormatVersion::Version3 => serialization_v3::load_synth_nodes(&roots)?,
+        format_version::FormatVersion::Version2 => serialization_v2::load_synth_nodes(&roots)?,
+        format_version::FormatVersion::Version1 => serialization_v1::load_synth_nodes(&roots)?,
+        format_version::FormatVersion::Unknown => return Err(Error::InvalidVersionFormat),
+    };
+
+    Ok((synth, version_info))
 }
 
 /// Save a synth patch as XML
@@ -100,18 +115,18 @@ mod tests {
 
     #[test]
     fn test_load_version_3_synth() {
-        let synth = load_synth(include_str!("../data_tests/SYNTHS/SYNT184.XML")).unwrap();
+        let (_, version_info) = load_synth_with_version(include_str!("../data_tests/SYNTHS/SYNT184.XML")).unwrap();
 
-        assert_eq!(&synth.firmware_version.unwrap(), "3.1.5");
-        assert_eq!(&synth.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
+        assert_eq!(&version_info.firmware_version.unwrap(), "3.1.5");
+        assert_eq!(&version_info.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
     }
 
     #[test]
     fn test_load_version_3_kit() {
-        let kit = load_kit(include_str!("../data_tests/KITS/KIT057.XML")).unwrap();
+        let (kit, version_info) = load_kit_with_version(include_str!("../data_tests/KITS/KIT057.XML")).unwrap();
 
-        assert_eq!(&kit.firmware_version.unwrap(), "3.1.5");
-        assert_eq!(&kit.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
+        assert_eq!(&version_info.firmware_version.unwrap(), "3.1.5");
+        assert_eq!(&version_info.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
         assert_eq!(kit.rows.len(), 7);
     }
 
@@ -147,27 +162,27 @@ mod tests {
 
     #[test]
     fn test_load_version_2_synth() {
-        let kit = load_synth(include_str!("../data_tests/SYNTHS/SYNT170.XML")).unwrap();
+        let (_, version_info) = load_synth_with_version(include_str!("../data_tests/SYNTHS/SYNT170.XML")).unwrap();
 
-        assert_eq!(&kit.firmware_version.unwrap(), "2.1.0");
-        assert_eq!(&kit.earliest_compatible_firmware.unwrap(), "2.1.0");
+        assert_eq!(&version_info.firmware_version.unwrap(), "2.1.0");
+        assert_eq!(&version_info.earliest_compatible_firmware.unwrap(), "2.1.0");
     }
 
     #[test]
     fn test_load_version_2_kit() {
-        let kit = load_kit(include_str!("../data_tests/KITS/KIT026.XML")).unwrap();
+        let (kit, version_info) = load_kit_with_version(include_str!("../data_tests/KITS/KIT026.XML")).unwrap();
 
-        assert_eq!(&kit.firmware_version.unwrap(), "2.1.0");
-        assert_eq!(&kit.earliest_compatible_firmware.unwrap(), "2.0.0");
+        assert_eq!(&version_info.firmware_version.unwrap(), "2.1.0");
+        assert_eq!(&version_info.earliest_compatible_firmware.unwrap(), "2.0.0");
         assert_eq!(kit.rows.len(), 16);
     }
 
     #[test]
     fn test_load_version_1_kit() {
-        let kit = load_kit(include_str!("../data_tests/KITS/KIT000.XML")).unwrap();
+        let (kit, version_info) = load_kit_with_version(include_str!("../data_tests/KITS/KIT000.XML")).unwrap();
 
-        assert_eq!(&kit.firmware_version, &None);
-        assert_eq!(&kit.earliest_compatible_firmware, &None);
+        assert_eq!(&version_info.firmware_version, &None);
+        assert_eq!(&version_info.earliest_compatible_firmware, &None);
         assert_eq!(kit.rows.len(), 16);
     }
 

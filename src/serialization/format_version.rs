@@ -1,7 +1,5 @@
 use std::borrow::Cow;
 
-use crate::Error;
-
 use xmltree::Element;
 
 use super::{keys, xml};
@@ -9,11 +7,12 @@ use super::{keys, xml};
 /// Deluge format version
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum FormatVersion {
-    // The initial version of the format
+    Unknown,
+    /// The initial version of the Deluge format. Nothing was specified actually.
     Version1,
-    // This version introduces the firmwareVersion information in the data
+    /// This version introduces the firmwareVersion information in the data stored as content of root node.
     Version2,
-    // This version uses more attributes instead of children
+    /// This version uses more attributes instead of children.
     Version3,
 }
 
@@ -68,15 +67,7 @@ fn check_for_version(text: &str, expected_first_char: char) -> bool {
     }
 }
 
-pub fn detect_kit_format_version(roots: &[Element]) -> Result<FormatVersion, Error> {
-    detect_format_version(roots, keys::KIT)
-}
-
-pub fn detect_synth_format_version(roots: &[Element]) -> Result<FormatVersion, Error> {
-    detect_format_version(roots, keys::SOUND)
-}
-
-fn detect_format_version(roots: &[Element], element_type: &str) -> Result<FormatVersion, Error> {
+pub fn detect_format_version(roots: &[Element], element_type: &str) -> Option<FormatVersion> {
     // Notice we check the newest versions first, but this is because version 1 does not contains any version infos.
     let functions: Vec<(VersionFunctionDetection, FormatVersion)> = vec![
         (is_version_3, FormatVersion::Version3),
@@ -86,16 +77,28 @@ fn detect_format_version(roots: &[Element], element_type: &str) -> Result<Format
 
     for f in &functions {
         if f.0(roots, element_type) {
-            return Ok(f.1);
+            return Some(f.1);
         }
     }
 
-    Err(Error::InvalidVersionFormat)
+    None
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::Error;
+
     use super::*;
+
+    /// This helper exists to avoid having to change each test, but it's legacy.
+    fn detect_kit_format_version(roots: &[Element]) -> Result<FormatVersion, Error> {
+        detect_format_version(roots, keys::KIT).ok_or(Error::InvalidVersionFormat)
+    }
+
+    /// This helper exists to avoid having to change each test, but it's legacy.
+    fn detect_synth_format_version(roots: &[Element]) -> Result<FormatVersion, Error> {
+        detect_format_version(roots, keys::SOUND).ok_or(Error::InvalidVersionFormat)
+    }
 
     #[test]
     fn test_detect_format_version_sound() {

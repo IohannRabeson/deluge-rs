@@ -3,7 +3,7 @@ use crate::{
     serialization::{
         default_params::{DefaultParams, TwinSelector},
         keys,
-        serialization_common::{convert_milliseconds_to_samples, parse_u8},
+        serialization_common::{convert_milliseconds_to_samples, parse_u8_string},
         xml,
     },
     values::*,
@@ -21,16 +21,12 @@ pub fn load_synth_nodes(root_nodes: &[Element]) -> Result<Synth, Error> {
 
     Ok(Synth {
         sound: load_sound(sound_node)?,
-        firmware_version: xml::parse_opt_attribute(sound_node, keys::FIRMWARE_VERSION)?,
-        earliest_compatible_firmware: xml::parse_opt_attribute(sound_node, keys::EARLIEST_COMPATIBLE_FIRMWARE)?,
     })
 }
 
 pub fn load_kit_nodes(root_nodes: &[Element]) -> Result<Kit, Error> {
     let kit_node = xml::get_element(root_nodes, keys::KIT)?;
     let sound_sources_node = xml::get_children_element(kit_node, keys::SOUND_SOURCES)?;
-    let firmware_version = xml::parse_opt_attribute(kit_node, keys::FIRMWARE_VERSION)?;
-    let earliest_compatible_firmware = xml::parse_opt_attribute(kit_node, keys::EARLIEST_COMPATIBLE_FIRMWARE)?;
     let sources: Vec<Result<SoundSource, Error>> = sound_sources_node
         .children
         .iter()
@@ -43,8 +39,6 @@ pub fn load_kit_nodes(root_nodes: &[Element]) -> Result<Kit, Error> {
     }
 
     return Ok(Kit {
-        firmware_version,
-        earliest_compatible_firmware,
         rows: sources.iter().flatten().cloned().collect::<Vec<SoundSource>>(),
     });
 }
@@ -269,15 +263,15 @@ fn load_waveform_oscillator(osc_type: OscType, root: &Element, params: &DefaultP
 }
 
 fn load_midi_output(root: &Element) -> Result<MidiOutput, Error> {
-    let channel = xml::get_attribute(root, keys::CHANNEL).and_then(parse_u8)?;
-    let note = xml::get_attribute(root, keys::NOTE).and_then(parse_u8)?;
+    let channel = xml::get_attribute(root, keys::CHANNEL).and_then(parse_u8_string)?;
+    let note = xml::get_attribute(root, keys::NOTE).and_then(parse_u8_string)?;
 
     Ok(MidiOutput { channel, note })
 }
 
 fn load_gate_output(root: &Element) -> Result<GateOutput, Error> {
     xml::get_attribute(root, keys::CHANNEL)
-        .and_then(parse_u8)
+        .and_then(parse_u8_string)
         .map(|channel| GateOutput { channel })
 }
 
@@ -464,8 +458,6 @@ mod tests {
         let roots = xml::load_xml(include_str!("../../data_tests/KITS/KIT_TEST_SOUNDS_ONLY.XML")).unwrap();
         let kit = load_kit_nodes(&roots).unwrap();
 
-        assert_eq!(&kit.firmware_version.unwrap(), "3.1.5");
-        assert_eq!(&kit.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
         assert_eq!(kit.rows.len(), 7);
     }
 
@@ -474,8 +466,6 @@ mod tests {
         let roots = xml::load_xml(include_str!("../../data_tests/KITS/KIT_TEST_SOUNDS_MIDI_GATE.XML")).unwrap();
         let kit = load_kit_nodes(&roots).unwrap();
 
-        assert_eq!(&kit.firmware_version.unwrap(), "3.1.5");
-        assert_eq!(&kit.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
         assert_eq!(kit.rows.len(), 9);
         assert_eq!(kit.rows[0], SoundSource::MidiOutput(MidiOutput { channel: 1, note: 63 }));
         assert_eq!(kit.rows[1], SoundSource::GateOutput(GateOutput { channel: 3 }));
@@ -508,9 +498,6 @@ mod tests {
         let xml_elements = xml::load_xml(include_str!("../../data_tests/SYNTHS/SYNT184.XML")).unwrap();
         let synth = load_synth_nodes(&xml_elements).unwrap();
         let sound = &synth.sound;
-
-        assert_eq!(&synth.firmware_version.unwrap(), "3.1.5");
-        assert_eq!(&synth.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
 
         assert_eq!(sound.voice_priority, VoicePriority::Medium);
         assert_eq!(sound.polyphonic, Polyphony::Poly);
@@ -591,9 +578,6 @@ mod tests {
         let synth = load_synth_nodes(&xml_elements).unwrap();
         let sound = &synth.sound;
 
-        assert_eq!(&synth.firmware_version.unwrap(), "3.1.5");
-        assert_eq!(&synth.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
-
         assert_eq!(sound.voice_priority, VoicePriority::Medium);
         assert_eq!(sound.polyphonic, Polyphony::Poly);
         assert_eq!(sound.volume, HexU50::parse("0x1E000000").unwrap());
@@ -664,9 +648,6 @@ mod tests {
         let xml_elements = xml::load_xml(include_str!("../../data_tests/SYNTHS/SYNT173.XML")).unwrap();
         let synth = load_synth_nodes(&xml_elements).unwrap();
         let sound = &synth.sound;
-
-        assert_eq!(&synth.firmware_version.unwrap(), "3.1.5");
-        assert_eq!(&synth.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
 
         assert_eq!(sound.voice_priority, VoicePriority::High);
         assert_eq!(sound.polyphonic, Polyphony::Mono);
@@ -761,9 +742,6 @@ mod tests {
         let xml_elements = xml::load_xml(include_str!("../../data_tests/SYNTHS/SYNT168A.XML")).unwrap();
         let synth = load_synth_nodes(&xml_elements).unwrap();
         let sound = &synth.sound;
-
-        assert_eq!(&synth.firmware_version.unwrap(), "3.1.5");
-        assert_eq!(&synth.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
 
         assert_eq!(sound.voice_priority, VoicePriority::Medium);
         assert_eq!(sound.polyphonic, Polyphony::Poly);

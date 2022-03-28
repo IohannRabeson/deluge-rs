@@ -23,16 +23,12 @@ pub fn load_synth_nodes(root_nodes: &[Element]) -> Result<Synth, Error> {
 
     Ok(Synth {
         sound: load_sound(sound_node)?,
-        firmware_version: xml::get_opt_element(root_nodes, keys::FIRMWARE_VERSION).map(xml::get_text),
-        earliest_compatible_firmware: xml::get_opt_element(root_nodes, keys::EARLIEST_COMPATIBLE_FIRMWARE).map(xml::get_text),
     })
 }
 
 pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, Error> {
     let kit_node = xml::get_element(roots, keys::KIT)?;
     let sound_sources_node = xml::get_children_element(kit_node, keys::SOUND_SOURCES)?;
-    let firmware_version = xml::get_opt_element(roots, keys::FIRMWARE_VERSION).map(xml::get_text);
-    let earliest_compatible_firmware = xml::get_opt_element(roots, keys::EARLIEST_COMPATIBLE_FIRMWARE).map(xml::get_text);
     let sources: Vec<Result<SoundSource, Error>> = sound_sources_node
         .children
         .iter()
@@ -45,8 +41,6 @@ pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, Error> {
     }
 
     return Ok(Kit {
-        firmware_version,
-        earliest_compatible_firmware,
         rows: sources.iter().flatten().cloned().collect::<Vec<SoundSource>>(),
     });
 }
@@ -500,9 +494,6 @@ mod tests {
         let xml_elements = xml::load_xml(include_str!("../../data_tests/SYNTHS/SYNT061.XML")).unwrap();
         let synth = load_synth_nodes(&xml_elements).unwrap();
         let sound = &synth.sound;
-
-        assert_eq!(&synth.firmware_version.unwrap(), "2.0.0-beta");
-        assert_eq!(&synth.earliest_compatible_firmware.unwrap(), "2.0.0-beta");
 
         assert_eq!(sound.voice_priority, VoicePriority::Medium);
         assert_eq!(sound.polyphonic, Polyphony::Poly);
