@@ -3,17 +3,12 @@ use super::Sound;
 #[derive(Derivative, Clone, Debug, Default)]
 #[derivative(PartialEq)]
 pub struct Kit {
-    #[derivative(PartialEq = "ignore")]
-    pub firmware_version: Option<String>,
-    #[derivative(PartialEq = "ignore")]
-    pub earliest_compatible_firmware: Option<String>,
     pub rows: Vec<SoundSource>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(test, derive(enum_as_inner::EnumAsInner))]
 pub enum SoundSource {
-    /// Sound is 320 bytes so I'm boxing it to reduce the size of the enum.
     SoundOutput(SoundOutput),
     MidiOutput(MidiOutput),
     GateOutput(GateOutput),
@@ -21,6 +16,7 @@ pub enum SoundSource {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct SoundOutput {
+    /// Sound is 320 bytes so I'm boxing it to reduce the size of SoundSource.
     pub sound: Box<Sound>,
     pub name: String,
 }

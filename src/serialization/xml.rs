@@ -38,10 +38,14 @@ pub fn get_opt_element<'a>(elements: &'a [Element], name: &'a str) -> Option<&'a
     elements.iter().find(|e| e.name == name)
 }
 
-pub fn get_attribute<'a>(element: &'a Element, name: &'a str) -> Result<&'a str, Error> {
+pub fn get_attribute<'a>(element: &'a Element, name: &'a str) -> Result<&'a String, Error> {
+    get_opt_attribute(element, name).ok_or_else(|| Error::MissingAttribute(element.name.to_string(), name.to_string()))
+}
+
+pub fn get_opt_attribute<'a>(element: &'a Element, name: &'a str) -> Option<&'a String> {
     match element.attributes.get(name) {
-        Some(attribute_value) => Ok(attribute_value),
-        None => Err(Error::MissingAttribute(element.name.to_string(), name.to_string())),
+        Some(attribute_value) => Some(attribute_value),
+        None => None,
     }
 }
 

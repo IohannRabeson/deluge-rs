@@ -5,8 +5,8 @@ use crate::{
     },
     Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Error, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput,
     Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
-    SampleOscillator, SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SoundSource,
-    SubtractiveGenerator, Synth, Unison, WaveformOscillator, SoundOutput,
+    SampleOscillator, SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SoundOutput, SoundSource,
+    SubtractiveGenerator, Synth, Unison, WaveformOscillator,
 };
 use xmltree::Element;
 
@@ -23,16 +23,12 @@ pub fn load_synth_nodes(root_nodes: &[Element]) -> Result<Synth, Error> {
 
     Ok(Synth {
         sound: load_sound(sound_node)?,
-        firmware_version: xml::get_opt_element(root_nodes, keys::FIRMWARE_VERSION).map(xml::get_text),
-        earliest_compatible_firmware: xml::get_opt_element(root_nodes, keys::EARLIEST_COMPATIBLE_FIRMWARE).map(xml::get_text),
     })
 }
 
 pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, Error> {
     let kit_node = xml::get_element(roots, keys::KIT)?;
     let sound_sources_node = xml::get_children_element(kit_node, keys::SOUND_SOURCES)?;
-    let firmware_version = xml::get_opt_element(roots, keys::FIRMWARE_VERSION).map(xml::get_text);
-    let earliest_compatible_firmware = xml::get_opt_element(roots, keys::EARLIEST_COMPATIBLE_FIRMWARE).map(xml::get_text);
     let sources: Vec<Result<SoundSource, Error>> = sound_sources_node
         .children
         .iter()
@@ -45,8 +41,6 @@ pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, Error> {
     }
 
     return Ok(Kit {
-        firmware_version,
-        earliest_compatible_firmware,
         rows: sources.iter().flatten().cloned().collect::<Vec<SoundSource>>(),
     });
 }
@@ -321,7 +315,7 @@ fn load_gate_output(root: &Element) -> Result<GateOutput, Error> {
 fn load_sound_output(root: &Element) -> Result<SoundOutput, Error> {
     Ok(SoundOutput {
         sound: Box::new(load_sound(root)?),
-        name: xml::parse_children_element_content(root, keys::NAME)?
+        name: xml::parse_children_element_content(root, keys::NAME)?,
     })
 }
 
@@ -499,9 +493,6 @@ mod tests {
         let xml_elements = xml::load_xml(include_str!("../../data_tests/SYNTHS/SYNT061.XML")).unwrap();
         let synth = load_synth_nodes(&xml_elements).unwrap();
         let sound = &synth.sound;
-
-        assert_eq!(&synth.firmware_version.unwrap(), "2.0.0-beta");
-        assert_eq!(&synth.earliest_compatible_firmware.unwrap(), "2.0.0-beta");
 
         assert_eq!(sound.voice_priority, VoicePriority::Medium);
         assert_eq!(sound.polyphonic, Polyphony::Poly);
