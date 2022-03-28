@@ -13,6 +13,8 @@ pub struct VersionInfo {
 }
 
 pub fn load_version_info(roots: &[Element], element_type: &str) -> VersionInfo {
+    // Yeah it's not the best possible because I'm reading the same information twice.
+    // Also it's easier for testing to have `detect_format_version` independent.
     VersionInfo {
         firmware_version: load_version(roots, element_type, keys::FIRMWARE_VERSION),
         earliest_compatible_firmware: load_version(roots, element_type, keys::EARLIEST_COMPATIBLE_FIRMWARE),
