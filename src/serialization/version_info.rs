@@ -12,22 +12,37 @@ pub struct VersionInfo {
     pub format_version: FormatVersion,
 }
 
-pub fn load_version_info(roots: &[Element], element_type: &str) -> VersionInfo {
-    // Yeah it's not the best possible because I'm reading the same information twice.
-    // Also it's easier for testing to have `detect_format_version` independent.
-    VersionInfo {
-        firmware_version: load_version(roots, element_type, keys::FIRMWARE_VERSION),
-        earliest_compatible_firmware: load_version(roots, element_type, keys::EARLIEST_COMPATIBLE_FIRMWARE),
-        format_version: detect_format_version(roots, element_type).unwrap_or(FormatVersion::Unknown),
+#[derive(Copy, Clone)]
+pub enum PatchType {
+    Synth,
+    Kit,
+}
+
+impl PatchType {
+    pub fn get_key<'a>(self) -> &'a str {
+        match self {
+            PatchType::Kit => "kit",
+            PatchType::Synth => "sound",
+        }
     }
 }
 
-fn load_version(roots: &[Element], element_type: &str, key: &str) -> Option<String> {
+pub fn load_version_info(roots: &[Element], patch_type: PatchType) -> VersionInfo {
+    // Yeah it's not the best possible because I'm reading the same information twice.
+    // Also it's easier for testing to have `detect_format_version` independent.
+    VersionInfo {
+        firmware_version: load_version(roots, patch_type, keys::FIRMWARE_VERSION),
+        earliest_compatible_firmware: load_version(roots, patch_type, keys::EARLIEST_COMPATIBLE_FIRMWARE),
+        format_version: detect_format_version(roots, patch_type).unwrap_or(FormatVersion::Unknown),
+    }
+}
+
+fn load_version(roots: &[Element], patch_type: PatchType, key: &str) -> Option<String> {
     if let Some(version) = xml::get_opt_element(roots, key).map(xml::get_text) {
         return Some(version);
     }
 
-    if let Some(node) = xml::get_opt_element(roots, element_type) {
+    if let Some(node) = xml::get_opt_element(roots, patch_type.get_key()) {
         if let Some(version) = xml::get_opt_attribute(node, key).cloned() {
             return Some(version);
         }
@@ -50,7 +65,7 @@ mod tests {
             },
             load_version_info(
                 &xml::load_xml(include_str!("../data_tests/SYNTHS/SYNT184.XML")).unwrap(),
-                keys::SOUND
+                PatchType::Synth
             )
         );
     }
@@ -65,7 +80,7 @@ mod tests {
             },
             load_version_info(
                 &xml::load_xml(include_str!("../data_tests/KITS/KIT057.XML")).unwrap(),
-                keys::KIT
+                PatchType::Kit
             )
         );
 
@@ -77,7 +92,7 @@ mod tests {
             },
             load_version_info(
                 &xml::load_xml(include_str!("../data_tests/KITS/KIT026.XML")).unwrap(),
-                keys::KIT
+                PatchType::Kit
             )
         );
 
@@ -89,7 +104,7 @@ mod tests {
             },
             load_version_info(
                 &xml::load_xml(include_str!("../data_tests/KITS/KIT000.XML")).unwrap(),
-                keys::KIT
+                PatchType::Kit
             )
         );
     }
