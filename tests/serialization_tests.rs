@@ -1,8 +1,13 @@
+//! This file contains a set of data driven tests.
+//! I'm using <https://docs.rs/test-generator/latest/test_generator/> to generate tests using the
+//! files present in //tests/data_tests
+//! 
+
 #![cfg(test)]
 extern crate test_generator;
 
 use test_generator::test_resources;
-
+use pretty_assertions::assert_eq;
 use deluge::{load_kit, load_synth, save_kit, save_synth};
 
 #[test_resources("tests/data_tests/KITS/*.XML")]
@@ -24,8 +29,6 @@ fn smoke_test_load_sound(resource: &str) {
 
     loading_result.unwrap();
 }
-
-use pretty_assertions::assert_eq;
 
 #[test_resources("tests/data_tests/SYNTHS/*.XML")]
 fn smoke_test_load_write_load_sound(resource: &str) {

@@ -1,7 +1,7 @@
-//! A crate to exchange with Synthstrom Deluge
+//! A crate to read and write Synthstrom Deluge's patches
 //!
 //! This crate provides the data structures Sound and Kit. You can read and write them using the XML deluge schema.
-//! It hides the crap from the user, like the fact there are at least 3 differents version of the XML schema.
+//! It hides the crap from the user, like the fact there are at least differents version of the XML schema.
 //!
 //! # Data structures
 //! There are 2 types of patches: synth and kit.  
@@ -10,9 +10,6 @@
 //! are not named.
 //!
 //! https://docs.google.com/document/d/11DUuuE1LBYOVlluPA9McT1_dT4AofZ5jnUD5eHvj7Vs/edit
-
-#[macro_use]
-extern crate derivative;
 
 mod kit;
 mod serialization;

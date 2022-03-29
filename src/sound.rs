@@ -5,8 +5,7 @@ use crate::values::{
 };
 use serde::{Deserialize, Serialize};
 
-#[derive(Derivative, Clone, Debug)]
-#[derivative(PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Sound {
     pub generator: SoundGenerator,
     pub polyphonic: Polyphony,
