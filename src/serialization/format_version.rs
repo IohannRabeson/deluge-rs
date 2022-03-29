@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use xmltree::Element;
 
-use super::{keys, xml};
+use super::{keys, xml, version_info::PatchType};
 
 /// Deluge format version
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -67,7 +67,7 @@ fn check_for_version(text: &str, expected_first_char: char) -> bool {
     }
 }
 
-pub fn detect_format_version(roots: &[Element], element_type: &str) -> Option<FormatVersion> {
+pub fn detect_format_version(roots: &[Element], patch_type: PatchType) -> Option<FormatVersion> {
     // Notice we check the newest versions first, but this is because version 1 does not contains any version infos.
     let functions: Vec<(VersionFunctionDetection, FormatVersion)> = vec![
         (is_version_3, FormatVersion::Version3),
@@ -75,8 +75,10 @@ pub fn detect_format_version(roots: &[Element], element_type: &str) -> Option<Fo
         (is_version_1, FormatVersion::Version1),
     ];
 
+    let key = patch_type.get_key();
+
     for f in &functions {
-        if f.0(roots, element_type) {
+        if f.0(roots, key) {
             return Some(f.1);
         }
     }
@@ -92,12 +94,12 @@ mod tests {
 
     /// This helper exists to avoid having to change each test, but it's legacy.
     fn detect_kit_format_version(roots: &[Element]) -> Result<FormatVersion, SerializationError> {
-        detect_format_version(roots, keys::KIT).ok_or(SerializationError::InvalidVersionFormat)
+        detect_format_version(roots, PatchType::Kit).ok_or(SerializationError::InvalidVersionFormat)
     }
 
     /// This helper exists to avoid having to change each test, but it's legacy.
     fn detect_synth_format_version(roots: &[Element]) -> Result<FormatVersion, SerializationError> {
-        detect_format_version(roots, keys::SOUND).ok_or(SerializationError::InvalidVersionFormat)
+        detect_format_version(roots, PatchType::Synth).ok_or(SerializationError::InvalidVersionFormat)
     }
 
     #[test]
