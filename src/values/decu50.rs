@@ -1,4 +1,4 @@
-use crate::values::{map_50_i32, map_i32_50, read_i32, Error};
+use crate::values::{map_50_i32, map_i32_50, read_i32, SerializationError};
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
@@ -9,7 +9,7 @@ impl DecU50 {
         Self(value)
     }
 
-    pub fn parse(text: &str) -> Result<Self, Error> {
+    pub fn parse(text: &str) -> Result<Self, SerializationError> {
         read_decu50(text)
     }
 }
@@ -66,7 +66,7 @@ fn map_decu50_i32(value: DecU50) -> i32 {
 }
 
 /// Read a 0-50 value encoded as unsigned u32 hexadecimal
-fn read_decu50(text: &str) -> Result<DecU50, Error> {
+fn read_decu50(text: &str) -> Result<DecU50, SerializationError> {
     read_i32(text).map(map_i32_decu50)
 }
 

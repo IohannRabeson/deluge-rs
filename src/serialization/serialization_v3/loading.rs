@@ -7,7 +7,7 @@ use crate::{
         xml,
     },
     values::*,
-    Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Error, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput,
+    Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, SerializationError, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput,
     Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
     SampleOscillator, SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SoundSource,
     SubtractiveGenerator, Synth, Unison, WaveformOscillator,
@@ -16,7 +16,7 @@ use crate::{
 use xmltree::Element;
 
 /// Load a deluge synth XML file
-pub fn load_synth_nodes(root_nodes: &[Element]) -> Result<Synth, Error> {
+pub fn load_synth_nodes(root_nodes: &[Element]) -> Result<Synth, SerializationError> {
     let sound_node = xml::get_element(root_nodes, keys::SOUND)?;
 
     Ok(Synth {
@@ -24,10 +24,10 @@ pub fn load_synth_nodes(root_nodes: &[Element]) -> Result<Synth, Error> {
     })
 }
 
-pub fn load_kit_nodes(root_nodes: &[Element]) -> Result<Kit, Error> {
+pub fn load_kit_nodes(root_nodes: &[Element]) -> Result<Kit, SerializationError> {
     let kit_node = xml::get_element(root_nodes, keys::KIT)?;
     let sound_sources_node = xml::get_children_element(kit_node, keys::SOUND_SOURCES)?;
-    let sources: Vec<Result<SoundSource, Error>> = sound_sources_node
+    let sources: Vec<Result<SoundSource, SerializationError>> = sound_sources_node
         .children
         .iter()
         .filter_map(xml::keep_element_only)
@@ -51,7 +51,7 @@ pub fn load_kit_nodes(root_nodes: &[Element]) -> Result<Kit, Error> {
 /// I think the class structure in the deluge implementation looks like:
 /// class Sound
 /// class RowKit(Sound, Name, OtherAdditionalInfosByRow)
-fn load_sound(root: &Element) -> Result<Sound, Error> {
+fn load_sound(root: &Element) -> Result<Sound, SerializationError> {
     let sound_type = xml::parse_attribute::<SoundType>(root, keys::MODE)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
 
@@ -59,7 +59,7 @@ fn load_sound(root: &Element) -> Result<Sound, Error> {
         SoundType::Subtractive => load_subtractive_sound(root)?,
         SoundType::Fm => load_fm_sound(root)?,
         SoundType::RingMod => load_ringmode_sound(root)?,
-        _ => return Err(Error::UnsupportedSoundType),
+        _ => return Err(SerializationError::UnsupportedSoundType),
     };
 
     Ok(Sound {
@@ -88,7 +88,7 @@ fn load_sound(root: &Element) -> Result<Sound, Error> {
     })
 }
 
-fn load_subtractive_sound(root: &Element) -> Result<SoundGenerator, Error> {
+fn load_subtractive_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
     let osc1_node = xml::get_children_element(root, keys::OSC1)?;
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
@@ -106,7 +106,7 @@ fn load_subtractive_sound(root: &Element) -> Result<SoundGenerator, Error> {
     }))
 }
 
-fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, Error> {
+fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
     let osc1_node = xml::get_children_element(root, keys::OSC1)?;
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
@@ -119,7 +119,7 @@ fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, Error> {
     }))
 }
 
-fn load_fm_sound(root: &Element) -> Result<SoundGenerator, Error> {
+fn load_fm_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
     let osc1_node = xml::get_children_element(root, keys::OSC1)?;
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
     let mod1_node = xml::get_children_element(root, keys::FM_MODULATOR1)?;
@@ -137,7 +137,7 @@ fn load_fm_sound(root: &Element) -> Result<SoundGenerator, Error> {
     }))
 }
 
-fn load_oscillator(root: &Element, params: &DefaultParams) -> Result<Oscillator, Error> {
+fn load_oscillator(root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
     let osc_type = xml::parse_attribute(root, keys::TYPE)?;
 
     match osc_type {
@@ -151,7 +151,7 @@ fn load_oscillator(root: &Element, params: &DefaultParams) -> Result<Oscillator,
     }
 }
 
-fn load_carrier(root: &Element, params: &DefaultParams) -> Result<FmCarrier, Error> {
+fn load_carrier(root: &Element, params: &DefaultParams) -> Result<FmCarrier, SerializationError> {
     Ok(FmCarrier {
         transpose: xml::parse_attribute(root, keys::TRANSPOSE)?,
         fine_transpose: xml::parse_attribute(root, keys::CENTS)?,
@@ -161,7 +161,7 @@ fn load_carrier(root: &Element, params: &DefaultParams) -> Result<FmCarrier, Err
     })
 }
 
-fn load_fm_modulation(root: &Element, params: &DefaultParams) -> Result<FmModulator, Error> {
+fn load_fm_modulation(root: &Element, params: &DefaultParams) -> Result<FmModulator, SerializationError> {
     Ok(FmModulator {
         transpose: xml::parse_attribute(root, keys::TRANSPOSE)?,
         fine_transpose: xml::parse_attribute(root, keys::CENTS)?,
@@ -171,7 +171,7 @@ fn load_fm_modulation(root: &Element, params: &DefaultParams) -> Result<FmModula
     })
 }
 
-fn load_sample_oscillator(root: &Element, params: &DefaultParams) -> Result<Oscillator, Error> {
+fn load_sample_oscillator(root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
     Ok(Oscillator::Sample(SampleOscillator {
         transpose: xml::parse_opt_attribute(root, keys::TRANSPOSE)?.unwrap_or_default(),
         fine_transpose: xml::parse_opt_attribute(root, keys::CENTS)?.unwrap_or_default(),
@@ -185,7 +185,7 @@ fn load_sample_oscillator(root: &Element, params: &DefaultParams) -> Result<Osci
     }))
 }
 
-fn load_sample(root: &Element) -> Result<Sample, Error> {
+fn load_sample(root: &Element) -> Result<Sample, SerializationError> {
     Ok(
         if let Some(sample_ranges_node) = xml::get_opt_children_element(root, keys::SAMPLE_RANGES) {
             let mut ranges: Vec<SampleRange> = Vec::new();
@@ -224,7 +224,7 @@ fn load_sample(root: &Element) -> Result<Sample, Error> {
 /// The root element must be a "zone" node.
 /// We try to get start and end positions as samples if possible, and as milliseconds if forced.
 /// If both are missing then SamplePosition(0) is assigned.
-fn parse_sample_zone(root: &Element) -> Result<SampleZone, Error> {
+fn parse_sample_zone(root: &Element) -> Result<SampleZone, SerializationError> {
     let start = SamplePosition::new(match xml::parse_opt_attribute::<u64>(root, keys::START_SAMPLES_POS)? {
         Some(samples) => samples,
         None => xml::parse_opt_attribute::<u64>(root, keys::START_MILLISECONDS_POS)?
@@ -251,7 +251,7 @@ fn parse_sample_zone(root: &Element) -> Result<SampleZone, Error> {
     })
 }
 
-fn load_waveform_oscillator(osc_type: OscType, root: &Element, params: &DefaultParams) -> Result<Oscillator, Error> {
+fn load_waveform_oscillator(osc_type: OscType, root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
     Ok(Oscillator::Waveform(WaveformOscillator {
         osc_type,
         transpose: xml::parse_attribute(root, keys::TRANSPOSE)?,
@@ -262,36 +262,36 @@ fn load_waveform_oscillator(osc_type: OscType, root: &Element, params: &DefaultP
     }))
 }
 
-fn load_midi_output(root: &Element) -> Result<MidiOutput, Error> {
+fn load_midi_output(root: &Element) -> Result<MidiOutput, SerializationError> {
     let channel = xml::get_attribute(root, keys::CHANNEL).and_then(parse_u8_string)?;
     let note = xml::get_attribute(root, keys::NOTE).and_then(parse_u8_string)?;
 
     Ok(MidiOutput { channel, note })
 }
 
-fn load_gate_output(root: &Element) -> Result<GateOutput, Error> {
+fn load_gate_output(root: &Element) -> Result<GateOutput, SerializationError> {
     xml::get_attribute(root, keys::CHANNEL)
         .and_then(parse_u8_string)
         .map(|channel| GateOutput { channel })
 }
 
-fn load_sound_source(root: &Element) -> Result<SoundSource, Error> {
+fn load_sound_source(root: &Element) -> Result<SoundSource, SerializationError> {
     Ok(match root.name.as_str() {
         keys::SOUND => SoundSource::SoundOutput(load_sound_output(root)?),
         keys::MIDI_OUTPUT => SoundSource::MidiOutput(load_midi_output(root)?),
         keys::GATE_OUTPUT => SoundSource::GateOutput(load_gate_output(root)?),
-        _ => return Err(Error::UnsupportedSoundSource(root.name.clone())),
+        _ => return Err(SerializationError::UnsupportedSoundSource(root.name.clone())),
     })
 }
 
-fn load_sound_output(root: &Element) -> Result<SoundOutput, Error> {
+fn load_sound_output(root: &Element) -> Result<SoundOutput, SerializationError> {
     Ok(SoundOutput {
         sound: Box::new(load_sound(root)?),
         name: xml::parse_attribute(root, keys::NAME)?,
     })
 }
 
-fn load_envelope(root: &Element) -> Result<Envelope, Error> {
+fn load_envelope(root: &Element) -> Result<Envelope, SerializationError> {
     Ok(Envelope {
         attack: xml::parse_attribute(root, keys::ENV_ATTACK)?,
         decay: xml::parse_attribute(root, keys::ENV_DECAY)?,
@@ -300,7 +300,7 @@ fn load_envelope(root: &Element) -> Result<Envelope, Error> {
     })
 }
 
-fn load_lfo1(root: &Element, default_params_node: &Element) -> Result<Lfo1, Error> {
+fn load_lfo1(root: &Element, default_params_node: &Element) -> Result<Lfo1, SerializationError> {
     Ok(Lfo1 {
         shape: xml::parse_attribute(root, keys::LFO_SHAPE)?,
         sync_level: xml::parse_attribute(root, keys::SYNC_LEVEL)?,
@@ -308,21 +308,21 @@ fn load_lfo1(root: &Element, default_params_node: &Element) -> Result<Lfo1, Erro
     })
 }
 
-fn load_lfo2(root: &Element, default_params_node: &Element) -> Result<Lfo2, Error> {
+fn load_lfo2(root: &Element, default_params_node: &Element) -> Result<Lfo2, SerializationError> {
     Ok(Lfo2 {
         shape: xml::parse_attribute(root, keys::LFO_SHAPE)?,
         rate: xml::parse_attribute(default_params_node, keys::LFO2_RATE)?,
     })
 }
 
-fn load_unison(root: &Element) -> Result<Unison, Error> {
+fn load_unison(root: &Element) -> Result<Unison, SerializationError> {
     Ok(Unison {
         voice_count: xml::parse_attribute(root, keys::UNISON_VOICE_COUNT)?,
         detune: xml::parse_attribute(root, keys::UNISON_DETUNE)?,
     })
 }
 
-fn load_delay(root: &Element, default_params_node: &Element) -> Result<Delay, Error> {
+fn load_delay(root: &Element, default_params_node: &Element) -> Result<Delay, SerializationError> {
     Ok(Delay {
         ping_pong: xml::parse_attribute(root, keys::PING_PONG)?,
         analog: xml::parse_attribute(root, keys::ANALOG)?,
@@ -332,7 +332,7 @@ fn load_delay(root: &Element, default_params_node: &Element) -> Result<Delay, Er
     })
 }
 
-fn load_arpeggiator(root: &Element, default_params_node: &Element) -> Result<Arpeggiator, Error> {
+fn load_arpeggiator(root: &Element, default_params_node: &Element) -> Result<Arpeggiator, SerializationError> {
     Ok(Arpeggiator {
         mode: xml::parse_attribute(root, keys::ARPEGGIATOR_MODE)?,
         sync_level: xml::parse_attribute(root, keys::SYNC_LEVEL)?,
@@ -342,7 +342,7 @@ fn load_arpeggiator(root: &Element, default_params_node: &Element) -> Result<Arp
     })
 }
 
-fn load_distorsion(root: &Element, default_params_node: &Element) -> Result<Distorsion, Error> {
+fn load_distorsion(root: &Element, default_params_node: &Element) -> Result<Distorsion, SerializationError> {
     Ok(Distorsion {
         saturation: xml::parse_opt_attribute(root, keys::CLIPPING_AMOUNT)?.unwrap_or_default(),
         bit_crush: xml::parse_attribute(default_params_node, keys::BIT_CRUSH)?,
@@ -350,7 +350,7 @@ fn load_distorsion(root: &Element, default_params_node: &Element) -> Result<Dist
     })
 }
 
-fn load_equalizer(root: &Element) -> Result<Equalizer, Error> {
+fn load_equalizer(root: &Element) -> Result<Equalizer, SerializationError> {
     Ok(Equalizer {
         bass_level: xml::parse_attribute(root, keys::EQ_BASS)?,
         bass_frequency: xml::parse_attribute(root, keys::EQ_BASS_FREQUENCY)?,
@@ -359,7 +359,7 @@ fn load_equalizer(root: &Element) -> Result<Equalizer, Error> {
     })
 }
 
-fn load_modulation_fx(root: &Element) -> Result<ModulationFx, Error> {
+fn load_modulation_fx(root: &Element) -> Result<ModulationFx, SerializationError> {
     let modulation_fx_type = xml::parse_attribute(root, keys::MOD_FX_TYPE)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
 
@@ -368,18 +368,18 @@ fn load_modulation_fx(root: &Element) -> Result<ModulationFx, Error> {
         keys::MODULATION_FX_FLANGER => ModulationFx::Flanger(load_modulation_fx_flanger(default_params_node)?),
         keys::MODULATION_FX_CHORUS => ModulationFx::Chorus(load_modulation_fx_chorus(default_params_node)?),
         keys::MODULATION_FX_PHASER => ModulationFx::Phaser(load_modulation_fx_phaser(default_params_node)?),
-        &_ => return Err(Error::UnsupportedModulationFx(modulation_fx_type.to_owned())),
+        &_ => return Err(SerializationError::UnsupportedModulationFx(modulation_fx_type.to_owned())),
     })
 }
 
-fn load_modulation_fx_flanger(default_params_node: &Element) -> Result<Flanger, Error> {
+fn load_modulation_fx_flanger(default_params_node: &Element) -> Result<Flanger, SerializationError> {
     Ok(Flanger {
         rate: xml::parse_attribute(default_params_node, keys::MODULATION_FX_RATE)?,
         feedback: xml::parse_attribute(default_params_node, keys::MODULATION_FX_FEEDBACK)?,
     })
 }
 
-fn load_modulation_fx_chorus(default_params_node: &Element) -> Result<Chorus, Error> {
+fn load_modulation_fx_chorus(default_params_node: &Element) -> Result<Chorus, SerializationError> {
     Ok(Chorus {
         rate: xml::parse_attribute(default_params_node, keys::MODULATION_FX_RATE)?,
         depth: xml::parse_attribute(default_params_node, keys::MODULATION_FX_DEPTH)?,
@@ -387,7 +387,7 @@ fn load_modulation_fx_chorus(default_params_node: &Element) -> Result<Chorus, Er
     })
 }
 
-fn load_modulation_fx_phaser(default_params_node: &Element) -> Result<Phaser, Error> {
+fn load_modulation_fx_phaser(default_params_node: &Element) -> Result<Phaser, SerializationError> {
     Ok(Phaser {
         rate: xml::parse_attribute(default_params_node, keys::MODULATION_FX_RATE)?,
         depth: xml::parse_attribute(default_params_node, keys::MODULATION_FX_DEPTH)?,
@@ -395,7 +395,7 @@ fn load_modulation_fx_phaser(default_params_node: &Element) -> Result<Phaser, Er
     })
 }
 
-fn load_patch_cables(root: &Element) -> Result<Vec<PatchCable>, Error> {
+fn load_patch_cables(root: &Element) -> Result<Vec<PatchCable>, SerializationError> {
     let cables = xml::get_all_children_element_with_name(root, keys::PATCH_CABLE);
     let mut patch_cables = Vec::new();
 
@@ -406,14 +406,14 @@ fn load_patch_cables(root: &Element) -> Result<Vec<PatchCable>, Error> {
     Ok(patch_cables)
 }
 
-fn load_mod_knob(element: &Element) -> Result<ModKnob, Error> {
+fn load_mod_knob(element: &Element) -> Result<ModKnob, SerializationError> {
     Ok(ModKnob {
         control_param: xml::parse_attribute(element, keys::MOD_KNOB_CONTROL_PARAM)?,
         patch_amount_from_source: xml::parse_opt_attribute(element, keys::MOD_KNOB_PATCH_AMOUNT_FROM_SOURCE)?,
     })
 }
 
-fn load_mod_knobs(root: &Element) -> Result<Vec<ModKnob>, Error> {
+fn load_mod_knobs(root: &Element) -> Result<Vec<ModKnob>, SerializationError> {
     let mod_knob_nodes = xml::get_all_children_element_with_name(root, keys::MOD_KNOB);
     let mut mod_knobs = Vec::new();
 
@@ -424,7 +424,7 @@ fn load_mod_knobs(root: &Element) -> Result<Vec<ModKnob>, Error> {
     Ok(mod_knobs)
 }
 
-fn load_patch_cable(root: &Element) -> Result<PatchCable, Error> {
+fn load_patch_cable(root: &Element) -> Result<PatchCable, SerializationError> {
     Ok(PatchCable {
         source: xml::parse_attribute(root, keys::PATCH_CABLE_SOURCE)?,
         destination: xml::parse_attribute(root, keys::PATCH_CABLE_DESTINATION)?,
@@ -432,7 +432,7 @@ fn load_patch_cable(root: &Element) -> Result<PatchCable, Error> {
     })
 }
 
-fn load_sidechain(root: &Element, default_params_node: &Element) -> Result<Sidechain, Error> {
+fn load_sidechain(root: &Element, default_params_node: &Element) -> Result<Sidechain, SerializationError> {
     Ok(Sidechain {
         attack: xml::parse_attribute(root, keys::COMPRESSOR_ATTACK)?,
         release: xml::parse_attribute(root, keys::COMPRESSOR_RELEASE)?,

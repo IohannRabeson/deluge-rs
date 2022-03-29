@@ -1,4 +1,4 @@
-use crate::{serialization::xml, Error};
+use crate::{serialization::xml, SerializationError};
 
 use serde::{Deserialize, Serialize};
 use std::{cell::RefCell, rc::Rc};
@@ -40,13 +40,13 @@ impl<'l> DefaultParams<'l> {
         self.selector.get_key(key_a, key_b)
     }
 
-    pub fn parse_twin_attribute<T: Deserialize<'l>>(&'l self, key_a: &'l str, key_b: &'l str) -> Result<T, Error> {
+    pub fn parse_twin_attribute<T: Deserialize<'l>>(&'l self, key_a: &'l str, key_b: &'l str) -> Result<T, SerializationError> {
         let key = self.get_key(key_a, key_b);
 
         xml::parse_attribute::<T>(self.default_params_node, key)
     }
 
-    pub fn parse_twin_children_content<T: Deserialize<'l>>(&self, key_a: &'l str, key_b: &'l str) -> Result<T, Error> {
+    pub fn parse_twin_children_content<T: Deserialize<'l>>(&self, key_a: &'l str, key_b: &'l str) -> Result<T, SerializationError> {
         let key = self.get_key(key_a, key_b);
 
         xml::parse_children_element_content::<T>(self.default_params_node, key)
@@ -74,7 +74,7 @@ impl DefaultParamsMut {
         Element::new(self.selector.get_key(name_a, name_b))
     }
 
-    pub fn insert_attribute<'a, T: Serialize>(&self, key_a: &'a str, key_b: &'a str, value: &T) -> Result<(), Error> {
+    pub fn insert_attribute<'a, T: Serialize>(&self, key_a: &'a str, key_b: &'a str, value: &T) -> Result<(), SerializationError> {
         let key = self.get_key(key_a, key_b);
 
         xml::insert_attribute(&mut self.default_params_node.borrow_mut(), key, value)

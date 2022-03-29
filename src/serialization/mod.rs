@@ -1,6 +1,8 @@
-use crate::{Error, Kit, Synth};
+use crate::{Kit, Synth};
 
 use self::version_info::{PatchType, VersionInfo};
+
+pub use self::error::SerializationError;
 
 mod default_params;
 mod format_version;
@@ -11,38 +13,39 @@ mod serialization_v2;
 mod serialization_v3;
 mod version_info;
 mod xml;
+mod error;
 
 /// Load a kit patch from XML
-pub fn load_kit(xml: &str) -> Result<Kit, Error> {
+pub fn load_kit(xml: &str) -> Result<Kit, SerializationError> {
     Ok(load_kit_with_version(xml)?.0)
 }
 
-pub fn load_kit_with_version(xml: &str) -> Result<(Kit, VersionInfo), Error> {
+pub fn load_kit_with_version(xml: &str) -> Result<(Kit, VersionInfo), SerializationError> {
     let roots = xml::load_xml(xml)?;
     let version_info = version_info::load_version_info(&roots, PatchType::Kit);
     let kit = match version_info.format_version {
         format_version::FormatVersion::Version3 => serialization_v3::load_kit_nodes(&roots)?,
         format_version::FormatVersion::Version2 => serialization_v2::load_kit_nodes(&roots)?,
         format_version::FormatVersion::Version1 => serialization_v1::load_kit_nodes(&roots)?,
-        format_version::FormatVersion::Unknown => return Err(Error::InvalidVersionFormat),
+        format_version::FormatVersion::Unknown => return Err(SerializationError::InvalidVersionFormat),
     };
 
     Ok((kit, version_info))
 }
 
 /// Load a synth patch from XML
-pub fn load_synth(xml: &str) -> Result<Synth, Error> {
+pub fn load_synth(xml: &str) -> Result<Synth, SerializationError> {
     Ok(load_synth_with_version(xml)?.0)
 }
 
-pub fn load_synth_with_version(xml: &str) -> Result<(Synth, VersionInfo), Error> {
+pub fn load_synth_with_version(xml: &str) -> Result<(Synth, VersionInfo), SerializationError> {
     let roots = xml::load_xml(xml)?;
     let version_info = version_info::load_version_info(&roots, PatchType::Synth);
     let synth = match version_info.format_version {
         format_version::FormatVersion::Version3 => serialization_v3::load_synth_nodes(&roots)?,
         format_version::FormatVersion::Version2 => serialization_v2::load_synth_nodes(&roots)?,
         format_version::FormatVersion::Version1 => serialization_v1::load_synth_nodes(&roots)?,
-        format_version::FormatVersion::Unknown => return Err(Error::InvalidVersionFormat),
+        format_version::FormatVersion::Unknown => return Err(SerializationError::InvalidVersionFormat),
     };
 
     Ok((synth, version_info))
@@ -50,7 +53,7 @@ pub fn load_synth_with_version(xml: &str) -> Result<(Synth, VersionInfo), Error>
 
 /// Save a synth patch as XML
 /// The patch is saved using the latest format version.
-pub fn save_synth(synth: &Synth) -> Result<String, Error> {
+pub fn save_synth(synth: &Synth) -> Result<String, SerializationError> {
     let roots = vec![serialization_v3::write_synth(synth)?];
 
     Ok(xml::write_xml(&roots))
@@ -58,7 +61,7 @@ pub fn save_synth(synth: &Synth) -> Result<String, Error> {
 
 /// Save a kit patch as XML
 /// The patch is saved using the latest format version.
-pub fn save_kit(kit: &Kit) -> Result<String, Error> {
+pub fn save_kit(kit: &Kit) -> Result<String, SerializationError> {
     let roots = vec![serialization_v3::write_kit(kit)?];
 
     Ok(xml::write_xml(&roots))

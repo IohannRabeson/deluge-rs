@@ -2,7 +2,7 @@
 //! The value is formatted as an 32-bits unsigned integer hexadecimal.
 
 use crate::values::{map_i32_u32, map_u32_i32, read_hexadecimal_u32, write_hexadecimal_u32};
-use crate::Error;
+use crate::SerializationError;
 
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 
@@ -13,19 +13,19 @@ impl Pan {
     const MAX_PAN: i8 = 32i8;
     const MIN_PAN: i8 = -32i8;
 
-    pub fn new(value: i8) -> Result<Self, Error> {
+    pub fn new(value: i8) -> Result<Self, SerializationError> {
         if value > Self::MAX_PAN {
-            return Err(Error::Overflow(value.to_string(), Self::MAX_PAN.to_string()));
+            return Err(SerializationError::Overflow(value.to_string(), Self::MAX_PAN.to_string()));
         }
 
         if value < Self::MIN_PAN {
-            return Err(Error::Underflow(value.to_string(), Self::MIN_PAN.to_string()));
+            return Err(SerializationError::Underflow(value.to_string(), Self::MIN_PAN.to_string()));
         }
 
         Ok(Self(value))
     }
 
-    pub fn parse(text: &str) -> Result<Self, Error> {
+    pub fn parse(text: &str) -> Result<Self, SerializationError> {
         read_pan(text)
     }
 }
@@ -42,14 +42,14 @@ impl std::fmt::Display for Pan {
 
 const PAN_FACTOR: f64 = 67108864f64;
 
-fn write_pan(pan: Pan) -> Result<String, Error> {
+fn write_pan(pan: Pan) -> Result<String, SerializationError> {
     let value = (pan.0 as f64 * PAN_FACTOR) as i32;
     let value = map_i32_u32(value)?;
 
     Ok(write_hexadecimal_u32(value))
 }
 
-fn read_pan(text: &str) -> Result<Pan, Error> {
+fn read_pan(text: &str) -> Result<Pan, SerializationError> {
     let number = read_hexadecimal_u32(text)?;
     let number = map_u32_i32(number)? as f64;
 

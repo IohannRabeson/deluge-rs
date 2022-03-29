@@ -2,7 +2,7 @@
 //! I can't use an array as const generic parameter. But I guess this is something that can come one day.
 //! For now, I resolve that by having a little bit of code duplicated (AttackSidechain and ReleaseSidechain only have differents numbers in their tables).
 //!
-use super::Error;
+use super::SerializationError;
 use crate::values::Uint8;
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 use std::convert::From;
@@ -43,7 +43,7 @@ impl From<TableIndex> for AttackSidechain {
 }
 
 impl TryFrom<u32> for AttackSidechain {
-    type Error = Error;
+    type Error = SerializationError;
 
     fn try_from(value: u32) -> Result<Self, Self::Error> {
         match Self::SIDECHAIN_ATTACK_VALUES.binary_search_by(|probe| probe.cmp(&value).reverse()) {
@@ -111,7 +111,7 @@ impl From<TableIndex> for ReleaseSidechain {
 }
 
 impl TryFrom<u32> for ReleaseSidechain {
-    type Error = Error;
+    type Error = SerializationError;
 
     fn try_from(value: u32) -> Result<Self, Self::Error> {
         match Self::SIDECHAIN_RELEASE_VALUES.binary_search_by(|probe| probe.cmp(&value).reverse()) {

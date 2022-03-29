@@ -35,44 +35,44 @@ pub type UnisonDetune = Uint8<0, 50, 0>;
 pub type UnisonVoiceCount = Uint8<1, 8, 1>;
 pub type OctavesCount = Uint8<1, 8, 1>;
 
-use crate::Error;
+use crate::SerializationError;
 use byteorder::{BigEndian, ReadBytesExt};
 use std::io::Cursor;
 use std::str::FromStr;
 use std::sync::Arc;
 
-pub fn map_u32_i32(value: u32) -> Result<i32, Error> {
+pub fn map_u32_i32(value: u32) -> Result<i32, SerializationError> {
     let mut cursor = Cursor::new(value.to_be_bytes());
 
     cursor
         .read_i32::<BigEndian>()
-        .map_err(|e| Error::ConversionError(Arc::new(e)))
+        .map_err(|e| SerializationError::ConversionError(Arc::new(e)))
 }
 
-pub fn map_i32_u32(value: i32) -> Result<u32, Error> {
+pub fn map_i32_u32(value: i32) -> Result<u32, SerializationError> {
     let mut cursor = Cursor::new(value.to_be_bytes());
 
     cursor
         .read_u32::<BigEndian>()
-        .map_err(|e| Error::ConversionError(Arc::new(e)))
+        .map_err(|e| SerializationError::ConversionError(Arc::new(e)))
 }
 
 pub fn write_hexadecimal_u32(value: u32) -> String {
     format!("{:#010X}", value)
 }
 
-fn read_hexadecimal_u32(text: &str) -> Result<u32, Error> {
+fn read_hexadecimal_u32(text: &str) -> Result<u32, SerializationError> {
     let mut text = text;
 
     if text.starts_with("0x") {
         text = &text[2..];
     }
 
-    u32::from_str_radix(text, 16).map_err(|e| Error::ParseHexdecimalU32Error(text.to_string(), e))
+    u32::from_str_radix(text, 16).map_err(|e| SerializationError::ParseHexdecimalU32Error(text.to_string(), e))
 }
 
-fn read_i32(text: &str) -> Result<i32, Error> {
-    i32::from_str(text).map_err(|e| Error::ParseI32Error(text.to_string(), e))
+fn read_i32(text: &str) -> Result<i32, SerializationError> {
+    i32::from_str(text).map_err(|e| SerializationError::ParseI32Error(text.to_string(), e))
 }
 
 fn map_i32_50(value: i32) -> u8 {

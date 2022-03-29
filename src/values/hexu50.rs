@@ -1,7 +1,7 @@
 //! Store an unsigned integer in the range [0; 50].
 //! This type of value is formatted as an 32-bits unsigned integer hexadecimal.
 use crate::values::{
-    Error, {map_50_i32, map_i32_50, map_i32_u32, map_u32_i32, read_hexadecimal_u32, write_hexadecimal_u32},
+    SerializationError, {map_50_i32, map_i32_50, map_i32_u32, map_u32_i32, read_hexadecimal_u32, write_hexadecimal_u32},
 };
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 
@@ -13,7 +13,7 @@ impl HexU50 {
         Self(value)
     }
 
-    pub fn parse(text: &str) -> Result<Self, Error> {
+    pub fn parse(text: &str) -> Result<Self, SerializationError> {
         read_hexu50(text)
     }
 }
@@ -70,13 +70,13 @@ fn map_hexu50_i32(value: HexU50) -> i32 {
 }
 
 /// Read a 0-50 value encoded as unsigned u32 hexadecimal
-fn read_hexu50(text: &str) -> Result<HexU50, Error> {
+fn read_hexu50(text: &str) -> Result<HexU50, SerializationError> {
     read_hexadecimal_u32(text).and_then(map_u32_i32).map(map_i32_hexu50)
 }
 
 /// Write a 0-50 value encoded as unsigned u32 hexadecimal with prefix 0x
 /// The value must be in the interval [0; 50] or Error::Overflow and Error::Underflow are returned.
-fn write_hexu50(value: HexU50) -> Result<String, Error> {
+fn write_hexu50(value: HexU50) -> Result<String, SerializationError> {
     let value = map_hexu50_i32(value);
     let value = map_i32_u32(value)?;
 
