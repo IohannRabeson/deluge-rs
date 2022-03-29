@@ -9,7 +9,7 @@ use crate::{
         xml,
     },
     values::*,
-    Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Error, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput,
+    Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, SerializationError, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput,
     Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
     SampleOscillator, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SoundSource, SubtractiveGenerator, Synth,
     Unison, WaveformOscillator,
@@ -17,7 +17,7 @@ use crate::{
 
 use xmltree::Element;
 
-pub fn write_synth(synth: &Synth) -> Result<Element, Error> {
+pub fn write_synth(synth: &Synth) -> Result<Element, SerializationError> {
     let mut sound_node = write_sound(&synth.sound, None)?;
 
     xml::insert_attribute(&mut sound_node, keys::FIRMWARE_VERSION, &LATEST_SUPPORTED_FIRMWARE_VERSION)?;
@@ -30,7 +30,7 @@ pub fn write_synth(synth: &Synth) -> Result<Element, Error> {
     Ok(sound_node)
 }
 
-pub fn write_kit(kit: &Kit) -> Result<Element, Error> {
+pub fn write_kit(kit: &Kit) -> Result<Element, SerializationError> {
     let mut kit_node = Element::new(keys::KIT);
 
     xml::insert_attribute(&mut kit_node, keys::FIRMWARE_VERSION, &LATEST_SUPPORTED_FIRMWARE_VERSION)?;
@@ -43,7 +43,7 @@ pub fn write_kit(kit: &Kit) -> Result<Element, Error> {
     Ok(kit_node)
 }
 
-fn write_sound_sources(rows: &[SoundSource]) -> Result<Element, Error> {
+fn write_sound_sources(rows: &[SoundSource]) -> Result<Element, SerializationError> {
     let mut sound_source_node = Element::new(keys::SOUND_SOURCES);
 
     for row in rows {
@@ -58,7 +58,7 @@ fn write_sound_sources(rows: &[SoundSource]) -> Result<Element, Error> {
     Ok(sound_source_node)
 }
 
-fn write_gate_output(gate: &GateOutput) -> Result<Element, Error> {
+fn write_gate_output(gate: &GateOutput) -> Result<Element, SerializationError> {
     let mut gate_output_node = Element::new(keys::GATE_OUTPUT);
 
     xml::insert_attribute(&mut gate_output_node, keys::CHANNEL, &gate.channel)?;
@@ -66,7 +66,7 @@ fn write_gate_output(gate: &GateOutput) -> Result<Element, Error> {
     Ok(gate_output_node)
 }
 
-fn write_midi_output(midi_output: &MidiOutput) -> Result<Element, Error> {
+fn write_midi_output(midi_output: &MidiOutput) -> Result<Element, SerializationError> {
     let mut midi_output_node = Element::new(keys::MIDI_OUTPUT);
 
     xml::insert_attribute(&mut midi_output_node, keys::CHANNEL, &midi_output.channel)?;
@@ -75,7 +75,7 @@ fn write_midi_output(midi_output: &MidiOutput) -> Result<Element, Error> {
     Ok(midi_output_node)
 }
 
-fn write_sound(sound: &Sound, name: Option<&String>) -> Result<Element, Error> {
+fn write_sound(sound: &Sound, name: Option<&String>) -> Result<Element, SerializationError> {
     let mut sound_node = Element::new(keys::SOUND);
     let default_params_node = Rc::new(RefCell::new(Element::new(keys::DEFAULT_PARAMS)));
 
@@ -126,7 +126,7 @@ fn write_modulation_fx(
     modulation_fx: &ModulationFx,
     sound_node: &mut Element,
     default_params_node: &Rc<RefCell<Element>>,
-) -> Result<(), Error> {
+) -> Result<(), SerializationError> {
     match modulation_fx {
         ModulationFx::Off => {
             xml::insert_attribute(sound_node, keys::MOD_FX_TYPE, &keys::MODULATION_FX_OFF)?;
@@ -153,14 +153,14 @@ fn write_modulation_fx(
     }
 }
 
-fn write_phaser(phaser: &Phaser, default_params_node: &Rc<RefCell<Element>>) -> Result<(), Error> {
+fn write_phaser(phaser: &Phaser, default_params_node: &Rc<RefCell<Element>>) -> Result<(), SerializationError> {
     xml::insert_attribute_rc(default_params_node, keys::MODULATION_FX_RATE, &phaser.rate)?;
     xml::insert_attribute_rc(default_params_node, keys::MODULATION_FX_FEEDBACK, &phaser.feedback)?;
     xml::insert_attribute_rc(default_params_node, keys::MODULATION_FX_DEPTH, &phaser.depth)?;
     Ok(())
 }
 
-fn write_chorus(chorus: &Chorus, default_params_node: &Rc<RefCell<Element>>) -> Result<(), Error> {
+fn write_chorus(chorus: &Chorus, default_params_node: &Rc<RefCell<Element>>) -> Result<(), SerializationError> {
     xml::insert_attribute_rc(default_params_node, keys::MODULATION_FX_RATE, &chorus.rate)?;
     xml::insert_attribute_rc(default_params_node, keys::MODULATION_FX_DEPTH, &chorus.depth)?;
     xml::insert_attribute_rc(default_params_node, keys::MODULATION_FX_OFFSET, &chorus.offset)?;
@@ -168,14 +168,14 @@ fn write_chorus(chorus: &Chorus, default_params_node: &Rc<RefCell<Element>>) -> 
     Ok(())
 }
 
-fn write_flanger(flanger: &Flanger, default_params_node: &Rc<RefCell<Element>>) -> Result<(), Error> {
+fn write_flanger(flanger: &Flanger, default_params_node: &Rc<RefCell<Element>>) -> Result<(), SerializationError> {
     xml::insert_attribute_rc(default_params_node, keys::MODULATION_FX_RATE, &flanger.rate)?;
     xml::insert_attribute_rc(default_params_node, keys::MODULATION_FX_FEEDBACK, &flanger.feedback)?;
 
     Ok(())
 }
 
-fn write_arpegiator(arpeggiator: &Arpeggiator, default_params_node: &Rc<RefCell<Element>>) -> Result<Element, Error> {
+fn write_arpegiator(arpeggiator: &Arpeggiator, default_params_node: &Rc<RefCell<Element>>) -> Result<Element, SerializationError> {
     let mut arpegiator_node = Element::new(keys::ARPEGGIATOR);
 
     xml::insert_attribute(&mut arpegiator_node, keys::ARPEGGIATOR_MODE, &arpeggiator.mode)?;
@@ -191,7 +191,7 @@ fn write_arpegiator(arpeggiator: &Arpeggiator, default_params_node: &Rc<RefCell<
     Ok(arpegiator_node)
 }
 
-fn write_lfo1(lfo: &Lfo1, default_params_node: &Rc<RefCell<Element>>) -> Result<Element, Error> {
+fn write_lfo1(lfo: &Lfo1, default_params_node: &Rc<RefCell<Element>>) -> Result<Element, SerializationError> {
     let mut lfo_node = Element::new(keys::LFO1);
 
     xml::insert_attribute(&mut lfo_node, keys::LFO_SHAPE, &lfo.shape)?;
@@ -201,7 +201,7 @@ fn write_lfo1(lfo: &Lfo1, default_params_node: &Rc<RefCell<Element>>) -> Result<
     Ok(lfo_node)
 }
 
-fn write_lfo2(lfo: &Lfo2, default_params_node: &Rc<RefCell<Element>>) -> Result<Element, Error> {
+fn write_lfo2(lfo: &Lfo2, default_params_node: &Rc<RefCell<Element>>) -> Result<Element, SerializationError> {
     let mut lfo_node = Element::new(keys::LFO2);
 
     xml::insert_attribute(&mut lfo_node, keys::LFO_SHAPE, &lfo.shape)?;
@@ -214,7 +214,7 @@ fn write_subtractive_sound(
     generator: &SubtractiveGenerator,
     sound_node: &mut Element,
     default_params_node: &Rc<RefCell<Element>>,
-) -> Result<(), Error> {
+) -> Result<(), SerializationError> {
     let default_params_a = DefaultParamsMut::new(TwinSelector::A, default_params_node.clone());
     let default_params_b = DefaultParamsMut::new(TwinSelector::B, default_params_node.clone());
 
@@ -235,14 +235,14 @@ fn write_subtractive_sound(
     Ok(())
 }
 
-fn write_oscillator(osc: &Oscillator, default_params: &DefaultParamsMut) -> Result<Element, Error> {
+fn write_oscillator(osc: &Oscillator, default_params: &DefaultParamsMut) -> Result<Element, SerializationError> {
     Ok(match &osc {
         Oscillator::Waveform(oscillator) => write_waveform_oscillator(oscillator, default_params)?,
         Oscillator::Sample(oscillator) => write_sample_oscillator(oscillator, default_params)?,
     })
 }
 
-fn write_carrier(osc: &FmCarrier, default_params: &DefaultParamsMut) -> Result<Element, Error> {
+fn write_carrier(osc: &FmCarrier, default_params: &DefaultParamsMut) -> Result<Element, SerializationError> {
     let mut node = default_params.create_element(keys::OSC1, keys::OSC2);
 
     xml::insert_attribute(&mut node, keys::TRANSPOSE, &osc.transpose)?;
@@ -254,7 +254,7 @@ fn write_carrier(osc: &FmCarrier, default_params: &DefaultParamsMut) -> Result<E
     Ok(node)
 }
 
-fn write_modulator(modulator: &FmModulator, default_params: &DefaultParamsMut) -> Result<Element, Error> {
+fn write_modulator(modulator: &FmModulator, default_params: &DefaultParamsMut) -> Result<Element, SerializationError> {
     let mut node = default_params.create_element(keys::FM_MODULATOR1, keys::FM_MODULATOR2);
 
     xml::insert_attribute(&mut node, keys::TRANSPOSE, &modulator.transpose)?;
@@ -266,7 +266,7 @@ fn write_modulator(modulator: &FmModulator, default_params: &DefaultParamsMut) -
     Ok(node)
 }
 
-fn write_sample_oscillator(sample: &SampleOscillator, default_params: &DefaultParamsMut) -> Result<Element, Error> {
+fn write_sample_oscillator(sample: &SampleOscillator, default_params: &DefaultParamsMut) -> Result<Element, SerializationError> {
     let mut node = default_params.create_element(keys::OSC1, keys::OSC2);
 
     xml::insert_attribute(&mut node, keys::TYPE, &OscType::Sample)?;
@@ -285,14 +285,14 @@ fn write_sample_oscillator(sample: &SampleOscillator, default_params: &DefaultPa
     Ok(node)
 }
 
-fn write_sample(node: &mut Element, sample: &Sample) -> Result<(), Error> {
+fn write_sample(node: &mut Element, sample: &Sample) -> Result<(), SerializationError> {
     match sample {
         Sample::OneZone(one_zone) => write_sample_one_zone(node, one_zone),
         Sample::SampleRanges(ranges) => write_sample_ranges(node, ranges),
     }
 }
 
-fn write_sample_ranges(node: &mut Element, ranges: &[SampleRange]) -> Result<(), Error> {
+fn write_sample_ranges(node: &mut Element, ranges: &[SampleRange]) -> Result<(), SerializationError> {
     let mut sample_ranges_node = Element::new(keys::SAMPLE_RANGES);
 
     for sample_range in ranges {
@@ -317,7 +317,7 @@ fn write_sample_ranges(node: &mut Element, ranges: &[SampleRange]) -> Result<(),
     Ok(())
 }
 
-fn write_sample_one_zone(node: &mut Element, sample: &SampleOneZone) -> Result<(), Error> {
+fn write_sample_one_zone(node: &mut Element, sample: &SampleOneZone) -> Result<(), SerializationError> {
     xml::insert_attribute(node, keys::FILE_NAME, &sample.file_path)?;
 
     if let Some(zone) = &sample.zone {
@@ -327,7 +327,7 @@ fn write_sample_one_zone(node: &mut Element, sample: &SampleOneZone) -> Result<(
     Ok(())
 }
 
-fn write_sample_zone(zone: &SampleZone) -> Result<Element, Error> {
+fn write_sample_zone(zone: &SampleZone) -> Result<Element, SerializationError> {
     let mut sample_zone_node = Element::new(keys::ZONE);
 
     xml::insert_attribute(&mut sample_zone_node, keys::START_SAMPLES_POS, &zone.start)?;
@@ -338,7 +338,7 @@ fn write_sample_zone(zone: &SampleZone) -> Result<Element, Error> {
     Ok(sample_zone_node)
 }
 
-fn write_waveform_oscillator(oscillator: &WaveformOscillator, default_params: &DefaultParamsMut) -> Result<Element, Error> {
+fn write_waveform_oscillator(oscillator: &WaveformOscillator, default_params: &DefaultParamsMut) -> Result<Element, SerializationError> {
     let mut node = default_params.create_element(keys::OSC1, keys::OSC2);
 
     xml::insert_attribute(&mut node, keys::TYPE, &oscillator.osc_type)?;
@@ -355,7 +355,7 @@ fn write_fm_sound(
     generator: &FmGenerator,
     sound_node: &mut Element,
     default_params_node: &Rc<RefCell<Element>>,
-) -> Result<(), Error> {
+) -> Result<(), SerializationError> {
     let default_params_a = DefaultParamsMut::new(TwinSelector::A, default_params_node.clone());
     let default_params_b = DefaultParamsMut::new(TwinSelector::B, default_params_node.clone());
     let mut mod2_node = write_modulator(&generator.modulator2, &default_params_b)?;
@@ -373,7 +373,7 @@ fn write_ringmod_sound(
     generator: &RingModGenerator,
     sound_node: &mut Element,
     default_params_node: &Rc<RefCell<Element>>,
-) -> Result<(), Error> {
+) -> Result<(), SerializationError> {
     let default_params_a = DefaultParamsMut::new(TwinSelector::A, default_params_node.clone());
     let default_params_b = DefaultParamsMut::new(TwinSelector::B, default_params_node.clone());
     let mut osc2_node = write_oscillator(&generator.osc2, &default_params_b)?;
@@ -386,7 +386,7 @@ fn write_ringmod_sound(
     Ok(())
 }
 
-fn write_envelope(envelope: &Envelope, selector: TwinSelector) -> Result<Element, Error> {
+fn write_envelope(envelope: &Envelope, selector: TwinSelector) -> Result<Element, SerializationError> {
     let mut node = Element::new(selector.get_key(keys::ENVELOPE1, keys::ENVELOPE2));
 
     xml::insert_attribute(&mut node, keys::ENV_ATTACK, &envelope.attack)?;
@@ -397,7 +397,7 @@ fn write_envelope(envelope: &Envelope, selector: TwinSelector) -> Result<Element
     Ok(node)
 }
 
-fn write_equalizer(equalizer: &Equalizer) -> Result<Element, Error> {
+fn write_equalizer(equalizer: &Equalizer) -> Result<Element, SerializationError> {
     let mut equalizer_node = Element::new(keys::EQUALIZER);
 
     xml::insert_attribute(&mut equalizer_node, keys::EQ_BASS, &equalizer.bass_level)?;
@@ -408,7 +408,7 @@ fn write_equalizer(equalizer: &Equalizer) -> Result<Element, Error> {
     Ok(equalizer_node)
 }
 
-fn write_unison(unison: &Unison) -> Result<Element, Error> {
+fn write_unison(unison: &Unison) -> Result<Element, SerializationError> {
     let mut unison_node = Element::new(keys::UNISON);
 
     xml::insert_attribute(&mut unison_node, keys::UNISON_VOICE_COUNT, &unison.voice_count)?;
@@ -421,7 +421,7 @@ fn write_distorsion(
     distorsion: &Distorsion,
     sound_node: &mut Element,
     default_params_node: &Rc<RefCell<Element>>,
-) -> Result<(), Error> {
+) -> Result<(), SerializationError> {
     xml::insert_attribute(sound_node, keys::CLIPPING_AMOUNT, &distorsion.saturation)?;
     xml::insert_attribute_rc(default_params_node, keys::BIT_CRUSH, &distorsion.bit_crush)?;
     xml::insert_attribute_rc(default_params_node, keys::DECIMATION, &distorsion.decimation)?;
@@ -429,7 +429,7 @@ fn write_distorsion(
     Ok(())
 }
 
-fn write_delay(delay: &Delay, default_params_node: &Rc<RefCell<Element>>) -> Result<Element, Error> {
+fn write_delay(delay: &Delay, default_params_node: &Rc<RefCell<Element>>) -> Result<Element, SerializationError> {
     let mut delay_node = Element::new(keys::DELAY);
 
     xml::insert_attribute(&mut delay_node, keys::PING_PONG, &delay.ping_pong)?;
@@ -441,7 +441,7 @@ fn write_delay(delay: &Delay, default_params_node: &Rc<RefCell<Element>>) -> Res
     Ok(delay_node)
 }
 
-fn write_sidechain(sidechain: &Sidechain, default_params_node: &Rc<RefCell<Element>>) -> Result<Element, Error> {
+fn write_sidechain(sidechain: &Sidechain, default_params_node: &Rc<RefCell<Element>>) -> Result<Element, SerializationError> {
     let mut sidechain_node = Element::new(keys::COMPRESSOR);
 
     xml::insert_attribute(&mut sidechain_node, keys::COMPRESSOR_ATTACK, &sidechain.attack)?;
@@ -452,7 +452,7 @@ fn write_sidechain(sidechain: &Sidechain, default_params_node: &Rc<RefCell<Eleme
     Ok(sidechain_node)
 }
 
-fn write_cables(patch_cables: &[PatchCable]) -> Result<Element, Error> {
+fn write_cables(patch_cables: &[PatchCable]) -> Result<Element, SerializationError> {
     let mut cables_node = Element::new(keys::PATCH_CABLES);
 
     for cable in patch_cables {
@@ -462,7 +462,7 @@ fn write_cables(patch_cables: &[PatchCable]) -> Result<Element, Error> {
     Ok(cables_node)
 }
 
-fn write_cable(cable: &PatchCable) -> Result<Element, Error> {
+fn write_cable(cable: &PatchCable) -> Result<Element, SerializationError> {
     let mut cable_node = Element::new(keys::PATCH_CABLE);
 
     xml::insert_attribute(&mut cable_node, keys::PATCH_CABLE_SOURCE, &cable.source)?;
@@ -472,7 +472,7 @@ fn write_cable(cable: &PatchCable) -> Result<Element, Error> {
     Ok(cable_node)
 }
 
-fn write_mod_knobs(mod_knobs: &[ModKnob]) -> Result<Element, Error> {
+fn write_mod_knobs(mod_knobs: &[ModKnob]) -> Result<Element, SerializationError> {
     let mut mod_knobs_node = Element::new(keys::MOD_KNOBS);
 
     for mod_knob in mod_knobs {

@@ -86,18 +86,18 @@ pub fn detect_format_version(roots: &[Element], element_type: &str) -> Option<Fo
 
 #[cfg(test)]
 mod tests {
-    use crate::Error;
+    use crate::SerializationError;
 
     use super::*;
 
     /// This helper exists to avoid having to change each test, but it's legacy.
-    fn detect_kit_format_version(roots: &[Element]) -> Result<FormatVersion, Error> {
-        detect_format_version(roots, keys::KIT).ok_or(Error::InvalidVersionFormat)
+    fn detect_kit_format_version(roots: &[Element]) -> Result<FormatVersion, SerializationError> {
+        detect_format_version(roots, keys::KIT).ok_or(SerializationError::InvalidVersionFormat)
     }
 
     /// This helper exists to avoid having to change each test, but it's legacy.
-    fn detect_synth_format_version(roots: &[Element]) -> Result<FormatVersion, Error> {
-        detect_format_version(roots, keys::SOUND).ok_or(Error::InvalidVersionFormat)
+    fn detect_synth_format_version(roots: &[Element]) -> Result<FormatVersion, SerializationError> {
+        detect_format_version(roots, keys::SOUND).ok_or(SerializationError::InvalidVersionFormat)
     }
 
     #[test]

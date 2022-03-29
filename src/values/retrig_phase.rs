@@ -1,7 +1,7 @@
 //! Specify the phase in degrees.
 //! This type is formatted as 32-bits unsigned integer hexadecimal.
 //! Notice RetrigPhase(0) is different than RetrigPhase::Off!
-use crate::values::{map_i32_u32, map_u32_i32, read_i32, Error};
+use crate::values::{map_i32_u32, map_u32_i32, read_i32, SerializationError};
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 use std::num::Wrapping;
 
@@ -94,7 +94,7 @@ impl<'de> Deserialize<'de> for RetrigPhase {
 const PHASE_FACTOR: i32 = 11930464i32;
 const PHASE_OFF_VALUE: &str = "-1";
 
-fn write_phase(phase: RetrigPhase) -> Result<String, Error> {
+fn write_phase(phase: RetrigPhase) -> Result<String, SerializationError> {
     Ok(match phase {
         RetrigPhase::Off => PHASE_OFF_VALUE.to_string(),
         RetrigPhase::Degrees(value) => {
@@ -106,7 +106,7 @@ fn write_phase(phase: RetrigPhase) -> Result<String, Error> {
     })
 }
 
-fn read_phase(text: &str) -> Result<RetrigPhase, Error> {
+fn read_phase(text: &str) -> Result<RetrigPhase, SerializationError> {
     let number = read_i32(text)?;
     let u32_value = map_i32_u32(number)?;
 
