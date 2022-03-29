@@ -1,6 +1,6 @@
 use crate::{Error, Kit, Synth};
 
-use self::version_info::VersionInfo;
+use self::version_info::{PatchType, VersionInfo};
 
 mod default_params;
 mod format_version;
@@ -19,7 +19,7 @@ pub fn load_kit(xml: &str) -> Result<Kit, Error> {
 
 pub fn load_kit_with_version(xml: &str) -> Result<(Kit, VersionInfo), Error> {
     let roots = xml::load_xml(xml)?;
-    let version_info = version_info::load_version_info(&roots, keys::KIT);
+    let version_info = version_info::load_version_info(&roots, PatchType::Kit);
     let kit = match version_info.format_version {
         format_version::FormatVersion::Version3 => serialization_v3::load_kit_nodes(&roots)?,
         format_version::FormatVersion::Version2 => serialization_v2::load_kit_nodes(&roots)?,
@@ -37,7 +37,7 @@ pub fn load_synth(xml: &str) -> Result<Synth, Error> {
 
 pub fn load_synth_with_version(xml: &str) -> Result<(Synth, VersionInfo), Error> {
     let roots = xml::load_xml(xml)?;
-    let version_info = version_info::load_version_info(&roots, keys::SOUND);
+    let version_info = version_info::load_version_info(&roots, PatchType::Synth);
     let synth = match version_info.format_version {
         format_version::FormatVersion::Version3 => serialization_v3::load_synth_nodes(&roots)?,
         format_version::FormatVersion::Version2 => serialization_v2::load_synth_nodes(&roots)?,
