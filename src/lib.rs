@@ -11,9 +11,6 @@
 //!
 //! https://docs.google.com/document/d/11DUuuE1LBYOVlluPA9McT1_dT4AofZ5jnUD5eHvj7Vs/edit
 
-#[macro_use]
-extern crate derivative;
-
 mod kit;
 mod serialization;
 mod sound;

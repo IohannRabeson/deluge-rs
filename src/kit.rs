@@ -1,7 +1,6 @@
 use super::Sound;
 
-#[derive(Derivative, Clone, Debug, Default)]
-#[derivative(PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Kit {
     pub rows: Vec<SoundSource>,
 }
