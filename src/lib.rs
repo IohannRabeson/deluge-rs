@@ -16,6 +16,7 @@ mod serialization;
 mod sound;
 mod synth;
 mod values;
+mod card;
 
 pub use kit::{GateOutput, Kit, MidiOutput, SoundOutput, SoundSource};
 pub use sound::{
@@ -24,5 +25,6 @@ pub use sound::{
     SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SubtractiveGenerator, Unison, WaveformOscillator,
 };
 pub use synth::Synth;
+pub use card::{Card, LocalFileSystem};
 
 pub use serialization::{load_kit, load_synth, save_kit, save_synth, SerializationError};
