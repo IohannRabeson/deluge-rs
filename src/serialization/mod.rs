@@ -5,6 +5,7 @@ use self::version_info::{PatchType, VersionInfo};
 pub use self::error::SerializationError;
 
 mod default_params;
+mod error;
 mod format_version;
 mod keys;
 mod serialization_common;
@@ -13,7 +14,6 @@ mod serialization_v2;
 mod serialization_v3;
 mod version_info;
 mod xml;
-mod error;
 
 /// Load a kit patch from XML
 pub fn load_kit(xml: &str) -> Result<Kit, SerializationError> {

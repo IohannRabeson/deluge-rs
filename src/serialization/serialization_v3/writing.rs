@@ -9,10 +9,10 @@ use crate::{
         xml,
     },
     values::*,
-    Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, SerializationError, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput,
-    Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
-    SampleOscillator, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SoundSource, SubtractiveGenerator, Synth,
-    Unison, WaveformOscillator,
+    Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput, Kit,
+    Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
+    SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator, SoundSource,
+    SubtractiveGenerator, Synth, Unison, WaveformOscillator,
 };
 
 use xmltree::Element;
@@ -175,7 +175,10 @@ fn write_flanger(flanger: &Flanger, default_params_node: &Rc<RefCell<Element>>) 
     Ok(())
 }
 
-fn write_arpegiator(arpeggiator: &Arpeggiator, default_params_node: &Rc<RefCell<Element>>) -> Result<Element, SerializationError> {
+fn write_arpegiator(
+    arpeggiator: &Arpeggiator,
+    default_params_node: &Rc<RefCell<Element>>,
+) -> Result<Element, SerializationError> {
     let mut arpegiator_node = Element::new(keys::ARPEGGIATOR);
 
     xml::insert_attribute(&mut arpegiator_node, keys::ARPEGGIATOR_MODE, &arpeggiator.mode)?;
@@ -338,7 +341,10 @@ fn write_sample_zone(zone: &SampleZone) -> Result<Element, SerializationError> {
     Ok(sample_zone_node)
 }
 
-fn write_waveform_oscillator(oscillator: &WaveformOscillator, default_params: &DefaultParamsMut) -> Result<Element, SerializationError> {
+fn write_waveform_oscillator(
+    oscillator: &WaveformOscillator,
+    default_params: &DefaultParamsMut,
+) -> Result<Element, SerializationError> {
     let mut node = default_params.create_element(keys::OSC1, keys::OSC2);
 
     xml::insert_attribute(&mut node, keys::TYPE, &oscillator.osc_type)?;

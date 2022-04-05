@@ -11,13 +11,14 @@
 //!
 //! https://docs.google.com/document/d/11DUuuE1LBYOVlluPA9McT1_dT4AofZ5jnUD5eHvj7Vs/edit
 
+mod card;
 mod kit;
 mod serialization;
 mod sound;
 mod synth;
 mod values;
-mod card;
 
+pub use card::{Card, LocalFileSystem};
 pub use kit::{GateOutput, Kit, MidiOutput, SoundOutput, SoundSource};
 pub use sound::{
     Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Lfo1, Lfo2,
@@ -25,6 +26,5 @@ pub use sound::{
     SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SubtractiveGenerator, Unison, WaveformOscillator,
 };
 pub use synth::Synth;
-pub use card::{Card, LocalFileSystem};
 
 pub use serialization::{load_kit, load_synth, save_kit, save_synth, SerializationError};
