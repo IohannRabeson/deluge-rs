@@ -14,6 +14,9 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
+
 pub use filesystem::{FileSystem, LocalFileSystem};
 
 #[derive(thiserror::Error, Debug, Clone, PartialEq)]
@@ -34,9 +37,24 @@ pub struct Card {
     root_directory: PathBuf,
 }
 
-impl Card {
-    const REQUIRED_DIRECTORIES: [&'static str; 3] = ["KITS", "SAMPLES", "SYNTHS"];
+#[derive(Debug, EnumIter)]
+pub enum CardFolder {
+    Kits,
+    Samples,
+    Synths,
+}
 
+impl CardFolder {
+    pub const fn directory_name(&self) -> &'static str {
+        match self {
+            CardFolder::Kits => "KITS",
+            CardFolder::Samples => "SAMPLES",
+            CardFolder::Synths => "SYNTHS",
+        }
+    }
+}
+
+impl Card {
     fn check_root_directories<FS: FileSystem>(file_system: &FS, root_directory: &Path) -> Result<(), CardError> {
         let directory_names = file_system
             .get_directories(root_directory)?
@@ -44,9 +62,9 @@ impl Card {
             .filter_map(|path| path.file_name().map(|file_name| file_name.to_string_lossy().to_string()))
             .collect::<BTreeSet<String>>();
 
-        for required_directory in Self::REQUIRED_DIRECTORIES {
-            if !directory_names.contains(required_directory) {
-                return Err(CardError::MissingRootDirectory(required_directory.to_owned()));
+        for required_directory in CardFolder::iter() {
+            if !directory_names.contains(required_directory.directory_name()) {
+                return Err(CardError::MissingRootDirectory(required_directory.directory_name().to_owned()));
             }
         }
 
@@ -61,8 +79,8 @@ impl Card {
             return Err(CardError::DirectoryDoesNotExists(root_directory));
         }
 
-        for required_directory in Self::REQUIRED_DIRECTORIES {
-            file_system.create_directory(&root_directory.join(required_directory))?;
+        for required_directory in CardFolder::iter() {
+            file_system.create_directory(&root_directory.join(required_directory.directory_name()))?;
         }
 
         Ok(Card { root_directory })
