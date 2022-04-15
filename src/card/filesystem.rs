@@ -2,12 +2,11 @@ use std::path::{Path, PathBuf};
 
 use super::CardError;
 
-use mockall::predicate::*;
-use mockall::*;
+#[cfg(test)]
+use mockall::{automock, predicate::*};
 
 /// This trait exists to make unit testing possible.
-
-#[automock]
+#[cfg_attr(test, automock)]
 pub trait FileSystem {
     /// This method gives the paths of the directories present in a given directory.
     fn get_directories(&self, path: &Path) -> Result<Vec<PathBuf>, CardError>;
