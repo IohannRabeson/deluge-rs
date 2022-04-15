@@ -7,9 +7,9 @@ use crate::{
         xml,
     },
     values::*,
-    Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, SerializationError, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput,
-    Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
-    SampleOscillator, SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SoundSource,
+    Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput, Kit,
+    Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
+    SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator, SoundSource,
     SubtractiveGenerator, Synth, Unison, WaveformOscillator,
 };
 

@@ -3,10 +3,10 @@ use crate::{
         ArpeggiatorMode, AttackSidechain, HexU50, OctavesCount, OnOff, OscType, ReleaseSidechain, RetrigPhase, SoundType,
         SyncLevel,
     },
-    Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, SerializationError, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput,
-    Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
-    SampleOscillator, SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SoundOutput, SoundSource,
-    SubtractiveGenerator, Synth, Unison, WaveformOscillator,
+    Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput, Kit,
+    Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
+    SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator, SoundOutput,
+    SoundSource, SubtractiveGenerator, Synth, Unison, WaveformOscillator,
 };
 use xmltree::Element;
 

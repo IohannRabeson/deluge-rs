@@ -1,4 +1,4 @@
-use std::{sync::Arc, num::ParseIntError};
+use std::{num::ParseIntError, sync::Arc};
 
 #[derive(thiserror::Error, Debug, Clone)]
 pub enum SerializationError {

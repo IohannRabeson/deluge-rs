@@ -39,7 +39,8 @@ pub fn get_opt_element<'a>(elements: &'a [Element], name: &'a str) -> Option<&'a
 }
 
 pub fn get_attribute<'a>(element: &'a Element, name: &'a str) -> Result<&'a String, SerializationError> {
-    get_opt_attribute(element, name).ok_or_else(|| SerializationError::MissingAttribute(element.name.to_string(), name.to_string()))
+    get_opt_attribute(element, name)
+        .ok_or_else(|| SerializationError::MissingAttribute(element.name.to_string(), name.to_string()))
 }
 
 pub fn get_opt_attribute<'a>(element: &'a Element, name: &'a str) -> Option<&'a String> {
@@ -50,7 +51,8 @@ pub fn get_opt_attribute<'a>(element: &'a Element, name: &'a str) -> Option<&'a 
 }
 
 pub fn get_children_element<'a>(element: &'a Element, name: &'a str) -> Result<&'a Element, SerializationError> {
-    get_opt_children_element(element, name).ok_or_else(|| SerializationError::MissingChild(element.name.to_string(), name.to_string()))
+    get_opt_children_element(element, name)
+        .ok_or_else(|| SerializationError::MissingChild(element.name.to_string(), name.to_string()))
 }
 
 pub fn get_opt_children_element<'a>(element: &'a Element, name: &'a str) -> Option<&'a Element> {
@@ -70,7 +72,10 @@ pub fn get_children_element_content<'a>(element: &'a Element, name: &'a str) -> 
     get_children_element(element, name).map(get_text)
 }
 
-pub fn parse_children_element_content<'a, T: Deserialize<'a>>(element: &'a Element, name: &'a str) -> Result<T, SerializationError> {
+pub fn parse_children_element_content<'a, T: Deserialize<'a>>(
+    element: &'a Element,
+    name: &'a str,
+) -> Result<T, SerializationError> {
     let element = get_children_element(element, name)?;
 
     parse_content(element)
@@ -137,7 +142,11 @@ pub fn insert_attribute<T: Serialize>(element: &mut Element, attribute_name: &st
     Ok(())
 }
 
-pub fn insert_opt_attribute<T: Serialize>(element: &mut Element, attribute_name: &str, value: &Option<T>) -> Result<(), SerializationError> {
+pub fn insert_opt_attribute<T: Serialize>(
+    element: &mut Element,
+    attribute_name: &str,
+    value: &Option<T>,
+) -> Result<(), SerializationError> {
     if let Some(value) = value {
         insert_attribute(element, attribute_name, value)?;
     }
@@ -166,7 +175,11 @@ pub fn insert_child_rc(element: &Rc<RefCell<Element>>, child: Element) {
     element.borrow_mut().children.push(XMLNode::Element(child));
 }
 
-pub fn insert_attribute_rc<T: Serialize>(element: &Rc<RefCell<Element>>, attribute_name: &str, value: &T) -> Result<(), SerializationError> {
+pub fn insert_attribute_rc<T: Serialize>(
+    element: &Rc<RefCell<Element>>,
+    attribute_name: &str,
+    value: &T,
+) -> Result<(), SerializationError> {
     let value_as_string = serde_plain::to_string::<T>(value).map_err(SerializationError::SerdeError)?;
 
     element
