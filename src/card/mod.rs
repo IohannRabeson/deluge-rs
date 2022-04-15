@@ -1,11 +1,12 @@
-//! Deluge expects a specific folder structure:
+//! Deluge expects a specific folder structure a the root of a card:
 //!
+//! ```bash
 //! tree -d -L 1
 //! .
 //! ├── KITS
 //! ├── SAMPLES
 //! └── SYNTHS
-//!
+//! ```
 
 mod filesystem;
 
@@ -79,16 +80,18 @@ impl Card {
             return Err(CardError::DirectoryDoesNotExists(root_directory));
         }
 
+        let card = Card { root_directory };
+
         for required_directory in CardFolder::iter() {
-            file_system.create_directory(&root_directory.join(required_directory.directory_name()))?;
+            file_system.create_directory(&card.get_directory_path(required_directory))?;
         }
 
-        Ok(Card { root_directory })
+        Ok(card)
     }
 
     /// Open a card directory.
     ///
-    /// The folder structure is checked and relevant are returned if something wrong is found.
+    /// The folder structure is checked and an error is returned if something wrong is found.
     pub fn open<FS: FileSystem>(file_system: &FS, root_directory: &Path) -> Result<Card, CardError> {
         let root_directory = root_directory.to_path_buf();
 
@@ -99,6 +102,11 @@ impl Card {
         Self::check_root_directories(file_system, &root_directory)?;
 
         Ok(Card { root_directory })
+    }
+
+    /// Get one of the card's directory path
+    pub fn get_directory_path(&self, folder: CardFolder) -> PathBuf {
+        self.root_directory.join(folder.directory_name())
     }
 }
 
