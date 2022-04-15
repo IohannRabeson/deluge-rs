@@ -65,7 +65,9 @@ impl Card {
 
         for required_directory in CardFolder::iter() {
             if !directory_names.contains(required_directory.directory_name()) {
-                return Err(CardError::MissingRootDirectory(required_directory.directory_name().to_owned()));
+                return Err(CardError::MissingRootDirectory(
+                    required_directory.directory_name().to_owned(),
+                ));
             }
         }
 
