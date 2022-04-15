@@ -18,5 +18,6 @@ serde_plain = "1.0.0"
 thiserror = "1.0.30"
 xmltree = "0.10.3"
 serde_repr = "0.1.7"
+# strum is to iterate on the enum's values
 strum = { version = "0.24", features = ["derive"] }
 strum_macros = "0.24.0"
