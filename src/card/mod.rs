@@ -11,11 +11,11 @@
 mod filesystem;
 mod patch_name;
 
+use std::str::FromStr;
 use std::{
     collections::BTreeSet,
     path::{Path, PathBuf},
 };
-use std::str::FromStr;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
@@ -98,7 +98,10 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
             return Err(CardError::DirectoryDoesNotExists(root_directory));
         }
 
-        let card = Self { file_system, root_directory };
+        let card = Self {
+            file_system,
+            root_directory,
+        };
 
         for required_directory in CardFolder::iter() {
             file_system.create_directory(&card.get_directory_path(required_directory))?;
@@ -119,7 +122,10 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
 
         Self::check_root_directories(file_system, &root_directory)?;
 
-        Ok(Self { file_system, root_directory })
+        Ok(Self {
+            file_system,
+            root_directory,
+        })
     }
 
     /// Get one of the card's directory path
@@ -138,10 +144,10 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
         };
 
         let mut max_number: Option<u16> = None;
-        
+
         for path in &self.file_system.get_directory_entries(&self.get_directory_path(folder))? {
             if self.file_system.is_file(path)? {
-                if let Some(file_name) = path.file_name().map(|name|name.to_string_lossy().to_string()) {
+                if let Some(file_name) = path.file_name().map(|name| name.to_string_lossy().to_string()) {
                     if let Ok(patch_name) = PatchName::from_str(&file_name) {
                         if patch_name.name == base_name {
                             if let Some(number) = patch_name.number {
@@ -154,9 +160,11 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
         }
 
         Ok(PatchName {
-            name: base_name.to_string(), 
-            number: Some(max_number.map(|n|n + 1).unwrap_or(0u16)),
-            suffix: None }.to_string())
+            name: base_name.to_string(),
+            number: Some(max_number.map(|n| n + 1).unwrap_or(0u16)),
+            suffix: None,
+        }
+        .to_string())
     }
 }
 
@@ -258,7 +266,6 @@ mod tests {
         assert!(Card::open(fs, &Path::new("I_m_existings")).is_ok());
     }
 
-
     #[test_case("KIT000", "KIT001" ; "KIT000")]
     #[test_case("KIT", "KIT000" ; "KIT")]
     #[test_case("alariabiata", "KIT000" ; "not default kit")]
@@ -268,15 +275,17 @@ mod tests {
         let root_directory = Path::new("I_exist");
 
         fs.expect_directory_exists().return_const(true);
-        fs.expect_get_directory_entries().with(mockall::predicate::eq(root_directory)).return_once(|path| {
-            let mut paths: Vec<PathBuf> = Vec::new();
+        fs.expect_get_directory_entries()
+            .with(mockall::predicate::eq(root_directory))
+            .return_once(|path| {
+                let mut paths: Vec<PathBuf> = Vec::new();
 
-            paths.push(path.join("KITS"));
-            paths.push(path.join("SAMPLES"));
-            paths.push(path.join("SYNTHS"));
+                paths.push(path.join("KITS"));
+                paths.push(path.join("SAMPLES"));
+                paths.push(path.join("SYNTHS"));
 
-            Ok(paths)
-        });
+                Ok(paths)
+            });
 
         let existing_patch_name_for_closure = existing_patch_name.to_string();
         fs.expect_get_directory_entries().return_once(|path| {
@@ -291,6 +300,6 @@ mod tests {
         let card = Card::open(fs, &Path::new("I_exist")).expect("open mocked card");
         let patch_name = card.get_next_patch_name(PatchType::Kit).unwrap();
 
-        assert_eq!( expected_patch_name, patch_name );
+        assert_eq!(expected_patch_name, patch_name);
     }
 }

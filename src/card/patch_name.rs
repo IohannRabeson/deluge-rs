@@ -1,9 +1,9 @@
-use std::str::FromStr;
 use nom::{
     character::complete::{alpha1, digit1},
     combinator::{map_res, opt},
-    IResult, Finish,
+    Finish, IResult,
 };
+use std::str::FromStr;
 
 pub type ParseError = nom::error::Error<String>;
 
@@ -12,7 +12,7 @@ pub type ParseError = nom::error::Error<String>;
 /// use deluge::PatchName;
 /// use std::str::FromStr;
 /// let patch_name = PatchName::from_str("SYNT234R").unwrap();
-/// assert_eq!( 
+/// assert_eq!(
 ///     patch_name,
 ///     PatchName{ name: "SYNT".to_string(), number: Some(234), suffix: Some("R".to_string()) },
 /// )
@@ -30,7 +30,10 @@ impl FromStr for PatchName {
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         match parse_patch_name(input).finish() {
             Ok(patch_name) => Ok(patch_name.1),
-            Err(nom::error::Error{ input, code }) => Err(nom::error::Error{ input: input.to_string(), code }),
+            Err(nom::error::Error { input, code }) => Err(nom::error::Error {
+                input: input.to_string(),
+                code,
+            }),
         }
     }
 }
@@ -40,7 +43,7 @@ impl ToString for PatchName {
         let mut buffer = String::with_capacity(7);
 
         buffer.push_str(&self.name);
-        
+
         if let Some(number) = self.number {
             buffer.push_str(&format!("{:03}", number));
         }
