@@ -18,7 +18,7 @@ mod sound;
 mod synth;
 mod values;
 
-pub use card::{Card, LocalFileSystem};
+pub use card::{Card, CardError, LocalFileSystem, PatchName};
 pub use kit::{GateOutput, Kit, MidiOutput, SoundOutput, SoundSource};
 pub use sound::{
     Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Lfo1, Lfo2,
@@ -27,4 +27,4 @@ pub use sound::{
 };
 pub use synth::Synth;
 
-pub use serialization::{load_kit, load_synth, save_kit, save_synth, SerializationError};
+pub use serialization::{load_kit, load_synth, save_kit, save_synth, SerializationError, PatchType};
