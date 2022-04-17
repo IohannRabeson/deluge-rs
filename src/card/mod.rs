@@ -24,7 +24,7 @@ pub use patch_name::PatchName;
 
 use crate::PatchType;
 
-#[derive(thiserror::Error, Debug, PartialEq)]
+#[derive(thiserror::Error, Debug, PartialEq, Clone)]
 pub enum CardError {
     #[error("directory '{0}' does not exists")]
     DirectoryDoesNotExists(PathBuf),
@@ -133,7 +133,14 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
         self.root_directory.join(folder.directory_name())
     }
 
-    pub fn get_next_patch_name(&self, patch_type: PatchType) -> Result<String, CardError> {
+    /// Gets the next standard patch name
+    ///
+    /// With Deluge, when you create a patch it gets a default name. For example with kits, the first default
+    /// kit is "KIT000". The next one is "KIT001". Also you can have variation of the same patch composed by the original name with a letter as postfix, example: "KIT001A". For synths patch the base name is "SYNT" instead of "KIT".
+    /// Those are what I call standard patch names.
+    /// The other names not respecting this pattern I call them custom patch names.
+    /// Those can also have a number but this is optional and they can't have a letter (I'm not sure of that).
+    pub fn get_next_standard_patch_name(&self, patch_type: PatchType) -> Result<String, CardError> {
         let folder = match patch_type {
             PatchType::Kit => CardFolder::Kits,
             PatchType::Synth => CardFolder::Synths,
@@ -144,13 +151,13 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
         for path in &self.file_system.get_directory_entries(&self.get_directory_path(folder))? {
             if self.file_system.is_file(path)? {
                 if let Some(file_name) = path.file_name().map(|name| name.to_string_lossy().to_string()) {
-                    if let Ok(file_patch_name) = PatchName::from_str(&file_name) {
-                        match file_patch_name {
-                            PatchName::Standard { patch_type, number, suffix } => {
-                                max_number = Some(number.max(number));
-                            },
-                            PatchName::CustomName { name, number } => (),
-                        }
+                    if let Ok(PatchName::Standard {
+                        patch_type: _,
+                        number,
+                        suffix: _,
+                    }) = PatchName::from_str(&file_name)
+                    {
+                        max_number = Some(number.max(max_number.unwrap_or(0)))
                     }
                 }
             }
@@ -263,11 +270,49 @@ mod tests {
         assert!(Card::open(fs, &Path::new("I_m_existings")).is_ok());
     }
 
+    fn create_valid_card(mut fs: MockFileSystem, root_directory: &'static Path) -> MockFileSystem {
+        fs.expect_directory_exists().return_const(true);
+        fs.expect_get_directory_entries()
+            .with(mockall::predicate::eq(root_directory))
+            .return_once(|path| {
+                let mut paths: Vec<PathBuf> = Vec::new();
+
+                paths.push(path.join("KITS"));
+                paths.push(path.join("SAMPLES"));
+                paths.push(path.join("SYNTHS"));
+
+                Ok(paths)
+            });
+
+        fs
+    }
+
     #[test_case("KIT000", "KIT001" ; "KIT000")]
     #[test_case("KIT", "KIT000" ; "KIT")]
     #[test_case("alariabiata", "KIT000" ; "not default kit")]
     #[test_case("KIT000A", "KIT001" ; "KIT000A")]
     fn test_get_next_patch_name(existing_patch_name: &str, expected_patch_name: &str) {
+        // let fs = &mut MockFileSystem::default();
+        let root_directory = Path::new("I_exist");
+        let mut fs = create_valid_card(MockFileSystem::default(), root_directory);
+        let existing_patch_name_for_closure = existing_patch_name.to_string();
+        fs.expect_get_directory_entries().return_once(|path| {
+            let mut paths: Vec<PathBuf> = Vec::new();
+
+            paths.push(path.join(existing_patch_name_for_closure));
+
+            Ok(paths)
+        });
+        fs.expect_is_file().return_once(|_path| Ok(true));
+
+        let card = Card::open(&fs, &Path::new("I_exist")).expect("open mocked card");
+        let patch_name = card.get_next_standard_patch_name(PatchType::Kit).unwrap();
+
+        assert_eq!(expected_patch_name, patch_name);
+    }
+
+    #[test]
+    fn test_get_next_patch_name_max() {
         let fs = &mut MockFileSystem::default();
         let root_directory = Path::new("I_exist");
 
@@ -284,19 +329,20 @@ mod tests {
                 Ok(paths)
             });
 
-        let existing_patch_name_for_closure = existing_patch_name.to_string();
         fs.expect_get_directory_entries().return_once(|path| {
             let mut paths: Vec<PathBuf> = Vec::new();
 
-            paths.push(path.join(existing_patch_name_for_closure));
+            paths.push(path.join("KIT003"));
+            paths.push(path.join("KIT007"));
+            paths.push(path.join("KIT001"));
 
             Ok(paths)
         });
-        fs.expect_is_file().return_once(|_path| Ok(true));
+        fs.expect_is_file().return_const::<Result<bool, CardError>>(Ok(true));
 
         let card = Card::open(fs, &Path::new("I_exist")).expect("open mocked card");
-        let patch_name = card.get_next_patch_name(PatchType::Kit).unwrap();
+        let patch_name = card.get_next_standard_patch_name(PatchType::Kit).unwrap();
 
-        assert_eq!(expected_patch_name, patch_name);
+        assert_eq!("KIT008", patch_name);
     }
 }

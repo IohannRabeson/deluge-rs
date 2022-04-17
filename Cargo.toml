@@ -21,4 +21,4 @@ serde_repr = "0.1.7"
 # strum is to iterate on the enum's values
 strum = { version = "0.24", features = ["derive"] }
 strum_macros = "0.24.0"
-nom = "7.1.1"
+nom = { version = "7.1.1" }
