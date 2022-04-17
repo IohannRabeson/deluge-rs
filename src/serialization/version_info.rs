@@ -29,11 +29,10 @@ impl PatchType {
     }
 
     pub fn get_standard_patch_base_name<'a>(self) -> &'a str {
-        let base_name = match self {
+        match self {
             PatchType::Kit => KIT_BASE_NAME,
             PatchType::Synth => SYNTH_BASE_NAME,
-        };
-        base_name
+        }
     }
 }
 
