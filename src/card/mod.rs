@@ -49,7 +49,8 @@ fn make_io_error(error: std::io::Error) -> CardError {
 ///
 /// Represents the card on the file system.
 /// You should normally don't have to care about the lifetime 'l, just pass your file system and the
-/// compiler should be able to deduce everything for you.
+/// compiler should be able to deduce everything for you. More precisely, the filesystem instance must live
+/// at least while the card instance lives.
 /// ```
 /// # use std::path::Path;
 /// # use deluge::{LocalFileSystem, PatchType, CardError, CardFolder};
