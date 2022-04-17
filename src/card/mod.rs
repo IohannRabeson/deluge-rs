@@ -59,6 +59,10 @@ impl CardFolder {
 }
 
 /// A deluge card
+/// 
+/// Represents the card on the file system.
+/// You should normally don't have to care about the lifetime 'l, just pass you file system and the 
+/// compiler should be able to deduce everything.
 #[derive(Debug)]
 pub struct Card<'l, FS: FileSystem> {
     root_directory: PathBuf,

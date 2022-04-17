@@ -20,12 +20,6 @@ pub type ParseError = nom::error::Error<String>;
 ///     PatchName::Standard{ patch_type: PatchType::Synth, number: 234, suffix: Some('R') },
 /// )
 /// ```
-// #[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
-// pub struct PatchName {
-//     pub name: String,
-//     pub number: Option<u16>,
-//     pub suffix: Option<String>,
-// }
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum PatchName {
