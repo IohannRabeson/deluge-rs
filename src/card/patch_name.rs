@@ -8,9 +8,16 @@ pub type ParseError = nom::error::Error<String>;
 
 /// A parsed patch name
 ///
-/// There are 2 type of patch name:
-///  - Standard: "SYNT|KIT<3DIGITS>[<SUFFIX>]"
-///  - Custom: "ALPHANUMSPACE1 ALPHANUM[ NUMBER]"
+/// There are 2 types of patch name, standard and custom.
+/// 
+/// The standard patch name looks like "KIT000", "KIT001", "KIT001A". It contains 3 parts, a tag which is KIT or SYNT then follows
+/// the number and finally the optional suffix. I assume the suffix is always one char but I'm not sure about that. Also I'm not
+/// sure what happens on the deluge when you try to save more than 26 variations.
+/// I guess it says CANT but I never tried it -- good way of doing it is to create using the computer
+/// artificial variation file then try to create the last one on the Deluge.
+/// 
+/// The custom patch name is simpler, it's any chars with at the end an optional number preceded by a space.
+/// Example: "HELLO WORLD", "HELLO WORLD 12".
 /// ```
 /// use deluge::{PatchType, PatchName};
 /// use std::str::FromStr;
@@ -20,7 +27,7 @@ pub type ParseError = nom::error::Error<String>;
 ///     PatchName::Standard{ patch_type: PatchType::Synth, number: 234, suffix: Some('R') },
 /// )
 /// ```
-/// Todo: the field number should be an integer limited to [0; 999] (like int8 but for u16).
+/// Todo: the field number should be an integer limited to [0; 999] (like deluge::values::int8 but for u16).
 #[derive(Debug, PartialEq, Eq)]
 pub enum PatchName {
     Standard {
