@@ -20,7 +20,7 @@ pub type ParseError = nom::error::Error<String>;
 ///     PatchName::Standard{ patch_type: PatchType::Synth, number: 234, suffix: Some('R') },
 /// )
 /// ```
-
+/// Todo: the field number should be an integer limited to [0; 999] (like int8 but for u16).
 #[derive(Debug, PartialEq, Eq)]
 pub enum PatchName {
     Standard {
@@ -59,6 +59,7 @@ impl PatchName {
         buffer
     }
 }
+
 impl FromStr for PatchName {
     type Err = ParseError;
 
@@ -87,6 +88,8 @@ impl ToString for PatchName {
 }
 
 mod parser {
+    use std::num::ParseIntError;
+
     use super::*;
 
     use nom::{
@@ -100,18 +103,25 @@ mod parser {
 
     const MAX_PATCH_NAME_NUMBER: u16 = 999;
 
-    fn map_number_3_digits(input: &str) -> Result<u16, String> {
+    #[derive(PartialEq, Eq, Clone, Debug, thiserror::Error)]
+    enum ParseDigitError {
+        #[error("failed to parse integer: too many digits (max is 3)")]
+        TooManyDigits,
+        #[error("failed to parse integer: value too big (max is 999)")]
+        Overflow,
+        #[error("failed to parse integer: {0}")]
+        InvalidInteger(#[from] ParseIntError),
+    }
+
+    fn map_number_3_digits(input: &str) -> Result<u16, ParseDigitError> {
         if input.len() > 3 {
-            return Err(String::from("maximum 3 digits"));
+            return Err(ParseDigitError::TooManyDigits);
         }
 
-        let number = u16::from_str(input).map_err(|e| e.to_string())?;
+        let number = u16::from_str(input)?;
 
         if number > MAX_PATCH_NAME_NUMBER {
-            return Err(format!(
-                "value too big: {} maximum allowed is {}",
-                number, MAX_PATCH_NAME_NUMBER
-            ));
+            return Err(ParseDigitError::Overflow);
         }
 
         Ok(number)
