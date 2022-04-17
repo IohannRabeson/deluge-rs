@@ -18,7 +18,7 @@ mod sound;
 mod synth;
 mod values;
 
-pub use card::{Card, CardError, LocalFileSystem, PatchName};
+pub use card::{Card, CardError, CardFolder, LocalFileSystem, PatchName};
 pub use kit::{GateOutput, Kit, MidiOutput, SoundOutput, SoundSource};
 pub use sound::{
     Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Lfo1, Lfo2,

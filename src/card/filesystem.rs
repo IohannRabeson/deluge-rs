@@ -17,9 +17,13 @@ pub trait FileSystem {
     /// Check if a directory exists
     fn directory_exists(&self, path: &Path) -> bool;
 
+    /// Check if a path points on a file
     fn is_file(&self, path: &Path) -> Result<bool, CardError>;
 }
 
+/// The local filesystem.
+/// 
+/// A card created using this file system will read and write the local file system.
 #[derive(Default)]
 pub struct LocalFileSystem;
 
