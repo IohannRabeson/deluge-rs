@@ -198,6 +198,8 @@ mod parser {
         }
     }
 
+    /// Parse any patch name properly formatted.
+    /// This is the entry point of this module.
     pub(crate) fn parse_patch_name(input: &str) -> IResult<&str, PatchName> {
         alt((parse_standard_patch_name, parse_custom_patch_name))(input)
     }
