@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use xmltree::Element;
 
 use super::{
@@ -12,7 +14,7 @@ pub struct VersionInfo {
     pub format_version: FormatVersion,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum PatchType {
     Synth,
     Kit,
@@ -23,6 +25,29 @@ impl PatchType {
         match self {
             PatchType::Kit => "kit",
             PatchType::Synth => "sound",
+        }
+    }
+
+    pub fn get_standard_patch_base_name<'a>(self) -> &'a str {
+        let base_name = match self {
+            PatchType::Kit => KIT_BASE_NAME,
+            PatchType::Synth => SYNTH_BASE_NAME,
+        };
+        base_name
+    }
+}
+
+const KIT_BASE_NAME: &str = "KIT";
+const SYNTH_BASE_NAME: &str = "SYNT";
+
+impl FromStr for PatchType {
+    type Err = ();
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        match input {
+            KIT_BASE_NAME => Ok(PatchType::Kit),
+            SYNTH_BASE_NAME => Ok(PatchType::Synth),
+            _ => Err(()),
         }
     }
 }

@@ -134,10 +134,6 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
     }
 
     pub fn get_next_patch_name(&self, patch_type: PatchType) -> Result<String, CardError> {
-        let base_name = match patch_type {
-            PatchType::Kit => "KIT",
-            PatchType::Synth => "SYNT",
-        };
         let folder = match patch_type {
             PatchType::Kit => CardFolder::Kits,
             PatchType::Synth => CardFolder::Synths,
@@ -148,20 +144,21 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
         for path in &self.file_system.get_directory_entries(&self.get_directory_path(folder))? {
             if self.file_system.is_file(path)? {
                 if let Some(file_name) = path.file_name().map(|name| name.to_string_lossy().to_string()) {
-                    if let Ok(patch_name) = PatchName::from_str(&file_name) {
-                        if patch_name.name == base_name {
-                            if let Some(number) = patch_name.number {
-                                max_number = Some(number.max(max_number.unwrap_or(0u16)));
-                            }
+                    if let Ok(file_patch_name) = PatchName::from_str(&file_name) {
+                        match file_patch_name {
+                            PatchName::Standard { patch_type, number, suffix } => {
+                                max_number = Some(number.max(number));
+                            },
+                            PatchName::CustomName { name, number } => (),
                         }
                     }
                 }
             }
         }
 
-        Ok(PatchName {
-            name: base_name.to_string(),
-            number: Some(max_number.map(|n| n + 1).unwrap_or(0u16)),
+        Ok(PatchName::Standard {
+            patch_type,
+            number: max_number.map(|n| n + 1).unwrap_or(0u16),
             suffix: None,
         }
         .to_string())
