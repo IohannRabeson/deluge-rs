@@ -7,7 +7,7 @@ use super::Sound;
 
 /// Store a kit patch
 ///
-/// A kit is basically an array of SoundSource.
+/// A kit is basically an array of RowKit.
 ///
 /// The rows order are visually reversed by the deluge. In the XML file, the rows
 /// are logically ordered as we expect meaning the index increase as we add new row.
