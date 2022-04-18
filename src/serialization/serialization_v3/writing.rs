@@ -47,6 +47,7 @@ pub fn write_kit(kit: &Kit) -> Result<Element, SerializationError> {
     let default_params_node = Rc::new(RefCell::new(Element::new(keys::DEFAULT_PARAMS)));
     let default_delay_node = Rc::new(RefCell::new(Element::new(keys::DELAY)));
     xml::insert_child(&mut kit_node, write_global_delay(&kit.delay, &default_delay_node)?)?;
+    xml::insert_child(&mut kit_node, write_global_sidechain(&kit.sidechain, &default_params_node)?)?;
     xml::insert_child(&mut kit_node, write_sound_sources(&kit.rows)?)?;
 
     if let Some(index) = kit.selected_drum_index {
@@ -493,6 +494,17 @@ fn write_sidechain(sidechain: &Sidechain, default_params_node: &Rc<RefCell<Eleme
     xml::insert_attribute(&mut sidechain_node, keys::COMPRESSOR_RELEASE, &sidechain.release)?;
     xml::insert_attribute(&mut sidechain_node, keys::COMPRESSOR_SYNCLEVEL, &sidechain.sync)?;
     xml::insert_attribute_rc(default_params_node, keys::COMPRESSOR_SHAPE, &sidechain.shape)?;
+
+    Ok(sidechain_node)
+}
+
+fn write_global_sidechain(sidechain: &Sidechain, default_params_node: &Rc<RefCell<Element>>) -> Result<Element, SerializationError> {
+    let mut sidechain_node = Element::new(keys::COMPRESSOR);
+
+    xml::insert_attribute(&mut sidechain_node, keys::COMPRESSOR_ATTACK, &sidechain.attack)?;
+    xml::insert_attribute(&mut sidechain_node, keys::COMPRESSOR_RELEASE, &sidechain.release)?;
+    xml::insert_attribute(&mut sidechain_node, keys::COMPRESSOR_SYNCLEVEL, &sidechain.sync)?;
+    xml::insert_attribute_rc(default_params_node, keys::SIDECHAIN_COMPRESSOR_SHAPE, &sidechain.shape)?;
 
     Ok(sidechain_node)
 }

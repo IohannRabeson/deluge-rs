@@ -45,6 +45,7 @@ pub fn load_kit_nodes(root_nodes: &[Element]) -> Result<Kit, SerializationError>
         current_filter_type: xml::parse_attribute(kit_node, keys::CURRENT_FILTER_TYPE)?,
         selected_drum_index: xml::parse_opt_children_element_content(kit_node, keys::SELECTED_DRUM_INDEX)?,
         delay: load_global_delay(kit_node)?,
+        sidechain: load_global_sidechain(kit_node)?,
     });
 }
 
@@ -458,6 +459,22 @@ fn load_sidechain(root: &Element, default_params_node: &Element) -> Result<Sidec
         release: xml::parse_attribute(root, keys::COMPRESSOR_RELEASE)?,
         shape: xml::parse_attribute(default_params_node, keys::COMPRESSOR_SHAPE)?,
         sync: xml::parse_attribute(root, keys::COMPRESSOR_SYNCLEVEL)?,
+    })
+}
+
+fn load_global_sidechain(kit_node: &Element) -> Result<Sidechain, SerializationError> {
+    Ok(match xml::get_opt_children_element(kit_node, keys::COMPRESSOR) {
+        Some(compressor_node) => {
+            let default_params_node = xml::get_children_element(kit_node, keys::DEFAULT_PARAMS)?;
+
+            Sidechain {
+                attack: xml::parse_attribute(compressor_node, keys::COMPRESSOR_ATTACK)?,
+                release: xml::parse_attribute(compressor_node, keys::COMPRESSOR_RELEASE)?,
+                shape: xml::parse_attribute(default_params_node, keys::SIDECHAIN_COMPRESSOR_SHAPE)?,
+                sync: xml::parse_attribute(compressor_node, keys::COMPRESSOR_SYNCLEVEL)?,
+            }
+        }
+        None => Sidechain::default(),
     })
 }
 

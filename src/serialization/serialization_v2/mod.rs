@@ -1,5 +1,5 @@
 use crate::{
-    values::{ArpeggiatorMode, MidiChannel, ModulationFxType, OctavesCount, OnOff, OscType, RetrigPhase, SoundType, SyncLevel},
+    values::{ArpeggiatorMode, MidiChannel, ModulationFxType, OctavesCount, OnOff, OscType, RetrigPhase, SoundType, SyncLevel, AttackSidechain, ReleaseSidechain, TableIndex},
     Arpeggiator, AudioOutput, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator,
     FmModulator, Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit,
     Sample, SampleOneZone, SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain, Sound,
@@ -44,6 +44,7 @@ pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, SerializationError> {
         current_filter_type: xml::parse_children_element_content(kit_node, keys::CURRENT_FILTER_TYPE)?,
         selected_drum_index: xml::parse_children_element_content(kit_node, keys::SELECTED_DRUM_INDEX)?,
         delay: load_global_delay(kit_node)?,
+        sidechain: load_global_sidechain(kit_node)?,
     });
 }
 
@@ -457,6 +458,20 @@ fn load_sidechain(root: &Element, default_params_node: &Element) -> Result<Sidec
         release: xml::parse_children_element_content(root, keys::COMPRESSOR_RELEASE)?,
         shape: xml::parse_children_element_content(default_params_node, keys::COMPRESSOR_SHAPE)?,
         sync: xml::parse_children_element_content(root, keys::COMPRESSOR_SYNCLEVEL)?,
+    })
+}
+
+fn load_global_sidechain(kit_node: &Element) -> Result<Sidechain, SerializationError> {
+    Ok(match xml::get_opt_children_element(kit_node, keys::COMPRESSOR) {
+        Some(compressor_node) => {
+            Sidechain {
+                attack: AttackSidechain::new(TableIndex::new(7)),
+                release: ReleaseSidechain::new(TableIndex::new(28)),
+                shape: 18.into(),
+                sync: xml::parse_children_element_content(compressor_node, keys::COMPRESSOR_SYNCLEVEL)?,
+            }
+        }
+        None => Sidechain::default(),
     })
 }
 

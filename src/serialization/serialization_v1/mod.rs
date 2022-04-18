@@ -47,6 +47,7 @@ pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, SerializationError> {
         current_filter_type: xml::parse_children_element_content(kit_node, keys::CURRENT_FILTER_TYPE)?,
         selected_drum_index: xml::parse_children_element_content(kit_node, keys::SELECTED_DRUM_INDEX)?,
         delay: load_global_delay(kit_node)?,
+        sidechain: Sidechain::default(),
     });
 }
 

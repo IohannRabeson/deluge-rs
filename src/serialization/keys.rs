@@ -9,6 +9,7 @@ pub const ARPEGGIATOR_RATE: &str = "arpeggiatorRate";
 pub const BIT_CRUSH: &str = "bitCrush";
 pub const CENTS: &str = "cents";
 pub const CHANNEL: &str = "channel";
+pub const SIDECHAIN_COMPRESSOR_SHAPE: &str = "sidechainCompressorShape";
 pub const CLIPPING_AMOUNT: &str = "clippingAmount";
 pub const FEEDBACK: &str = "feedback";
 pub const RATE: &str = "rate";

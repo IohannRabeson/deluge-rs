@@ -1,6 +1,6 @@
 use crate::{
     values::{CvGateChannel, FilterType, LpfMode, MidiChannel, ModulationFxType, Polyphony},
-    Delay, Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone,
+    Delay, Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone, Sidechain,
 };
 
 use super::Sound;
@@ -24,6 +24,8 @@ pub struct Kit {
     pub modulation_fx_type: ModulationFxType,
     /// The global delay
     pub delay: Delay,
+
+    pub sidechain: Sidechain
 }
 
 impl Kit {
@@ -37,6 +39,7 @@ impl Kit {
             current_filter_type: FilterType::Lpf,
             selected_drum_index: if has_rows { None } else { Some(0) },
             delay: Delay::default(),
+            sidechain: Sidechain::default(),
         }
     }
 
