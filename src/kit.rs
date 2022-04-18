@@ -21,7 +21,19 @@ impl Kit {
         Self { rows }
     }
 
-    pub fn add_sound_row(&mut self, sound: Sound, name: &str) -> usize {
+    pub fn add_sound_row(&mut self, sound: Sound) -> usize {
+        let index = self.rows.len();
+        let source = RowKit::AudioOutput(AudioOutput {
+            name: format!("U{}", index + 1),
+            sound: Box::new(sound),
+        });
+
+        self.rows.push(source);
+
+        index
+    }
+
+    pub fn add_sound_row_with_name(&mut self, sound: Sound, name: &str) -> usize {
         let source = RowKit::AudioOutput(AudioOutput {
             name: name.to_string(),
             sound: Box::new(sound),
