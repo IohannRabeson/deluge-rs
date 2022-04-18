@@ -35,7 +35,7 @@ pub enum PatchName {
         number: u16,
         suffix: Option<char>,
     },
-    CustomName {
+    Custom {
         name: String,
         number: Option<u16>,
     },
@@ -89,7 +89,7 @@ impl ToString for PatchName {
                 number,
                 suffix,
             } => Self::standard_to_string(*patch_type, *number, *suffix),
-            PatchName::CustomName { name, number } => Self::custom_to_string(name, *number),
+            PatchName::Custom { name, number } => Self::custom_to_string(name, *number),
         }
     }
 }
@@ -173,7 +173,7 @@ mod parser {
 
                         Ok((
                             "",
-                            PatchName::CustomName {
+                            PatchName::Custom {
                                 name: name.to_string(),
                                 number: Some(number),
                             },
@@ -181,7 +181,7 @@ mod parser {
                     }
                     Err(_) => Ok((
                         "",
-                        PatchName::CustomName {
+                        PatchName::Custom {
                             name: input.to_string(),
                             number: None,
                         },
@@ -190,7 +190,7 @@ mod parser {
             }
             None => Ok((
                 "",
-                PatchName::CustomName {
+                PatchName::Custom {
                     name: input.to_string(),
                     number: None,
                 },
@@ -260,7 +260,7 @@ mod parser {
         #[test_case("SYNT", "SYNT", None ; "SYNT")]
         fn test_parse_custom_patch_name_success(input: &str, expected_name: &str, expected_number: Option<u16>) {
             let (_, result) = parse_custom_patch_name(input).unwrap();
-            let expected_result = PatchName::CustomName {
+            let expected_result = PatchName::Custom {
                 name: expected_name.to_string(),
                 number: expected_number,
             };
@@ -297,7 +297,7 @@ mod tests {
     #[test_case("KIKI FLORIDA0101", "KIKI FLORIDA0101", None ; "standard without number")]
     #[test_case("YO 123", "YO", Some(123) ; "standard with number")]
     fn parse_valid_input_custom_test(input: &str, expected_name: &str, expected_number: Option<u16>) {
-        let expected = PatchName::CustomName {
+        let expected = PatchName::Custom {
             name: expected_name.to_string(),
             number: expected_number,
         };
