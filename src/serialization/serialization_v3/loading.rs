@@ -10,7 +10,7 @@ use crate::{
     Arpeggiator, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Kit,
     Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit, Sample,
     SampleOneZone, SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain, Sound,
-    SoundGenerator, SubtractiveGenerator, Synth, Unison, WaveformOscillator, Lpf,
+    SoundGenerator, SubtractiveGenerator, Synth, Unison, WaveformOscillator, Lpf, Hpf,
 };
 
 use xmltree::Element;
@@ -47,6 +47,7 @@ pub fn load_kit_nodes(root_nodes: &[Element]) -> Result<Kit, SerializationError>
         delay: load_global_delay(kit_node)?,
         sidechain: load_global_sidechain(kit_node)?,
         lpf: load_global_lpf(kit_node)?,
+        hpf: load_global_hpf(kit_node)?,
     });
 }
 
@@ -490,6 +491,20 @@ fn load_global_lpf(kit_node: &Element) -> Result<Lpf, SerializationError> {
             }
         }
         None => Lpf::default(),
+    })
+}
+
+fn load_global_hpf(kit_node: &Element) -> Result<Hpf, SerializationError> {
+    Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
+        Some(default_params_node) => {
+            let default_lpf_node = xml::get_children_element(default_params_node, keys::HPF)?;
+
+            Hpf {
+                frequency: xml::parse_attribute(default_lpf_node, keys::FREQUENCY)?,
+                resonance: xml::parse_attribute(default_lpf_node, keys::RESONANCE)?,
+            }
+        }
+        None => Hpf::default(),
     })
 }
 

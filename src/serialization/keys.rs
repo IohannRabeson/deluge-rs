@@ -48,6 +48,7 @@ pub const FM_MODULATOR1: &str = "modulator1";
 pub const FM_MODULATOR2: &str = "modulator2";
 pub const FREQUENCY: &str = "frequency";
 pub const GATE_OUTPUT: &str = "gateOutput";
+pub const HPF: &str = "hpf";
 pub const HPF_FREQUENCY: &str = "hpfFrequency";
 pub const HPF_RESONANCE: &str = "hpfResonance";
 pub const KIT: &str = "kit";

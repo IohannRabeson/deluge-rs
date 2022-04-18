@@ -29,6 +29,9 @@ pub struct Kit {
 
     /// The global low pass filter
     pub lpf: Lpf,
+
+    /// The global high pass filter
+    pub hpf: Hpf,
 }
 
 impl Kit {
@@ -44,6 +47,7 @@ impl Kit {
             delay: Delay::default(),
             sidechain: Sidechain::default(),
             lpf: Lpf::default(),
+            hpf: Hpf::default(),
         }
     }
 
@@ -110,6 +114,18 @@ pub struct Lpf {
 impl Default for Lpf {
     fn default() -> Self {
         Self { frequency: 50.into(), resonance: 0.into() }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Hpf {
+    pub frequency: HexU50,
+    pub resonance: HexU50,
+}
+
+impl Default for Hpf {
+    fn default() -> Self {
+        Self { frequency: 0.into(), resonance: 0.into() }
     }
 }
 

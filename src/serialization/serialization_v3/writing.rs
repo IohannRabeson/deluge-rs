@@ -12,7 +12,7 @@ use crate::{
     Arpeggiator, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Kit,
     Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit, Sample,
     SampleOneZone, SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator,
-    SubtractiveGenerator, Synth, Unison, WaveformOscillator, Lpf,
+    SubtractiveGenerator, Synth, Unison, WaveformOscillator, Lpf, Hpf,
 };
 
 use xmltree::Element;
@@ -57,6 +57,7 @@ pub fn write_kit(kit: &Kit) -> Result<Element, SerializationError> {
 
     // Must be done at the end to ensure 'default_params_node' has all his children added.
     xml::insert_child_rc(&mut default_params_node, write_global_lpf(&kit.lpf)?);
+    xml::insert_child_rc(&mut default_params_node, write_global_hpf(&kit.hpf)?);
     xml::insert_child(&mut default_params_node.borrow_mut(), default_delay_node.borrow().clone())?;
     xml::insert_child(&mut kit_node, default_params_node.borrow().clone())?;
 
@@ -521,6 +522,15 @@ fn write_global_lpf(lpf: &Lpf) -> Result<Element, SerializationError> {
     xml::insert_attribute(&mut lpf_node, keys::RESONANCE, &lpf.resonance)?;
 
     Ok(lpf_node)
+}
+
+fn write_global_hpf(hpf: &Hpf) -> Result<Element, SerializationError> {
+    let mut hpf_node = Element::new(keys::HPF);
+
+    xml::insert_attribute(&mut hpf_node, keys::FREQUENCY, &hpf.frequency)?;
+    xml::insert_attribute(&mut hpf_node, keys::RESONANCE, &hpf.resonance)?;
+
+    Ok(hpf_node)
 }
 
 fn write_cables(patch_cables: &[PatchCable]) -> Result<Element, SerializationError> {
