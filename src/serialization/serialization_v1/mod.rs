@@ -50,6 +50,7 @@ pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, SerializationError> {
         sidechain: Sidechain::default(),
         lpf: load_global_lpf(kit_node)?,
         hpf: load_global_hpf(kit_node)?,
+        equalizer: load_global_equalizer(kit_node)?,
     });
 }
 
@@ -498,6 +499,14 @@ fn load_global_hpf(kit_node: &Element) -> Result<Hpf, SerializationError> {
     })
 }
 
+fn load_global_equalizer(kit_node: &Element) -> Result<Equalizer, SerializationError> {
+    Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
+        Some(default_params_node) => {
+            load_equalizer(xml::get_children_element(default_params_node, keys::EQUALIZER)?)?
+        },
+        None => Equalizer::default(),
+    })
+}
 
 #[cfg(test)]
 mod tests {

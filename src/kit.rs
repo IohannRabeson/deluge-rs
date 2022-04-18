@@ -1,6 +1,6 @@
 use crate::{
     values::{CvGateChannel, FilterType, LpfMode, MidiChannel, ModulationFxType, Polyphony, HexU50},
-    Delay, Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone, Sidechain,
+    Delay, Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone, Sidechain, Equalizer,
 };
 
 use super::Sound;
@@ -32,6 +32,8 @@ pub struct Kit {
 
     /// The global high pass filter
     pub hpf: Hpf,
+
+    pub equalizer: Equalizer,
 }
 
 impl Kit {
@@ -48,6 +50,7 @@ impl Kit {
             sidechain: Sidechain::default(),
             lpf: Lpf::default(),
             hpf: Hpf::default(),
+            equalizer: Equalizer::default(),
         }
     }
 
