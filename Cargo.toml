@@ -5,7 +5,6 @@ edition = "2021"
 
 [dev-dependencies]
 test-case = "2.0.0"
-enum-as-inner = "0.4.0"
 pretty_assertions = "1.2.0"
 test-generator = { git = "https://github.com/JamesGuthrie/test-generator" }
 mockall = "0.11.0"
@@ -21,3 +20,4 @@ serde_repr = "0.1.7"
 strum = { version = "0.24", features = ["derive"] }
 strum_macros = "0.24.0"
 nom = { version = "7.1.1" }
+enum-as-inner = "0.4.0"

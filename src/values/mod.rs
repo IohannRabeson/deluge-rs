@@ -21,7 +21,7 @@ pub use int8::Int8;
 pub use on_off::OnOff;
 pub use pan::Pan;
 pub use retrig_phase::RetrigPhase;
-pub use sidechain_values::{AttackSidechain, ReleaseSidechain};
+pub use sidechain_values::{AttackSidechain, ReleaseSidechain, TableIndex};
 pub use simple_enums::{
     ArpeggiatorMode, LfoShape, LpfMode, OscType, PitchSpeed, Polyphony, SamplePlayMode, SoundType, SyncLevel, VoicePriority,
 };

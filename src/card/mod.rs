@@ -60,7 +60,7 @@ fn make_io_error(error: std::io::Error) -> CardError {
 /// }
 /// # Ok::<(), CardError>(())
 /// ```
-/// 
+///
 #[derive(Debug)]
 pub struct Card<'l, FS: FileSystem> {
     root_directory: PathBuf,
