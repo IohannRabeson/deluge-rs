@@ -13,6 +13,12 @@ impl<const MIN: i8, const MAX: i8, const DEFAULT: i8> Default for Int8<MIN, MAX,
     }
 }
 
+impl<const MIN: i8, const MAX: i8, const DEFAULT: i8> From<i8> for Int8<MIN, MAX, DEFAULT> {
+    fn from(value: i8) -> Self {
+        Self::new(value)
+    }
+}
+
 impl<const MIN: i8, const MAX: i8, const DEFAULT: i8> Int8<MIN, MAX, DEFAULT> {
     const MIN: i8 = MIN;
     const MAX: i8 = MAX;

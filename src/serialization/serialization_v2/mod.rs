@@ -1,5 +1,5 @@
 use crate::{
-    values::{ArpeggiatorMode, HexU50, MidiChannel, OctavesCount, OnOff, OscType, RetrigPhase, SoundType, SyncLevel},
+    values::{ArpeggiatorMode, MidiChannel, OctavesCount, OnOff, OscType, RetrigPhase, SoundType, SyncLevel},
     Arpeggiator, AudioOutput, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator,
     FmModulator, Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit,
     Sample, SampleOneZone, SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain, Sound,
@@ -337,8 +337,8 @@ fn load_arpeggiator(root: &Element, default_params_node: &Element) -> Result<Arp
             mode: ArpeggiatorMode::Off,
             sync_level: SyncLevel::Sixteenth,
             octaves_count: OctavesCount::default(),
-            rate: HexU50::new(25),
-            gate: HexU50::new(25),
+            rate: 25.into(),
+            gate: 25.into(),
         },
     })
 }
@@ -448,7 +448,7 @@ mod tests {
         load_synth, save_synth,
         values::{
             AttackSidechain, ClippingAmount, FineTranspose, LfoShape, LpfMode, Pan, Polyphony, ReleaseSidechain, RetrigPhase,
-            Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
+            Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority, HexU50,
         },
     };
 

@@ -87,8 +87,8 @@ fn create_default_arpeggiator() -> Arpeggiator {
         mode: ArpeggiatorMode::Off,
         sync_level: SyncLevel::Sixteenth,
         octaves_count: OctavesCount::new(2),
-        rate: HexU50::new(25),
-        gate: HexU50::new(25),
+        rate: 25.into(),
+        gate: 25.into(),
     }
 }
 

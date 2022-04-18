@@ -1,5 +1,5 @@
 use crate::{
-    values::{CvGateChannel, HexU50, MidiChannel, Polyphony},
+    values::{CvGateChannel, MidiChannel, Polyphony},
     Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone,
 };
 
@@ -74,7 +74,7 @@ impl Default for Kit {
             zone: None,
         }));
 
-        osc2.set_volume(HexU50::new(0));
+        osc2.set_volume(0.into());
 
         let mut default_sound = Sound::new_substractive(osc1, osc2);
 

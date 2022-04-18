@@ -1,7 +1,7 @@
 use crate::values::{
     ArpeggiatorMode, AttackSidechain, ClippingAmount, DecU50, FineTranspose, HexU50, LfoShape, LpfMode, OctavesCount, OnOff,
     OscType, Pan, PitchSpeed, Polyphony, ReleaseSidechain, RetrigPhase, SamplePlayMode, SoundType, SyncLevel, TableIndex,
-    TimeStretchAmount, Transpose, Uint8, UnisonDetune, UnisonVoiceCount, VoicePriority,
+    TimeStretchAmount, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
 };
 use enum_as_inner::EnumAsInner;
 use serde::{Deserialize, Serialize};
@@ -63,17 +63,17 @@ impl Sound {
 impl Default for Sound {
     fn default() -> Self {
         let envelope1 = Envelope {
-            attack: HexU50::new(0),
-            decay: HexU50::new(20),
-            sustain: HexU50::new(50),
-            release: HexU50::new(0),
+            attack: 0.into(),
+            decay: 20.into(),
+            sustain: 50.into(),
+            release: 0.into(),
         };
 
         let envelope2 = Envelope {
-            attack: HexU50::new(20),
-            decay: HexU50::new(20),
-            sustain: HexU50::new(25),
-            release: HexU50::new(20),
+            attack: 20.into(),
+            decay: 20.into(),
+            sustain: 25.into(),
+            release: 20.into(),
         };
 
         let mod_knobs = vec![
@@ -95,17 +95,17 @@ impl Default for Sound {
             ModKnob::new("sampleRateReduction"),
         ];
 
-        let cables = vec![PatchCable::new("velocity", "volume", HexU50::new(37))];
+        let cables = vec![PatchCable::new("velocity", "volume", 37.into())];
 
         Self {
             generator: Default::default(),
             polyphonic: Polyphony::Poly,
             voice_priority: Default::default(),
-            volume: HexU50::new(40),
+            volume: 40.into(),
             pan: Default::default(),
-            portamento: HexU50::new(0),
-            reverb_amount: HexU50::new(0),
-            stutter_rate: HexU50::new(25),
+            portamento: 0.into(),
+            reverb_amount: 0.into(),
+            stutter_rate: 25.into(),
             sidechain_send: None,
             envelope1,
             envelope2,
@@ -144,7 +144,7 @@ impl Default for Lfo1 {
         Self {
             shape: LfoShape::Triangle,
             sync_level: SyncLevel::Off,
-            rate: HexU50::new(30),
+            rate: 30.into(),
         }
     }
 }
@@ -159,7 +159,7 @@ impl Default for Lfo2 {
     fn default() -> Self {
         Self {
             shape: LfoShape::Triangle,
-            rate: HexU50::new(25),
+            rate: 25.into(),
         }
     }
 }
@@ -253,7 +253,7 @@ impl Default for SampleOscillator {
             pitch_speed: PitchSpeed::Independent,
             time_stretch_amount: Default::default(),
             linear_interpolation: OnOff::Off,
-            volume: HexU50::new(50),
+            volume: 50.into(),
             sample: Default::default(),
         }
     }
@@ -342,8 +342,8 @@ impl Default for SubtractiveGenerator {
             transpose: Transpose::default(),
             fine_transpose: FineTranspose::default(),
             retrig_phase: RetrigPhase::Off,
-            volume: HexU50::new(50),
-            pulse_width: HexU50::new(25),
+            volume: 50.into(),
+            pulse_width: 25.into(),
         });
 
         let osc2 = Oscillator::Waveform(WaveformOscillator {
@@ -351,20 +351,20 @@ impl Default for SubtractiveGenerator {
             transpose: Transpose::default(),
             fine_transpose: FineTranspose::default(),
             retrig_phase: RetrigPhase::Off,
-            volume: HexU50::new(0),
-            pulse_width: HexU50::new(25),
+            volume: 0.into(),
+            pulse_width: 25.into(),
         });
 
         Self {
             osc1,
             osc2,
             osc2_sync: OnOff::Off,
-            noise: HexU50::new(0),
+            noise: 0.into(),
             lpf_mode: LpfMode::Lpf24,
-            lpf_frequency: HexU50::new(50),
-            lpf_resonance: HexU50::new(0),
-            hpf_frequency: HexU50::new(0),
-            hpf_resonance: HexU50::new(0),
+            lpf_frequency: 50.into(),
+            lpf_resonance: 0.into(),
+            hpf_frequency: 0.into(),
+            hpf_resonance: 0.into(),
         }
     }
 }
@@ -394,8 +394,8 @@ impl Default for RingModGenerator {
             transpose: Transpose::default(),
             fine_transpose: FineTranspose::default(),
             retrig_phase: RetrigPhase::Off,
-            volume: HexU50::new(50),
-            pulse_width: HexU50::new(25),
+            volume: 50.into(),
+            pulse_width: 25.into(),
         });
 
         let osc2 = Oscillator::Waveform(WaveformOscillator {
@@ -403,15 +403,15 @@ impl Default for RingModGenerator {
             transpose: Transpose::default(),
             fine_transpose: FineTranspose::default(),
             retrig_phase: RetrigPhase::Off,
-            volume: HexU50::new(0),
-            pulse_width: HexU50::new(25),
+            volume: 0.into(),
+            pulse_width: 25.into(),
         });
 
         Self {
             osc1,
             osc2,
             osc2_sync: OnOff::Off,
-            noise: HexU50::new(0),
+            noise: 0.into(),
         }
     }
 }
@@ -454,8 +454,8 @@ impl Default for FmCarrier {
             transpose: Default::default(),
             fine_transpose: Default::default(),
             retrig_phase: Default::default(),
-            volume: HexU50::new(50),
-            feedback: HexU50::new(0),
+            volume: 50.into(),
+            feedback: 0.into(),
         }
     }
 }
@@ -475,8 +475,8 @@ impl Default for FmModulator {
             transpose: Default::default(),
             fine_transpose: Default::default(),
             retrig_phase: RetrigPhase::Off,
-            amount: HexU50::new(0),
-            feedback: HexU50::new(0),
+            amount: 0.into(),
+            feedback: 0.into(),
         }
     }
 }
@@ -490,8 +490,8 @@ pub struct Unison {
 impl Default for Unison {
     fn default() -> Self {
         Self {
-            voice_count: Uint8::new(1),
-            detune: Uint8::new(8),
+            voice_count: 1.into(),
+            detune: 8.into(),
         }
     }
 }
@@ -510,8 +510,8 @@ impl Default for Delay {
         Self {
             ping_pong: OnOff::On,
             analog: OnOff::Off,
-            amount: HexU50::new(0),
-            rate: HexU50::new(25),
+            amount: 0.into(),
+            rate: 25.into(),
             sync_level: SyncLevel::Sixteenth,
         }
     }
@@ -530,10 +530,10 @@ impl Default for Arpeggiator {
     fn default() -> Self {
         Self {
             mode: ArpeggiatorMode::Off,
-            gate: HexU50::new(25),
-            rate: HexU50::new(25),
+            gate: 25.into(),
+            rate: 25.into(),
             sync_level: SyncLevel::Sixteenth,
-            octaves_count: Uint8::new(2),
+            octaves_count: 2.into(),
         }
     }
 }
@@ -548,9 +548,9 @@ pub struct Distorsion {
 impl Default for Distorsion {
     fn default() -> Self {
         Self {
-            bit_crush: HexU50::new(0),
-            saturation: ClippingAmount::new(0),
-            decimation: HexU50::new(0),
+            bit_crush: 0.into(),
+            saturation: 0.into(),
+            decimation: 0.into(),
         }
     }
 }
@@ -572,10 +572,10 @@ pub struct Equalizer {
 impl Default for Equalizer {
     fn default() -> Self {
         Self {
-            bass_level: HexU50::new(25),
-            bass_frequency: HexU50::new(25),
-            treble_level: HexU50::new(25),
-            treble_frequency: HexU50::new(25),
+            bass_level: 25.into(),
+            bass_frequency: 25.into(),
+            treble_level: 25.into(),
+            treble_frequency: 25.into(),
         }
     }
 }
@@ -626,7 +626,7 @@ impl Default for Sidechain {
         Self {
             attack: AttackSidechain::new(TableIndex::new(7)),
             release: ReleaseSidechain::new(TableIndex::new(28)),
-            shape: HexU50::new(18),
+            shape: 18.into(),
             sync: SyncLevel::Sixteenth,
         }
     }
