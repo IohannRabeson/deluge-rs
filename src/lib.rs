@@ -19,7 +19,7 @@ mod synth;
 mod values;
 
 pub use card::{Card, CardError, CardFolder, FileSystem, LocalFileSystem, PatchName};
-pub use kit::{AudioOutput, CvGateOutput, Kit, MidiOutput, RowKit};
+pub use kit::{AudioOutput, CvGateOutput, Kit, MidiOutput, RowKit, Lpf};
 pub use sound::{
     Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Lfo1, Lfo2,
     ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone, SampleOscillator,

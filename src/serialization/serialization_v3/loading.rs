@@ -10,7 +10,7 @@ use crate::{
     Arpeggiator, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Kit,
     Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit, Sample,
     SampleOneZone, SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain, Sound,
-    SoundGenerator, SubtractiveGenerator, Synth, Unison, WaveformOscillator,
+    SoundGenerator, SubtractiveGenerator, Synth, Unison, WaveformOscillator, Lpf,
 };
 
 use xmltree::Element;
@@ -46,6 +46,7 @@ pub fn load_kit_nodes(root_nodes: &[Element]) -> Result<Kit, SerializationError>
         selected_drum_index: xml::parse_opt_children_element_content(kit_node, keys::SELECTED_DRUM_INDEX)?,
         delay: load_global_delay(kit_node)?,
         sidechain: load_global_sidechain(kit_node)?,
+        lpf: load_global_lpf(kit_node)?,
     });
 }
 
@@ -475,6 +476,20 @@ fn load_global_sidechain(kit_node: &Element) -> Result<Sidechain, SerializationE
             }
         }
         None => Sidechain::default(),
+    })
+}
+
+fn load_global_lpf(kit_node: &Element) -> Result<Lpf, SerializationError> {
+    Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
+        Some(default_params_node) => {
+            let default_lpf_node = xml::get_children_element(default_params_node, keys::LPF)?;
+
+            Lpf {
+                frequency: xml::parse_attribute(default_lpf_node, keys::FREQUENCY)?,
+                resonance: xml::parse_attribute(default_lpf_node, keys::RESONANCE)?,
+            }
+        }
+        None => Lpf::default(),
     })
 }
 

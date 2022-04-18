@@ -1,5 +1,5 @@
 use crate::{
-    values::{CvGateChannel, FilterType, LpfMode, MidiChannel, ModulationFxType, Polyphony},
+    values::{CvGateChannel, FilterType, LpfMode, MidiChannel, ModulationFxType, Polyphony, HexU50},
     Delay, Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone, Sidechain,
 };
 
@@ -26,6 +26,9 @@ pub struct Kit {
     pub delay: Delay,
 
     pub sidechain: Sidechain,
+
+    /// The global low pass filter
+    pub lpf: Lpf,
 }
 
 impl Kit {
@@ -40,6 +43,7 @@ impl Kit {
             selected_drum_index: if has_rows { None } else { Some(0) },
             delay: Delay::default(),
             sidechain: Sidechain::default(),
+            lpf: Lpf::default(),
         }
     }
 
@@ -94,6 +98,18 @@ impl Default for Kit {
         default_sound.mod_knobs[12].control_param = "pitch".to_string();
 
         Self::new(vec![RowKit::AudioOutput(AudioOutput::new(default_sound, "U1"))])
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Lpf {
+    pub frequency: HexU50,
+    pub resonance: HexU50,
+}
+
+impl Default for Lpf {
+    fn default() -> Self {
+        Self { frequency: 50.into(), resonance: 0.into() }
     }
 }
 

@@ -12,7 +12,7 @@ use crate::{
     Arpeggiator, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Kit,
     Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit, Sample,
     SampleOneZone, SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator,
-    SubtractiveGenerator, Synth, Unison, WaveformOscillator,
+    SubtractiveGenerator, Synth, Unison, WaveformOscillator, Lpf,
 };
 
 use xmltree::Element;
@@ -44,10 +44,11 @@ pub fn write_kit(kit: &Kit) -> Result<Element, SerializationError> {
     xml::insert_attribute(&mut kit_node, keys::MOD_FX_TYPE, &kit.modulation_fx_type)?;
     xml::insert_attribute(&mut kit_node, keys::CURRENT_FILTER_TYPE, &kit.current_filter_type)?;
 
-    let default_params_node = Rc::new(RefCell::new(Element::new(keys::DEFAULT_PARAMS)));
+    let mut default_params_node = Rc::new(RefCell::new(Element::new(keys::DEFAULT_PARAMS)));
     let default_delay_node = Rc::new(RefCell::new(Element::new(keys::DELAY)));
     xml::insert_child(&mut kit_node, write_global_delay(&kit.delay, &default_delay_node)?)?;
     xml::insert_child(&mut kit_node, write_global_sidechain(&kit.sidechain, &default_params_node)?)?;
+    
     xml::insert_child(&mut kit_node, write_sound_sources(&kit.rows)?)?;
 
     if let Some(index) = kit.selected_drum_index {
@@ -55,6 +56,7 @@ pub fn write_kit(kit: &Kit) -> Result<Element, SerializationError> {
     }
 
     // Must be done at the end to ensure 'default_params_node' has all his children added.
+    xml::insert_child_rc(&mut default_params_node, write_global_lpf(&kit.lpf)?);
     xml::insert_child(&mut default_params_node.borrow_mut(), default_delay_node.borrow().clone())?;
     xml::insert_child(&mut kit_node, default_params_node.borrow().clone())?;
 
@@ -510,6 +512,15 @@ fn write_global_sidechain(
     xml::insert_attribute_rc(default_params_node, keys::SIDECHAIN_COMPRESSOR_SHAPE, &sidechain.shape)?;
 
     Ok(sidechain_node)
+}
+
+fn write_global_lpf(lpf: &Lpf) -> Result<Element, SerializationError> {
+    let mut lpf_node = Element::new(keys::LPF);
+
+    xml::insert_attribute(&mut lpf_node, keys::FREQUENCY, &lpf.frequency)?;
+    xml::insert_attribute(&mut lpf_node, keys::RESONANCE, &lpf.resonance)?;
+
+    Ok(lpf_node)
 }
 
 fn write_cables(patch_cables: &[PatchCable]) -> Result<Element, SerializationError> {
