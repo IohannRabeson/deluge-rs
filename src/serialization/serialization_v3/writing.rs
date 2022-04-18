@@ -498,7 +498,10 @@ fn write_sidechain(sidechain: &Sidechain, default_params_node: &Rc<RefCell<Eleme
     Ok(sidechain_node)
 }
 
-fn write_global_sidechain(sidechain: &Sidechain, default_params_node: &Rc<RefCell<Element>>) -> Result<Element, SerializationError> {
+fn write_global_sidechain(
+    sidechain: &Sidechain,
+    default_params_node: &Rc<RefCell<Element>>,
+) -> Result<Element, SerializationError> {
     let mut sidechain_node = Element::new(keys::COMPRESSOR);
 
     xml::insert_attribute(&mut sidechain_node, keys::COMPRESSOR_ATTACK, &sidechain.attack)?;

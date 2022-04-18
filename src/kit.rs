@@ -25,7 +25,7 @@ pub struct Kit {
     /// The global delay
     pub delay: Delay,
 
-    pub sidechain: Sidechain
+    pub sidechain: Sidechain,
 }
 
 impl Kit {

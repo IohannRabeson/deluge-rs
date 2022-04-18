@@ -1,5 +1,8 @@
 use crate::{
-    values::{ArpeggiatorMode, MidiChannel, ModulationFxType, OctavesCount, OnOff, OscType, RetrigPhase, SoundType, SyncLevel, AttackSidechain, ReleaseSidechain, TableIndex},
+    values::{
+        ArpeggiatorMode, AttackSidechain, MidiChannel, ModulationFxType, OctavesCount, OnOff, OscType, ReleaseSidechain,
+        RetrigPhase, SoundType, SyncLevel, TableIndex,
+    },
     Arpeggiator, AudioOutput, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator,
     FmModulator, Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit,
     Sample, SampleOneZone, SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain, Sound,
@@ -463,14 +466,12 @@ fn load_sidechain(root: &Element, default_params_node: &Element) -> Result<Sidec
 
 fn load_global_sidechain(kit_node: &Element) -> Result<Sidechain, SerializationError> {
     Ok(match xml::get_opt_children_element(kit_node, keys::COMPRESSOR) {
-        Some(compressor_node) => {
-            Sidechain {
-                attack: AttackSidechain::new(TableIndex::new(7)),
-                release: ReleaseSidechain::new(TableIndex::new(28)),
-                shape: 18.into(),
-                sync: xml::parse_children_element_content(compressor_node, keys::COMPRESSOR_SYNCLEVEL)?,
-            }
-        }
+        Some(compressor_node) => Sidechain {
+            attack: AttackSidechain::new(TableIndex::new(7)),
+            release: ReleaseSidechain::new(TableIndex::new(28)),
+            shape: 18.into(),
+            sync: xml::parse_children_element_content(compressor_node, keys::COMPRESSOR_SYNCLEVEL)?,
+        },
         None => Sidechain::default(),
     })
 }
