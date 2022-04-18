@@ -1,5 +1,5 @@
 use crate::{
-    kit::SoundOutput,
+    kit::AudioOutput,
     serialization::{
         default_params::{DefaultParams, TwinSelector},
         keys,
@@ -7,9 +7,9 @@ use crate::{
         xml,
     },
     values::*,
-    Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput, Kit,
+    Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, CvGateOutput, Kit,
     Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
-    SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator, SoundSource,
+    SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator, Output,
     SubtractiveGenerator, Synth, Unison, WaveformOscillator,
 };
 
@@ -27,7 +27,7 @@ pub fn load_synth_nodes(root_nodes: &[Element]) -> Result<Synth, SerializationEr
 pub fn load_kit_nodes(root_nodes: &[Element]) -> Result<Kit, SerializationError> {
     let kit_node = xml::get_element(root_nodes, keys::KIT)?;
     let sound_sources_node = xml::get_children_element(kit_node, keys::SOUND_SOURCES)?;
-    let sources: Vec<Result<SoundSource, SerializationError>> = sound_sources_node
+    let sources: Vec<Result<Output, SerializationError>> = sound_sources_node
         .children
         .iter()
         .filter_map(xml::keep_element_only)
@@ -39,7 +39,7 @@ pub fn load_kit_nodes(root_nodes: &[Element]) -> Result<Kit, SerializationError>
     }
 
     return Ok(Kit {
-        rows: sources.iter().flatten().cloned().collect::<Vec<SoundSource>>(),
+        rows: sources.iter().flatten().cloned().collect::<Vec<Output>>(),
     });
 }
 
@@ -269,23 +269,23 @@ fn load_midi_output(root: &Element) -> Result<MidiOutput, SerializationError> {
     Ok(MidiOutput { channel, note })
 }
 
-fn load_gate_output(root: &Element) -> Result<GateOutput, SerializationError> {
+fn load_gate_output(root: &Element) -> Result<CvGateOutput, SerializationError> {
     xml::get_attribute(root, keys::CHANNEL)
         .and_then(parse_u8_string)
-        .map(|channel| GateOutput { channel })
+        .map(|channel| CvGateOutput { channel })
 }
 
-fn load_sound_source(root: &Element) -> Result<SoundSource, SerializationError> {
+fn load_sound_source(root: &Element) -> Result<Output, SerializationError> {
     Ok(match root.name.as_str() {
-        keys::SOUND => SoundSource::SoundOutput(load_sound_output(root)?),
-        keys::MIDI_OUTPUT => SoundSource::MidiOutput(load_midi_output(root)?),
-        keys::GATE_OUTPUT => SoundSource::GateOutput(load_gate_output(root)?),
+        keys::SOUND => Output::AudioOutput(load_sound_output(root)?),
+        keys::MIDI_OUTPUT => Output::MidiOutput(load_midi_output(root)?),
+        keys::GATE_OUTPUT => Output::CvGateOutput(load_gate_output(root)?),
         _ => return Err(SerializationError::UnsupportedSoundSource(root.name.clone())),
     })
 }
 
-fn load_sound_output(root: &Element) -> Result<SoundOutput, SerializationError> {
-    Ok(SoundOutput {
+fn load_sound_output(root: &Element) -> Result<AudioOutput, SerializationError> {
+    Ok(AudioOutput {
         sound: Box::new(load_sound(root)?),
         name: xml::parse_attribute(root, keys::NAME)?,
     })
@@ -467,8 +467,8 @@ mod tests {
         let kit = load_kit_nodes(&roots).unwrap();
 
         assert_eq!(kit.rows.len(), 9);
-        assert_eq!(kit.rows[0], SoundSource::MidiOutput(MidiOutput { channel: 1, note: 63 }));
-        assert_eq!(kit.rows[1], SoundSource::GateOutput(GateOutput { channel: 3 }));
+        assert_eq!(kit.rows[0], Output::MidiOutput(MidiOutput { channel: 1, note: 63 }));
+        assert_eq!(kit.rows[1], Output::CvGateOutput(CvGateOutput { channel: 3 }));
     }
 
     #[test]
@@ -487,7 +487,7 @@ mod tests {
         assert_eq!(kit.rows.len(), 7);
 
         for i in 0..kit.rows.len() {
-            let sound = kit.rows[i].as_sound_output().unwrap();
+            let sound = kit.rows[i].as_audio_output().unwrap();
 
             assert_eq!(sound.name, expected[i]);
         }

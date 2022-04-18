@@ -3,10 +3,10 @@ use crate::{
         ArpeggiatorMode, AttackSidechain, HexU50, OctavesCount, OnOff, OscType, ReleaseSidechain, RetrigPhase, SoundType,
         SyncLevel,
     },
-    Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput, Kit,
+    Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, CvGateOutput, Kit,
     Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
-    SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator, SoundOutput,
-    SoundSource, SubtractiveGenerator, Synth, Unison, WaveformOscillator,
+    SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator, AudioOutput,
+    Output, SubtractiveGenerator, Synth, Unison, WaveformOscillator,
 };
 use xmltree::Element;
 
@@ -29,7 +29,7 @@ pub fn load_synth_nodes(root_nodes: &[Element]) -> Result<Synth, SerializationEr
 pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, SerializationError> {
     let kit_node = xml::get_element(roots, keys::KIT)?;
     let sound_sources_node = xml::get_children_element(kit_node, keys::SOUND_SOURCES)?;
-    let sources: Vec<Result<SoundSource, SerializationError>> = sound_sources_node
+    let sources: Vec<Result<Output, SerializationError>> = sound_sources_node
         .children
         .iter()
         .filter_map(xml::keep_element_only)
@@ -41,7 +41,7 @@ pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, SerializationError> {
     }
 
     return Ok(Kit {
-        rows: sources.iter().flatten().cloned().collect::<Vec<SoundSource>>(),
+        rows: sources.iter().flatten().cloned().collect::<Vec<Output>>(),
     });
 }
 
@@ -307,24 +307,24 @@ fn load_midi_output(root: &Element) -> Result<MidiOutput, SerializationError> {
     Ok(MidiOutput { channel, note })
 }
 
-fn load_gate_output(root: &Element) -> Result<GateOutput, SerializationError> {
+fn load_gate_output(root: &Element) -> Result<CvGateOutput, SerializationError> {
     xml::get_children_element_content(root, keys::CHANNEL)
         .and_then(|s| parse_u8(&s))
-        .map(|channel| GateOutput { channel })
+        .map(|channel| CvGateOutput { channel })
 }
 
-fn load_sound_output(root: &Element) -> Result<SoundOutput, SerializationError> {
-    Ok(SoundOutput {
+fn load_sound_output(root: &Element) -> Result<AudioOutput, SerializationError> {
+    Ok(AudioOutput {
         sound: Box::new(load_sound(root)?),
         name: xml::parse_children_element_content(root, keys::NAME)?,
     })
 }
 
-fn load_sound_source(root: &Element) -> Result<SoundSource, SerializationError> {
+fn load_sound_source(root: &Element) -> Result<Output, SerializationError> {
     Ok(match root.name.as_str() {
-        keys::SOUND => SoundSource::SoundOutput(load_sound_output(root)?),
-        keys::MIDI_OUTPUT => SoundSource::MidiOutput(load_midi_output(root)?),
-        keys::GATE_OUTPUT => SoundSource::GateOutput(load_gate_output(root)?),
+        keys::SOUND => Output::AudioOutput(load_sound_output(root)?),
+        keys::MIDI_OUTPUT => Output::MidiOutput(load_midi_output(root)?),
+        keys::GATE_OUTPUT => Output::CvGateOutput(load_gate_output(root)?),
         _ => return Err(SerializationError::UnsupportedSoundSource(root.name.clone())),
     })
 }

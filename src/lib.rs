@@ -19,7 +19,7 @@ mod synth;
 mod values;
 
 pub use card::{Card, CardError, CardFolder, LocalFileSystem, PatchName};
-pub use kit::{GateOutput, Kit, MidiOutput, SoundOutput, SoundSource};
+pub use kit::{CvGateOutput, Kit, MidiOutput, AudioOutput, Output};
 pub use sound::{
     Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Lfo1, Lfo2,
     ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone, SampleOscillator,
@@ -28,25 +28,3 @@ pub use sound::{
 pub use synth::Synth;
 
 pub use serialization::{load_kit, load_synth, save_kit, save_synth, PatchType, SerializationError};
-
-#[cfg(test)]
-mod tests {
-    use crate::{load_kit, load_synth, Kit, Synth};
-    use pretty_assertions::assert_eq;
-
-    #[test]
-    fn default_kit_test() {
-        let default_kit = Kit::default();
-        let expected_default_kit = load_kit(include_str!("data_tests/default/KIT Default Test.XML")).unwrap();
-
-        assert_eq!(expected_default_kit, default_kit)
-    }
-
-    #[test]
-    fn default_synth_test() {
-        let default_synth = Synth::default();
-        let expected_default_synth = load_synth(include_str!("data_tests/default/SYNTh Default.XML")).unwrap();
-
-        assert_eq!(expected_default_synth, default_synth)
-    }
-}
