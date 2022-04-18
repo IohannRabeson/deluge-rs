@@ -40,6 +40,9 @@ pub fn load_kit_nodes(root_nodes: &[Element]) -> Result<Kit, SerializationError>
 
     return Ok(Kit {
         rows: sources.iter().flatten().cloned().collect::<Vec<RowKit>>(),
+        lpf_mode: xml::parse_attribute(kit_node, keys::LPF_MODE)?,
+        modulation_fx_type: xml::parse_attribute(kit_node, keys::MOD_FX_TYPE)?,
+        current_filter_type: xml::parse_attribute(kit_node, keys::CURRENT_FILTER_TYPE)?,
     });
 }
 
@@ -358,15 +361,14 @@ fn load_equalizer(root: &Element) -> Result<Equalizer, SerializationError> {
 }
 
 fn load_modulation_fx(root: &Element) -> Result<ModulationFx, SerializationError> {
-    let modulation_fx_type = xml::parse_attribute(root, keys::MOD_FX_TYPE)?;
+    let modulation_fx_type: ModulationFxType = xml::parse_attribute(root, keys::MOD_FX_TYPE)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
 
     Ok(match modulation_fx_type {
-        keys::MODULATION_FX_OFF => ModulationFx::Off,
-        keys::MODULATION_FX_FLANGER => ModulationFx::Flanger(load_modulation_fx_flanger(default_params_node)?),
-        keys::MODULATION_FX_CHORUS => ModulationFx::Chorus(load_modulation_fx_chorus(default_params_node)?),
-        keys::MODULATION_FX_PHASER => ModulationFx::Phaser(load_modulation_fx_phaser(default_params_node)?),
-        &_ => return Err(SerializationError::UnsupportedModulationFx(modulation_fx_type.to_owned())),
+        ModulationFxType::Off => ModulationFx::Off,
+        ModulationFxType::Flanger => ModulationFx::Flanger(load_modulation_fx_flanger(default_params_node)?),
+        ModulationFxType::Chorus => ModulationFx::Chorus(load_modulation_fx_chorus(default_params_node)?),
+        ModulationFxType::Phaser => ModulationFx::Phaser(load_modulation_fx_phaser(default_params_node)?),
     })
 }
 

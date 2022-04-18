@@ -2,6 +2,8 @@ use std::str::FromStr;
 
 use xmltree::Element;
 
+use crate::CardFolder;
+
 use super::{
     format_version::{detect_format_version, FormatVersion},
     keys, xml,
@@ -32,6 +34,13 @@ impl PatchType {
         match self {
             PatchType::Kit => KIT_BASE_NAME,
             PatchType::Synth => SYNTH_BASE_NAME,
+        }
+    }
+
+    pub fn get_card_folder(self) -> CardFolder {
+        match self {
+            PatchType::Kit => CardFolder::Kits,
+            PatchType::Synth => CardFolder::Synths,
         }
     }
 }

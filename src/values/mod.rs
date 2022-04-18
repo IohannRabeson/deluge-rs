@@ -23,7 +23,7 @@ pub use pan::Pan;
 pub use retrig_phase::RetrigPhase;
 pub use sidechain_values::{AttackSidechain, ReleaseSidechain, TableIndex};
 pub use simple_enums::{
-    ArpeggiatorMode, LfoShape, LpfMode, OscType, PitchSpeed, Polyphony, SamplePlayMode, SoundType, SyncLevel, VoicePriority,
+    ArpeggiatorMode, LfoShape, LpfMode, OscType, PitchSpeed, Polyphony, SamplePlayMode, SoundType, SyncLevel, VoicePriority, ModulationFxType, FilterType
 };
 pub use uint8::Uint8;
 

@@ -34,11 +34,11 @@ pub fn write_kit(kit: &Kit) -> Result<Element, SerializationError> {
     let mut kit_node = Element::new(keys::KIT);
 
     xml::insert_attribute(&mut kit_node, keys::FIRMWARE_VERSION, &LATEST_SUPPORTED_FIRMWARE_VERSION)?;
-    xml::insert_attribute(
-        &mut kit_node,
-        keys::EARLIEST_COMPATIBLE_FIRMWARE,
-        &LATEST_SUPPORTED_FIRMWARE_VERSION,
-    )?;
+    xml::insert_attribute(&mut kit_node, keys::EARLIEST_COMPATIBLE_FIRMWARE, &LATEST_SUPPORTED_FIRMWARE_VERSION)?;
+    xml::insert_attribute(&mut kit_node, keys::LPF_MODE, &kit.lpf_mode)?;
+    xml::insert_attribute(&mut kit_node, keys::MOD_FX_TYPE, &kit.modulation_fx_type)?;
+    xml::insert_attribute(&mut kit_node, keys::CURRENT_FILTER_TYPE, &kit.current_filter_type)?;
+
     xml::insert_child(&mut kit_node, write_sound_sources(&kit.rows)?)?;
     Ok(kit_node)
 }

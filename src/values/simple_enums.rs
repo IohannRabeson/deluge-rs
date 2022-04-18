@@ -194,3 +194,25 @@ impl Default for VoicePriority {
         Self::Medium
     }
 }
+
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub enum ModulationFxType {
+    #[serde(rename = "none")]
+    Off,
+    #[serde(rename = "flanger")]
+    Flanger,
+    #[serde(rename = "chorus")]
+    Chorus,
+    #[serde(rename = "phaser")]
+    Phaser,
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub enum FilterType {
+    #[serde(rename = "lpf")]
+    Lpf,
+    #[serde(rename = "hpf")]
+    Hpf,
+    #[serde(rename = "eq")]
+    Equalizer
+}
