@@ -1,6 +1,8 @@
 use crate::{Kit, Synth};
 
-use self::version_info::{PatchType, VersionInfo};
+use version_info::VersionInfo;
+
+pub use version_info::PatchType;
 
 pub use self::error::SerializationError;
 
