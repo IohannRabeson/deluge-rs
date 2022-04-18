@@ -22,7 +22,7 @@ pub trait FileSystem {
 }
 
 /// The local filesystem.
-/// 
+///
 /// A card created using this file system will read and write the local file system.
 #[derive(Default)]
 pub struct LocalFileSystem;

@@ -18,6 +18,12 @@ impl HexU50 {
     }
 }
 
+impl From<u8> for HexU50 {
+    fn from(value: u8) -> Self {
+        HexU50::new(value)
+    }
+}
+
 impl Serialize for HexU50 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where

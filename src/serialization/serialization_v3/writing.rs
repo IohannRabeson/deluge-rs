@@ -9,9 +9,9 @@ use crate::{
         xml,
     },
     values::*,
-    Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput, Kit,
-    Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
-    SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator, SoundSource,
+    Arpeggiator, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Kit,
+    Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit, Sample,
+    SampleOneZone, SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator,
     SubtractiveGenerator, Synth, Unison, WaveformOscillator,
 };
 
@@ -43,14 +43,14 @@ pub fn write_kit(kit: &Kit) -> Result<Element, SerializationError> {
     Ok(kit_node)
 }
 
-fn write_sound_sources(rows: &[SoundSource]) -> Result<Element, SerializationError> {
+fn write_sound_sources(rows: &[RowKit]) -> Result<Element, SerializationError> {
     let mut sound_source_node = Element::new(keys::SOUND_SOURCES);
 
     for row in rows {
         let node = match row {
-            SoundSource::SoundOutput(sound) => write_sound(&sound.sound, Some(&sound.name))?,
-            SoundSource::GateOutput(gate) => write_gate_output(gate)?,
-            SoundSource::MidiOutput(midi) => write_midi_output(midi)?,
+            RowKit::AudioOutput(sound) => write_sound(&sound.sound, Some(&sound.name))?,
+            RowKit::CvGateOutput(gate) => write_gate_output(gate)?,
+            RowKit::MidiOutput(midi) => write_midi_output(midi)?,
         };
 
         xml::insert_child(&mut sound_source_node, node)?;
@@ -58,7 +58,7 @@ fn write_sound_sources(rows: &[SoundSource]) -> Result<Element, SerializationErr
     Ok(sound_source_node)
 }
 
-fn write_gate_output(gate: &GateOutput) -> Result<Element, SerializationError> {
+fn write_gate_output(gate: &CvGateOutput) -> Result<Element, SerializationError> {
     let mut gate_output_node = Element::new(keys::GATE_OUTPUT);
 
     xml::insert_attribute(&mut gate_output_node, keys::CHANNEL, &gate.channel)?;

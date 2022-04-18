@@ -21,7 +21,7 @@ pub use int8::Int8;
 pub use on_off::OnOff;
 pub use pan::Pan;
 pub use retrig_phase::RetrigPhase;
-pub use sidechain_values::{AttackSidechain, ReleaseSidechain};
+pub use sidechain_values::{AttackSidechain, ReleaseSidechain, TableIndex};
 pub use simple_enums::{
     ArpeggiatorMode, LfoShape, LpfMode, OscType, PitchSpeed, Polyphony, SamplePlayMode, SoundType, SyncLevel, VoicePriority,
 };
@@ -34,6 +34,8 @@ pub type Transpose = Int8<-96, 96, 0>;
 pub type UnisonDetune = Uint8<0, 50, 0>;
 pub type UnisonVoiceCount = Uint8<1, 8, 1>;
 pub type OctavesCount = Uint8<1, 8, 1>;
+pub type CvGateChannel = Uint8<1, 4, 1>;
+pub type MidiChannel = Uint8<1, 16, 1>;
 
 use crate::SerializationError;
 use byteorder::{BigEndian, ReadBytesExt};

@@ -25,6 +25,12 @@ pub enum Polyphony {
     Choke,
 }
 
+impl Default for Polyphony {
+    fn default() -> Self {
+        Polyphony::Auto
+    }
+}
+
 struct PolyphonyVisitor;
 
 impl<'de> Visitor<'de> for PolyphonyVisitor {
@@ -181,4 +187,10 @@ pub enum VoicePriority {
     Low = 0,
     Medium = 1,
     High = 2,
+}
+
+impl Default for VoicePriority {
+    fn default() -> Self {
+        Self::Medium
+    }
 }

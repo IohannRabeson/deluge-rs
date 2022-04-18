@@ -1,16 +1,16 @@
 use crate::{
-    values::{ArpeggiatorMode, HexU50, OctavesCount, OnOff, OscType, RetrigPhase, SoundType, SyncLevel},
-    Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, GateOutput, Kit,
-    Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone,
-    SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator, SoundOutput,
-    SoundSource, SubtractiveGenerator, Synth, Unison, WaveformOscillator,
+    values::{ArpeggiatorMode, MidiChannel, OctavesCount, OnOff, OscType, RetrigPhase, SoundType, SyncLevel},
+    Arpeggiator, AudioOutput, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator,
+    FmModulator, Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit,
+    Sample, SampleOneZone, SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain, Sound,
+    SoundGenerator, SubtractiveGenerator, Synth, Unison, WaveformOscillator,
 };
 use xmltree::Element;
 
 use super::{
     default_params::{DefaultParams, TwinSelector},
     keys,
-    serialization_common::{convert_milliseconds_to_samples, parse_u8},
+    serialization_common::convert_milliseconds_to_samples,
     xml,
 };
 
@@ -26,7 +26,7 @@ pub fn load_synth_nodes(root_nodes: &[Element]) -> Result<Synth, SerializationEr
 pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, SerializationError> {
     let kit_node = xml::get_element(roots, keys::KIT)?;
     let sound_sources_node = xml::get_children_element(kit_node, keys::SOUND_SOURCES)?;
-    let sources: Vec<Result<SoundSource, SerializationError>> = sound_sources_node
+    let sources: Vec<Result<RowKit, SerializationError>> = sound_sources_node
         .children
         .iter()
         .filter_map(xml::keep_element_only)
@@ -38,7 +38,7 @@ pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, SerializationError> {
     }
 
     return Ok(Kit {
-        rows: sources.iter().flatten().cloned().collect::<Vec<SoundSource>>(),
+        rows: sources.iter().flatten().cloned().collect::<Vec<RowKit>>(),
     });
 }
 
@@ -257,30 +257,28 @@ fn load_waveform_oscillator(osc_type: OscType, root: &Element, params: &DefaultP
 }
 
 fn load_midi_output(root: &Element) -> Result<MidiOutput, SerializationError> {
-    let channel = xml::parse_children_element_content(root, keys::CHANNEL).and_then(parse_u8)?;
-    let note = xml::parse_children_element_content(root, keys::NOTE).and_then(parse_u8)?;
+    let channel: MidiChannel = xml::parse_children_element_content(root, keys::CHANNEL)?;
+    let note = xml::parse_children_element_content(root, keys::NOTE)?;
 
     Ok(MidiOutput { channel, note })
 }
 
-fn load_gate_output(root: &Element) -> Result<GateOutput, SerializationError> {
-    xml::get_children_element_content(root, keys::CHANNEL)
-        .and_then(|s| parse_u8(&s))
-        .map(|channel| GateOutput { channel })
+fn load_gate_output(root: &Element) -> Result<CvGateOutput, SerializationError> {
+    Ok(CvGateOutput::new(xml::parse_children_element_content(root, keys::CHANNEL)?))
 }
 
-fn load_sound_output(root: &Element) -> Result<SoundOutput, SerializationError> {
-    Ok(SoundOutput {
+fn load_sound_output(root: &Element) -> Result<AudioOutput, SerializationError> {
+    Ok(AudioOutput {
         sound: Box::new(load_sound(root)?),
         name: xml::parse_children_element_content(root, keys::NAME)?,
     })
 }
 
-fn load_sound_source(root: &Element) -> Result<SoundSource, SerializationError> {
+fn load_sound_source(root: &Element) -> Result<RowKit, SerializationError> {
     Ok(match root.name.as_str() {
-        keys::SOUND => SoundSource::SoundOutput(load_sound_output(root)?),
-        keys::MIDI_OUTPUT => SoundSource::MidiOutput(load_midi_output(root)?),
-        keys::GATE_OUTPUT => SoundSource::GateOutput(load_gate_output(root)?),
+        keys::SOUND => RowKit::AudioOutput(load_sound_output(root)?),
+        keys::MIDI_OUTPUT => RowKit::MidiOutput(load_midi_output(root)?),
+        keys::GATE_OUTPUT => RowKit::CvGateOutput(load_gate_output(root)?),
         _ => return Err(SerializationError::UnsupportedSoundSource(root.name.clone())),
     })
 }
@@ -339,8 +337,8 @@ fn load_arpeggiator(root: &Element, default_params_node: &Element) -> Result<Arp
             mode: ArpeggiatorMode::Off,
             sync_level: SyncLevel::Sixteenth,
             octaves_count: OctavesCount::default(),
-            rate: HexU50::new(25),
-            gate: HexU50::new(25),
+            rate: 25.into(),
+            gate: 25.into(),
         },
     })
 }
@@ -450,7 +448,7 @@ mod tests {
         load_synth, save_synth,
         values::{
             AttackSidechain, ClippingAmount, FineTranspose, LfoShape, LpfMode, Pan, Polyphony, ReleaseSidechain, RetrigPhase,
-            Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
+            Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority, HexU50,
         },
     };
 
