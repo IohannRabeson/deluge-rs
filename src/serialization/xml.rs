@@ -68,6 +68,9 @@ pub fn get_all_children_element_with_name<'a>(element: &'a Element, name: &'a st
         .collect()
 }
 
+// I might need it later for testing (April 17th 2022).
+// It's not trivial to refactor.
+#[allow(dead_code)]
 pub fn get_children_element_content<'a>(element: &'a Element, name: &'a str) -> Result<String, SerializationError> {
     get_children_element(element, name).map(get_text)
 }

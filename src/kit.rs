@@ -1,28 +1,28 @@
 use crate::{
-    values::{HexU50, Polyphony},
+    values::{CvGateChannel, HexU50, MidiChannel, Polyphony},
     Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone,
 };
 
 use super::Sound;
 
 /// Store a kit patch
-/// 
+///
 /// A kit is basically an array of SoundSource.
-/// 
+///
 /// The rows order are visually reversed by the deluge. In the XML file, the rows
 /// are logically ordered as we expect meaning the index increase as we add new row.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Kit {
-    pub rows: Vec<Output>,
+    pub rows: Vec<RowKit>,
 }
 
 impl Kit {
-    pub fn new(rows: Vec<Output>) -> Self {
+    pub fn new(rows: Vec<RowKit>) -> Self {
         Self { rows }
     }
 
     pub fn add_sound_row(&mut self, sound: Sound, name: &str) -> usize {
-        let source = Output::AudioOutput(AudioOutput {
+        let source = RowKit::AudioOutput(AudioOutput {
             name: name.to_string(),
             sound: Box::new(sound),
         });
@@ -34,8 +34,8 @@ impl Kit {
         index
     }
 
-    pub fn add_midi_row(&mut self, channel: u8, note: u8) -> usize {
-        let source = Output::MidiOutput(MidiOutput { channel, note });
+    pub fn add_midi_row(&mut self, channel: MidiChannel, note: u8) -> usize {
+        let source = RowKit::MidiOutput(MidiOutput { channel, note });
 
         let index = self.rows.len();
 
@@ -44,8 +44,8 @@ impl Kit {
         index
     }
 
-    pub fn add_gate_row(&mut self, channel: u8) -> usize {
-        let source = Output::CvGateOutput(CvGateOutput { channel });
+    pub fn add_gate_row(&mut self, channel: CvGateChannel) -> usize {
+        let source = RowKit::CvGateOutput(CvGateOutput { channel });
 
         let index = self.rows.len();
 
@@ -56,7 +56,7 @@ impl Kit {
 }
 
 /// Default implementation for Kit
-/// 
+///
 /// This implementation returns a Kit exactly like the Deluge would create it without any user changes.
 impl Default for Kit {
     fn default() -> Self {
@@ -81,19 +81,20 @@ impl Default for Kit {
         default_sound.polyphonic = Polyphony::Auto;
         default_sound.mod_knobs[12].control_param = "pitch".to_string();
 
-        Self::new(vec![Output::AudioOutput(AudioOutput::new(default_sound, "U1"))])
+        Self::new(vec![RowKit::AudioOutput(AudioOutput::new(default_sound, "U1"))])
     }
 }
 
 /// An output
-/// 
+///
 /// There are 3 different types of physical outputs for the Deluge:
 ///  - audio
 ///  - MIDI
 ///  - CV gate
+/// Each row in a Kit is an output and can be any of the 3.
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(test, derive(enum_as_inner::EnumAsInner))]
-pub enum Output {
+pub enum RowKit {
     AudioOutput(AudioOutput),
     MidiOutput(MidiOutput),
     CvGateOutput(CvGateOutput),
@@ -121,16 +122,20 @@ impl AudioOutput {
 /// The MIDI output is a MIDI channel and a MIDI note.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct MidiOutput {
-    // TODO use Uint<1, 16, 1>;
-    pub channel: u8,
+    pub channel: MidiChannel,
     pub note: u8,
 }
 
 /// The CV Gate output is the CV Gate channel only
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct CvGateOutput {
-    // TODO use Uint8<1, 4, 1>;
-    pub channel: u8,
+    pub channel: CvGateChannel,
+}
+
+impl CvGateOutput {
+    pub fn new(channel: CvGateChannel) -> Self {
+        Self { channel }
+    }
 }
 
 #[cfg(test)]

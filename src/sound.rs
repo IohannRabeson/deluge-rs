@@ -58,7 +58,7 @@ impl Sound {
 }
 
 /// Default implementation for Sound
-/// 
+///
 /// This implementation returns a Sound exactly like the Deluge would create it for a default synth patch.
 impl Default for Sound {
     fn default() -> Self {

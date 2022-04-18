@@ -11,6 +11,12 @@ pub struct Uint8<const MIN: u8, const MAX: u8, const DEFAULT: u8> {
     val: u8,
 }
 
+impl<const MIN: u8, const MAX: u8, const DEFAULT: u8> From<u8> for Uint8<MIN, MAX, DEFAULT> {
+    fn from(value: u8) -> Self {
+        Self::new(value)
+    }
+}
+
 impl<const MIN: u8, const MAX: u8, const DEFAULT: u8> Default for Uint8<MIN, MAX, DEFAULT> {
     fn default() -> Self {
         Self::new(MIN)
