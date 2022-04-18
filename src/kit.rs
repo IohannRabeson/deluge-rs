@@ -1,5 +1,5 @@
 use crate::{
-    values::{CvGateChannel, MidiChannel, Polyphony, LpfMode, ModulationFxType, FilterType},
+    values::{CvGateChannel, FilterType, LpfMode, MidiChannel, ModulationFxType, Polyphony},
     Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone,
 };
 
@@ -14,6 +14,9 @@ use super::Sound;
 #[derive(Clone, Debug, PartialEq)]
 pub struct Kit {
     pub rows: Vec<RowKit>,
+
+    pub selected_drum_index: Option<u32>,
+
     pub lpf_mode: LpfMode,
     /// The current type of filter controled by the gold buttons
     pub current_filter_type: FilterType,
@@ -23,7 +26,15 @@ pub struct Kit {
 
 impl Kit {
     pub fn new(rows: Vec<RowKit>) -> Self {
-        Self { rows, lpf_mode: LpfMode::Lpf24, modulation_fx_type: ModulationFxType::Flanger, current_filter_type: FilterType::Lpf }
+        let has_rows = rows.is_empty();
+
+        Self {
+            rows,
+            lpf_mode: LpfMode::Lpf24,
+            modulation_fx_type: ModulationFxType::Flanger,
+            current_filter_type: FilterType::Lpf,
+            selected_drum_index: if has_rows { None } else { Some(0) },
+        }
     }
 
     pub fn add_row(&mut self, row: RowKit) -> usize {
@@ -105,7 +116,7 @@ impl RowKit {
     }
 
     pub fn new_cv_gate(channel: CvGateChannel) -> Self {
-        RowKit::CvGateOutput(CvGateOutput{ channel })
+        RowKit::CvGateOutput(CvGateOutput { channel })
     }
 }
 

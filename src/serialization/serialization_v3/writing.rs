@@ -34,12 +34,21 @@ pub fn write_kit(kit: &Kit) -> Result<Element, SerializationError> {
     let mut kit_node = Element::new(keys::KIT);
 
     xml::insert_attribute(&mut kit_node, keys::FIRMWARE_VERSION, &LATEST_SUPPORTED_FIRMWARE_VERSION)?;
-    xml::insert_attribute(&mut kit_node, keys::EARLIEST_COMPATIBLE_FIRMWARE, &LATEST_SUPPORTED_FIRMWARE_VERSION)?;
+    xml::insert_attribute(
+        &mut kit_node,
+        keys::EARLIEST_COMPATIBLE_FIRMWARE,
+        &LATEST_SUPPORTED_FIRMWARE_VERSION,
+    )?;
     xml::insert_attribute(&mut kit_node, keys::LPF_MODE, &kit.lpf_mode)?;
     xml::insert_attribute(&mut kit_node, keys::MOD_FX_TYPE, &kit.modulation_fx_type)?;
     xml::insert_attribute(&mut kit_node, keys::CURRENT_FILTER_TYPE, &kit.current_filter_type)?;
 
     xml::insert_child(&mut kit_node, write_sound_sources(&kit.rows)?)?;
+
+    if let Some(index) = kit.selected_drum_index {
+        xml::insert_child(&mut kit_node, write_selected_drum_index(index)?)?;
+    }
+
     Ok(kit_node)
 }
 
@@ -56,6 +65,16 @@ fn write_sound_sources(rows: &[RowKit]) -> Result<Element, SerializationError> {
         xml::insert_child(&mut sound_source_node, node)?;
     }
     Ok(sound_source_node)
+}
+
+fn write_selected_drum_index(index: u32) -> Result<Element, SerializationError> {
+    let mut selected_drum_index_node = Element::new(keys::SELECTED_DRUM_INDEX);
+
+    selected_drum_index_node
+        .children
+        .push(xmltree::XMLNode::Text(index.to_string()));
+
+    Ok(selected_drum_index_node)
 }
 
 fn write_gate_output(gate: &CvGateOutput) -> Result<Element, SerializationError> {

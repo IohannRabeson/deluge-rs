@@ -39,6 +39,7 @@ pub const FEEDBACK_CARRIER1: &str = "carrier1Feedback";
 pub const FEEDBACK_CARRIER2: &str = "carrier2Feedback";
 pub const FEEDBACK_MODULATOR1: &str = "modulator1Feedback";
 pub const FEEDBACK_MODULATOR2: &str = "modulator2Feedback";
+pub const SELECTED_DRUM_INDEX: &str = "selectedDrumIndex";
 pub const CURRENT_FILTER_TYPE: &str = "currentFilterType";
 pub const FILE_NAME: &str = "fileName";
 pub const FIRMWARE_VERSION: &str = "firmwareVersion";

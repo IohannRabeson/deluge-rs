@@ -1,5 +1,5 @@
 use crate::{
-    values::{ArpeggiatorMode, MidiChannel, OctavesCount, OnOff, OscType, RetrigPhase, SoundType, SyncLevel, ModulationFxType},
+    values::{ArpeggiatorMode, MidiChannel, ModulationFxType, OctavesCount, OnOff, OscType, RetrigPhase, SoundType, SyncLevel},
     Arpeggiator, AudioOutput, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator,
     FmModulator, Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit,
     Sample, SampleOneZone, SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain, Sound,
@@ -42,6 +42,7 @@ pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, SerializationError> {
         lpf_mode: xml::parse_children_element_content(kit_node, keys::LPF_MODE)?,
         modulation_fx_type: xml::parse_children_element_content(kit_node, keys::MOD_FX_TYPE)?,
         current_filter_type: xml::parse_children_element_content(kit_node, keys::CURRENT_FILTER_TYPE)?,
+        selected_drum_index: xml::parse_children_element_content(kit_node, keys::SELECTED_DRUM_INDEX)?,
     });
 }
 
@@ -449,8 +450,8 @@ mod tests {
     use crate::{
         load_synth, save_synth,
         values::{
-            AttackSidechain, ClippingAmount, FineTranspose, LfoShape, LpfMode, Pan, Polyphony, ReleaseSidechain, RetrigPhase,
-            Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority, HexU50,
+            AttackSidechain, ClippingAmount, FineTranspose, HexU50, LfoShape, LpfMode, Pan, Polyphony, ReleaseSidechain,
+            RetrigPhase, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
         },
     };
 

@@ -214,5 +214,5 @@ pub enum FilterType {
     #[serde(rename = "hpf")]
     Hpf,
     #[serde(rename = "eq")]
-    Equalizer
+    Equalizer,
 }

@@ -176,6 +176,7 @@ mod tests {
         assert_eq!(kit.rows.len(), 7);
         assert_eq!(kit.lpf_mode, LpfMode::Lpf24);
         assert_eq!(kit.modulation_fx_type, ModulationFxType::Flanger);
+        assert_eq!(kit.selected_drum_index, Some(4));
     }
 
     #[test]
@@ -188,6 +189,7 @@ mod tests {
         assert_eq!(kit.rows.len(), 16);
         assert_eq!(kit.lpf_mode, LpfMode::Lpf24);
         assert_eq!(kit.modulation_fx_type, ModulationFxType::Flanger);
+        assert_eq!(kit.selected_drum_index, Some(15));
     }
 
     #[test]
@@ -200,6 +202,7 @@ mod tests {
         assert_eq!(kit.rows.len(), 16);
         assert_eq!(kit.lpf_mode, LpfMode::Lpf24);
         assert_eq!(kit.modulation_fx_type, ModulationFxType::Flanger);
+        assert_eq!(kit.selected_drum_index, Some(14));
     }
 
     #[test]

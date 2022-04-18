@@ -49,7 +49,7 @@ impl Sound {
         }));
 
         osc2.set_volume(0.into());
-        
+
         Self {
             generator: SoundGenerator::Subtractive(SubtractiveGenerator::new(Oscillator::new_sample(sample), osc2)),
             ..Default::default()
