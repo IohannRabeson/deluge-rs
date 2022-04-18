@@ -39,15 +39,23 @@ pub fn write_kit(kit: &Kit) -> Result<Element, SerializationError> {
         keys::EARLIEST_COMPATIBLE_FIRMWARE,
         &LATEST_SUPPORTED_FIRMWARE_VERSION,
     )?;
+
     xml::insert_attribute(&mut kit_node, keys::LPF_MODE, &kit.lpf_mode)?;
     xml::insert_attribute(&mut kit_node, keys::MOD_FX_TYPE, &kit.modulation_fx_type)?;
     xml::insert_attribute(&mut kit_node, keys::CURRENT_FILTER_TYPE, &kit.current_filter_type)?;
 
+    let default_params_node = Rc::new(RefCell::new(Element::new(keys::DEFAULT_PARAMS)));
+    let default_delay_node = Rc::new(RefCell::new(Element::new(keys::DELAY)));
+    xml::insert_child(&mut kit_node, write_global_delay(&kit.delay, &default_delay_node)?)?;
     xml::insert_child(&mut kit_node, write_sound_sources(&kit.rows)?)?;
 
     if let Some(index) = kit.selected_drum_index {
         xml::insert_child(&mut kit_node, write_selected_drum_index(index)?)?;
     }
+
+    // Must be done at the end to ensure 'default_params_node' has all his children added.
+    xml::insert_child(&mut default_params_node.borrow_mut(), default_delay_node.borrow().clone())?;
+    xml::insert_child(&mut kit_node, default_params_node.borrow().clone())?;
 
     Ok(kit_node)
 }
@@ -462,6 +470,18 @@ fn write_delay(delay: &Delay, default_params_node: &Rc<RefCell<Element>>) -> Res
     xml::insert_attribute(&mut delay_node, keys::SYNC_LEVEL, &delay.sync_level)?;
     xml::insert_attribute_rc(default_params_node, keys::DELAY_FEEDBACK, &delay.amount)?;
     xml::insert_attribute_rc(default_params_node, keys::DELAY_RATE, &delay.rate)?;
+
+    Ok(delay_node)
+}
+
+fn write_global_delay(delay: &Delay, default_params_node: &Rc<RefCell<Element>>) -> Result<Element, SerializationError> {
+    let mut delay_node = Element::new(keys::DELAY);
+
+    xml::insert_attribute(&mut delay_node, keys::PING_PONG, &delay.ping_pong)?;
+    xml::insert_attribute(&mut delay_node, keys::ANALOG, &delay.analog)?;
+    xml::insert_attribute(&mut delay_node, keys::SYNC_LEVEL, &delay.sync_level)?;
+    xml::insert_attribute_rc(default_params_node, keys::FEEDBACK, &delay.amount)?;
+    xml::insert_attribute_rc(default_params_node, keys::RATE, &delay.rate)?;
 
     Ok(delay_node)
 }

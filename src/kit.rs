@@ -1,6 +1,6 @@
 use crate::{
     values::{CvGateChannel, FilterType, LpfMode, MidiChannel, ModulationFxType, Polyphony},
-    Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone,
+    Delay, Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone,
 };
 
 use super::Sound;
@@ -22,6 +22,8 @@ pub struct Kit {
     pub current_filter_type: FilterType,
     /// The modulation FX global for the kit
     pub modulation_fx_type: ModulationFxType,
+    /// The global delay
+    pub delay: Delay,
 }
 
 impl Kit {
@@ -34,6 +36,7 @@ impl Kit {
             modulation_fx_type: ModulationFxType::Flanger,
             current_filter_type: FilterType::Lpf,
             selected_drum_index: if has_rows { None } else { Some(0) },
+            delay: Delay::default(),
         }
     }
 
@@ -160,7 +163,7 @@ impl CvGateOutput {
 
 #[cfg(test)]
 mod tests {
-    use crate::{load_kit, Kit};
+    use crate::{load_kit, save_kit, Kit};
     use pretty_assertions::assert_eq;
 
     #[test]
@@ -169,5 +172,15 @@ mod tests {
         let expected_default_kit = load_kit(include_str!("data_tests/default/KIT Default Test.XML")).unwrap();
 
         assert_eq!(expected_default_kit, default_kit)
+    }
+
+    #[test]
+    fn test_load_write_load_kit_community_patches_synth_hats() {
+        let kit = load_kit(include_str!("data_tests/KITS/Synth Hats.XML")).unwrap();
+        let xml = save_kit(&kit).unwrap();
+        println!("{}", xml);
+        let reloaded_kit = load_kit(&xml).unwrap();
+
+        assert_eq!(reloaded_kit, kit);
     }
 }

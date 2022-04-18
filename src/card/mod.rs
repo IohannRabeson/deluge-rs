@@ -131,8 +131,9 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
         })
     }
 
+    /// Make a path relative to the card root
     pub fn make_card_file_path<'a>(&self, path: &'a Path) -> Result<&'a Path, StripPrefixError> {
-        Ok(path.strip_prefix(&self.root_directory)?)
+        path.strip_prefix(&self.root_directory)
     }
 
     /// Get one of the card's directory path

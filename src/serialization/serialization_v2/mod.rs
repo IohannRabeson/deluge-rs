@@ -43,6 +43,7 @@ pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, SerializationError> {
         modulation_fx_type: xml::parse_children_element_content(kit_node, keys::MOD_FX_TYPE)?,
         current_filter_type: xml::parse_children_element_content(kit_node, keys::CURRENT_FILTER_TYPE)?,
         selected_drum_index: xml::parse_children_element_content(kit_node, keys::SELECTED_DRUM_INDEX)?,
+        delay: load_global_delay(kit_node)?,
     });
 }
 
@@ -325,6 +326,20 @@ fn load_delay(root: &Element, default_params_node: &Element) -> Result<Delay, Se
         sync_level: xml::parse_children_element_content(root, keys::SYNC_LEVEL)?,
         amount: xml::parse_children_element_content(default_params_node, keys::DELAY_FEEDBACK)?,
         rate: xml::parse_children_element_content(default_params_node, keys::DELAY_RATE)?,
+    })
+}
+
+fn load_global_delay(kit_node: &Element) -> Result<Delay, SerializationError> {
+    let default_params_node = xml::get_children_element(kit_node, keys::DEFAULT_PARAMS)?;
+    let default_delay_node = xml::get_children_element(default_params_node, keys::DELAY)?;
+    let delay_node = xml::get_children_element(kit_node, keys::DELAY)?;
+
+    Ok(Delay {
+        ping_pong: xml::parse_children_element_content(delay_node, keys::PING_PONG)?,
+        analog: xml::parse_children_element_content(delay_node, keys::ANALOG)?,
+        sync_level: xml::parse_children_element_content(delay_node, keys::SYNC_LEVEL)?,
+        amount: xml::parse_children_element_content(default_delay_node, keys::FEEDBACK)?,
+        rate: xml::parse_children_element_content(default_delay_node, keys::RATE)?,
     })
 }
 
