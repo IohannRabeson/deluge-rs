@@ -1,6 +1,6 @@
 use crate::{
-    values::{CvGateChannel, FilterType, LpfMode, MidiChannel, ModulationFxType, Polyphony, HexU50},
-    Delay, Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone, Sidechain, Equalizer,
+    values::{CvGateChannel, FilterType, LpfMode, MidiChannel, Polyphony, HexU50},
+    Delay, Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone, Sidechain, Equalizer, ModulationFx, Flanger,
 };
 
 use super::Sound;
@@ -21,7 +21,7 @@ pub struct Kit {
     /// The current type of filter controled by the gold buttons
     pub current_filter_type: FilterType,
     /// The modulation FX global for the kit
-    pub modulation_fx_type: ModulationFxType,
+    pub modulation_fx: ModulationFx,
     /// The global delay
     pub delay: Delay,
 
@@ -43,7 +43,10 @@ impl Kit {
         Self {
             rows,
             lpf_mode: LpfMode::Lpf24,
-            modulation_fx_type: ModulationFxType::Flanger,
+            modulation_fx: ModulationFx::Flanger(Flanger{
+                rate: 19.into(),
+                feedback: 0.into(),
+            }),
             current_filter_type: FilterType::Lpf,
             selected_drum_index: if has_rows { None } else { Some(0) },
             delay: Delay::default(),

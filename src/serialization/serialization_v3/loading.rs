@@ -41,7 +41,7 @@ pub fn load_kit_nodes(root_nodes: &[Element]) -> Result<Kit, SerializationError>
     return Ok(Kit {
         rows: sources.iter().flatten().cloned().collect::<Vec<RowKit>>(),
         lpf_mode: xml::parse_attribute(kit_node, keys::LPF_MODE)?,
-        modulation_fx_type: xml::parse_attribute(kit_node, keys::MOD_FX_TYPE)?,
+        modulation_fx: load_modulation_fx(kit_node)?,
         current_filter_type: xml::parse_attribute(kit_node, keys::CURRENT_FILTER_TYPE)?,
         selected_drum_index: xml::parse_opt_children_element_content(kit_node, keys::SELECTED_DRUM_INDEX)?,
         delay: load_global_delay(kit_node)?,
@@ -395,13 +395,17 @@ fn load_global_equalizer(kit_node: &Element) -> Result<Equalizer, SerializationE
 
 fn load_modulation_fx(root: &Element) -> Result<ModulationFx, SerializationError> {
     let modulation_fx_type: ModulationFxType = xml::parse_attribute(root, keys::MOD_FX_TYPE)?;
-    let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
-
-    Ok(match modulation_fx_type {
-        ModulationFxType::Off => ModulationFx::Off,
-        ModulationFxType::Flanger => ModulationFx::Flanger(load_modulation_fx_flanger(default_params_node)?),
-        ModulationFxType::Chorus => ModulationFx::Chorus(load_modulation_fx_chorus(default_params_node)?),
-        ModulationFxType::Phaser => ModulationFx::Phaser(load_modulation_fx_phaser(default_params_node)?),
+    
+    Ok(match xml::get_opt_children_element(root, keys::DEFAULT_PARAMS) {
+        Some(default_params_node) => {
+            match modulation_fx_type {
+                ModulationFxType::Off => ModulationFx::Off,
+                ModulationFxType::Flanger => ModulationFx::Flanger(load_modulation_fx_flanger(default_params_node)?),
+                ModulationFxType::Chorus => ModulationFx::Chorus(load_modulation_fx_chorus(default_params_node)?),
+                ModulationFxType::Phaser => ModulationFx::Phaser(load_modulation_fx_phaser(default_params_node)?),
+            }
+        },
+        None => ModulationFx::Flanger(Flanger::default()),
     })
 }
 

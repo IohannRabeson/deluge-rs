@@ -600,7 +600,7 @@ impl Default for Equalizer {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, EnumAsInner)]
 pub enum ModulationFx {
     Off,
     Flanger(Flanger),
@@ -612,6 +612,12 @@ pub enum ModulationFx {
 pub struct Flanger {
     pub rate: HexU50,
     pub feedback: HexU50,
+}
+
+impl Default for Flanger {
+    fn default() -> Self {
+        Self { rate: 25.into(), feedback: 0.into() }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]

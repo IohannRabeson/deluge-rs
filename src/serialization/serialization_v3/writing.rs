@@ -41,7 +41,6 @@ pub fn write_kit(kit: &Kit) -> Result<Element, SerializationError> {
     )?;
 
     xml::insert_attribute(&mut kit_node, keys::LPF_MODE, &kit.lpf_mode)?;
-    xml::insert_attribute(&mut kit_node, keys::MOD_FX_TYPE, &kit.modulation_fx_type)?;
     xml::insert_attribute(&mut kit_node, keys::CURRENT_FILTER_TYPE, &kit.current_filter_type)?;
 
     let mut default_params_node = Rc::new(RefCell::new(Element::new(keys::DEFAULT_PARAMS)));
@@ -49,6 +48,8 @@ pub fn write_kit(kit: &Kit) -> Result<Element, SerializationError> {
     xml::insert_child(&mut kit_node, write_global_delay(&kit.delay, &default_delay_node)?)?;
     xml::insert_child(&mut kit_node, write_global_sidechain(&kit.sidechain, &default_params_node)?)?;
     
+    write_modulation_fx(&kit.modulation_fx, &mut kit_node, &default_params_node)?;
+
     xml::insert_child(&mut kit_node, write_sound_sources(&kit.rows)?)?;
 
     if let Some(index) = kit.selected_drum_index {

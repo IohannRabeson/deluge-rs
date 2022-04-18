@@ -43,7 +43,7 @@ pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, SerializationError> {
     return Ok(Kit {
         rows: sources.iter().flatten().cloned().collect::<Vec<RowKit>>(),
         lpf_mode: xml::parse_children_element_content(kit_node, keys::LPF_MODE)?,
-        modulation_fx_type: xml::parse_children_element_content(kit_node, keys::MOD_FX_TYPE)?,
+        modulation_fx: load_modulation_fx(kit_node)?,
         current_filter_type: xml::parse_children_element_content(kit_node, keys::CURRENT_FILTER_TYPE)?,
         selected_drum_index: xml::parse_children_element_content(kit_node, keys::SELECTED_DRUM_INDEX)?,
         delay: load_global_delay(kit_node)?,
