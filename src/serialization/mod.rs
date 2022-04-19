@@ -71,7 +71,7 @@ pub fn save_kit(kit: &Kit) -> Result<String, SerializationError> {
 
 #[cfg(test)]
 mod tests {
-    use crate::values::{LpfMode, HexU50};
+    use crate::values::{HexU50, LpfMode};
 
     use super::*;
     use pretty_assertions::assert_eq;
@@ -175,8 +175,14 @@ mod tests {
 
         assert_eq!(kit.rows.len(), 7);
         assert_eq!(kit.lpf_mode, LpfMode::Lpf24);
-        assert_eq!(kit.modulation_fx.as_flanger().unwrap().rate, HexU50::parse("0xE0000000").unwrap());
-        assert_eq!(kit.modulation_fx.as_flanger().unwrap().feedback, HexU50::parse("0x80000000").unwrap());
+        assert_eq!(
+            kit.modulation_fx.as_flanger().unwrap().rate,
+            HexU50::parse("0xE0000000").unwrap()
+        );
+        assert_eq!(
+            kit.modulation_fx.as_flanger().unwrap().feedback,
+            HexU50::parse("0x80000000").unwrap()
+        );
         assert_eq!(kit.selected_drum_index, Some(4));
     }
 
@@ -189,8 +195,14 @@ mod tests {
 
         assert_eq!(kit.rows.len(), 16);
         assert_eq!(kit.lpf_mode, LpfMode::Lpf24);
-        assert_eq!(kit.modulation_fx.as_flanger().unwrap().rate, HexU50::parse("0xE0000000").unwrap());
-        assert_eq!(kit.modulation_fx.as_flanger().unwrap().feedback, HexU50::parse("0x80000000").unwrap());
+        assert_eq!(
+            kit.modulation_fx.as_flanger().unwrap().rate,
+            HexU50::parse("0xE0000000").unwrap()
+        );
+        assert_eq!(
+            kit.modulation_fx.as_flanger().unwrap().feedback,
+            HexU50::parse("0x80000000").unwrap()
+        );
         assert_eq!(kit.selected_drum_index, Some(15));
     }
 
@@ -203,8 +215,14 @@ mod tests {
 
         assert_eq!(kit.rows.len(), 16);
         assert_eq!(kit.lpf_mode, LpfMode::Lpf24);
-        assert_eq!(kit.modulation_fx.as_flanger().unwrap().rate, HexU50::parse("0xE0000000").unwrap());
-        assert_eq!(kit.modulation_fx.as_flanger().unwrap().feedback, HexU50::parse("0x80000000").unwrap());
+        assert_eq!(
+            kit.modulation_fx.as_flanger().unwrap().rate,
+            HexU50::parse("0xE0000000").unwrap()
+        );
+        assert_eq!(
+            kit.modulation_fx.as_flanger().unwrap().feedback,
+            HexU50::parse("0x80000000").unwrap()
+        );
         assert_eq!(kit.selected_drum_index, Some(14));
     }
 

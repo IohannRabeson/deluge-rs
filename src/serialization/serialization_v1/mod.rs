@@ -1,12 +1,12 @@
 use crate::{
     values::{
-        ArpeggiatorMode, AttackSidechain, HexU50, MidiChannel, ModulationFxType, OctavesCount, OnOff, OscType, ReleaseSidechain,
-        RetrigPhase, SoundType, SyncLevel, Pan,
+        ArpeggiatorMode, AttackSidechain, HexU50, MidiChannel, ModulationFxType, OctavesCount, OnOff, OscType, Pan,
+        ReleaseSidechain, RetrigPhase, SoundType, SyncLevel,
     },
     Arpeggiator, AudioOutput, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator,
-    FmModulator, Kit, Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit,
-    Sample, SampleOneZone, SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain, Sound,
-    SoundGenerator, SubtractiveGenerator, Synth, Unison, WaveformOscillator, Lpf, Hpf,
+    FmModulator, Hpf, Kit, Lfo1, Lfo2, Lpf, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator,
+    RowKit, Sample, SampleOneZone, SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain,
+    Sound, SoundGenerator, SubtractiveGenerator, Synth, Unison, WaveformOscillator,
 };
 use xmltree::Element;
 
@@ -488,7 +488,7 @@ fn load_patch_cable(root: &Element) -> Result<PatchCable, SerializationError> {
 fn load_global_lpf(kit_node: &Element) -> Result<Lpf, SerializationError> {
     let default_params_node = xml::get_children_element(kit_node, keys::DEFAULT_PARAMS)?;
     let default_lpf_node = xml::get_children_element(default_params_node, keys::LPF)?;
-    
+
     Ok(Lpf {
         frequency: xml::parse_children_element_content(default_lpf_node, keys::FREQUENCY)?,
         resonance: xml::parse_children_element_content(default_lpf_node, keys::RESONANCE)?,
@@ -498,7 +498,7 @@ fn load_global_lpf(kit_node: &Element) -> Result<Lpf, SerializationError> {
 fn load_global_hpf(kit_node: &Element) -> Result<Hpf, SerializationError> {
     let default_params_node = xml::get_children_element(kit_node, keys::DEFAULT_PARAMS)?;
     let default_lpf_node = xml::get_children_element(default_params_node, keys::HPF)?;
-    
+
     Ok(Hpf {
         frequency: xml::parse_children_element_content(default_lpf_node, keys::FREQUENCY)?,
         resonance: xml::parse_children_element_content(default_lpf_node, keys::RESONANCE)?,
@@ -507,27 +507,21 @@ fn load_global_hpf(kit_node: &Element) -> Result<Hpf, SerializationError> {
 
 fn load_global_equalizer(kit_node: &Element) -> Result<Equalizer, SerializationError> {
     Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
-        Some(default_params_node) => {
-            load_equalizer(xml::get_children_element(default_params_node, keys::EQUALIZER)?)?
-        },
+        Some(default_params_node) => load_equalizer(xml::get_children_element(default_params_node, keys::EQUALIZER)?)?,
         None => Equalizer::default(),
     })
 }
 
 fn load_global_hexu(kit_node: &Element, key: &str) -> Result<HexU50, SerializationError> {
     Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
-        Some(default_params_node) => {
-            xml::parse_children_element_content(default_params_node, key)?
-        },
+        Some(default_params_node) => xml::parse_children_element_content(default_params_node, key)?,
         None => 0.into(),
     })
 }
 
 fn load_global_pan(kit_node: &Element) -> Result<Pan, SerializationError> {
     Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
-        Some(default_params_node) => {
-            xml::parse_children_element_content(default_params_node, keys::PAN)?
-        },
+        Some(default_params_node) => xml::parse_children_element_content(default_params_node, keys::PAN)?,
         None => Pan::default(),
     })
 }

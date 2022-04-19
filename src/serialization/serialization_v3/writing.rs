@@ -9,10 +9,10 @@ use crate::{
         xml,
     },
     values::*,
-    Arpeggiator, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Kit,
-    Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit, Sample,
+    Arpeggiator, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Hpf,
+    Kit, Lfo1, Lfo2, Lpf, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit, Sample,
     SampleOneZone, SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator,
-    SubtractiveGenerator, Synth, Unison, WaveformOscillator, Lpf, Hpf,
+    SubtractiveGenerator, Synth, Unison, WaveformOscillator,
 };
 
 use xmltree::Element;
@@ -43,11 +43,11 @@ pub fn write_kit(kit: &Kit) -> Result<Element, SerializationError> {
     xml::insert_attribute(&mut kit_node, keys::LPF_MODE, &kit.lpf_mode)?;
     xml::insert_attribute(&mut kit_node, keys::CURRENT_FILTER_TYPE, &kit.current_filter_type)?;
 
-    let mut default_params_node = Rc::new(RefCell::new(Element::new(keys::DEFAULT_PARAMS)));
+    let default_params_node = Rc::new(RefCell::new(Element::new(keys::DEFAULT_PARAMS)));
     let default_delay_node = Rc::new(RefCell::new(Element::new(keys::DELAY)));
     xml::insert_child(&mut kit_node, write_global_delay(&kit.delay, &default_delay_node)?)?;
     xml::insert_child(&mut kit_node, write_global_sidechain(&kit.sidechain, &default_params_node)?)?;
-    
+
     write_modulation_fx(&kit.modulation_fx, &mut kit_node, &default_params_node)?;
 
     xml::insert_child(&mut kit_node, write_sound_sources(&kit.rows)?)?;
@@ -57,15 +57,15 @@ pub fn write_kit(kit: &Kit) -> Result<Element, SerializationError> {
     }
 
     // Must be done at the end to ensure 'default_params_node' has all his children added.
-    xml::insert_attribute_rc(&mut default_params_node, keys::BIT_CRUSH, &kit.bit_crush)?;
-    xml::insert_attribute_rc(&mut default_params_node, keys::DECIMATION, &kit.decimation)?;
-    xml::insert_attribute_rc(&mut default_params_node, keys::STUTTER_RATE, &kit.stutter_rate)?;
-    xml::insert_attribute_rc(&mut default_params_node, keys::VOLUME, &kit.volume)?;
-    xml::insert_attribute_rc(&mut default_params_node, keys::PAN, &kit.pan)?;
-    xml::insert_attribute_rc(&mut default_params_node, keys::REVERB_AMOUNT, &kit.reverb_amount)?;
-    xml::insert_child_rc(&mut default_params_node, write_global_lpf(&kit.lpf)?);
-    xml::insert_child_rc(&mut default_params_node, write_global_hpf(&kit.hpf)?);
-    xml::insert_child_rc(&mut default_params_node, write_equalizer(&kit.equalizer)?);
+    xml::insert_attribute_rc(&default_params_node, keys::BIT_CRUSH, &kit.bit_crush)?;
+    xml::insert_attribute_rc(&default_params_node, keys::DECIMATION, &kit.decimation)?;
+    xml::insert_attribute_rc(&default_params_node, keys::STUTTER_RATE, &kit.stutter_rate)?;
+    xml::insert_attribute_rc(&default_params_node, keys::VOLUME, &kit.volume)?;
+    xml::insert_attribute_rc(&default_params_node, keys::PAN, &kit.pan)?;
+    xml::insert_attribute_rc(&default_params_node, keys::REVERB_AMOUNT, &kit.reverb_amount)?;
+    xml::insert_child_rc(&default_params_node, write_global_lpf(&kit.lpf)?);
+    xml::insert_child_rc(&default_params_node, write_global_hpf(&kit.hpf)?);
+    xml::insert_child_rc(&default_params_node, write_equalizer(&kit.equalizer)?);
     xml::insert_child(&mut default_params_node.borrow_mut(), default_delay_node.borrow().clone())?;
     xml::insert_child(&mut kit_node, default_params_node.borrow().clone())?;
 

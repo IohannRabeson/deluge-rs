@@ -616,7 +616,10 @@ pub struct Flanger {
 
 impl Default for Flanger {
     fn default() -> Self {
-        Self { rate: 25.into(), feedback: 0.into() }
+        Self {
+            rate: 25.into(),
+            feedback: 0.into(),
+        }
     }
 }
 

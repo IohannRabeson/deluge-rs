@@ -1,6 +1,6 @@
 use crate::{
-    values::{CvGateChannel, FilterType, LpfMode, MidiChannel, Polyphony, HexU50, Pan},
-    Delay, Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone, Sidechain, Equalizer, ModulationFx, Flanger,
+    values::{CvGateChannel, FilterType, HexU50, LpfMode, MidiChannel, Pan, Polyphony},
+    Delay, Equalizer, Flanger, ModulationFx, Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone, Sidechain,
 };
 
 use super::Sound;
@@ -51,7 +51,7 @@ impl Kit {
         Self {
             rows,
             lpf_mode: LpfMode::Lpf24,
-            modulation_fx: ModulationFx::Flanger(Flanger{
+            modulation_fx: ModulationFx::Flanger(Flanger {
                 rate: 19.into(),
                 feedback: 0.into(),
             }),
@@ -133,7 +133,10 @@ pub struct Lpf {
 
 impl Default for Lpf {
     fn default() -> Self {
-        Self { frequency: 50.into(), resonance: 0.into() }
+        Self {
+            frequency: 50.into(),
+            resonance: 0.into(),
+        }
     }
 }
 
@@ -145,7 +148,10 @@ pub struct Hpf {
 
 impl Default for Hpf {
     fn default() -> Self {
-        Self { frequency: 0.into(), resonance: 0.into() }
+        Self {
+            frequency: 0.into(),
+            resonance: 0.into(),
+        }
     }
 }
 

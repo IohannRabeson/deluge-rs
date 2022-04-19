@@ -7,10 +7,10 @@ use crate::{
         xml,
     },
     values::*,
-    Arpeggiator, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Kit,
-    Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit, Sample,
+    Arpeggiator, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Hpf,
+    Kit, Lfo1, Lfo2, Lpf, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit, Sample,
     SampleOneZone, SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain, Sound,
-    SoundGenerator, SubtractiveGenerator, Synth, Unison, WaveformOscillator, Lpf, Hpf,
+    SoundGenerator, SubtractiveGenerator, Synth, Unison, WaveformOscillator,
 };
 
 use xmltree::Element;
@@ -392,42 +392,34 @@ fn load_equalizer(root: &Element) -> Result<Equalizer, SerializationError> {
 
 fn load_global_equalizer(kit_node: &Element) -> Result<Equalizer, SerializationError> {
     Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
-        Some(default_params_node) => {
-            load_equalizer(xml::get_children_element(default_params_node, keys::EQUALIZER)?)?
-        },
+        Some(default_params_node) => load_equalizer(xml::get_children_element(default_params_node, keys::EQUALIZER)?)?,
         None => Equalizer::default(),
     })
 }
 
 fn load_global_hexu(kit_node: &Element, key: &str) -> Result<HexU50, SerializationError> {
     Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
-        Some(default_params_node) => {
-            xml::parse_attribute(default_params_node, key)?
-        },
+        Some(default_params_node) => xml::parse_attribute(default_params_node, key)?,
         None => 0.into(),
     })
 }
 
 fn load_global_pan(kit_node: &Element) -> Result<Pan, SerializationError> {
     Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
-        Some(default_params_node) => {
-            xml::parse_attribute(default_params_node, keys::PAN)?
-        },
+        Some(default_params_node) => xml::parse_attribute(default_params_node, keys::PAN)?,
         None => Pan::default(),
     })
 }
 
 fn load_modulation_fx(root: &Element) -> Result<ModulationFx, SerializationError> {
     let modulation_fx_type: ModulationFxType = xml::parse_attribute(root, keys::MOD_FX_TYPE)?;
-    
+
     Ok(match xml::get_opt_children_element(root, keys::DEFAULT_PARAMS) {
-        Some(default_params_node) => {
-            match modulation_fx_type {
-                ModulationFxType::Off => ModulationFx::Off,
-                ModulationFxType::Flanger => ModulationFx::Flanger(load_modulation_fx_flanger(default_params_node)?),
-                ModulationFxType::Chorus => ModulationFx::Chorus(load_modulation_fx_chorus(default_params_node)?),
-                ModulationFxType::Phaser => ModulationFx::Phaser(load_modulation_fx_phaser(default_params_node)?),
-            }
+        Some(default_params_node) => match modulation_fx_type {
+            ModulationFxType::Off => ModulationFx::Off,
+            ModulationFxType::Flanger => ModulationFx::Flanger(load_modulation_fx_flanger(default_params_node)?),
+            ModulationFxType::Chorus => ModulationFx::Chorus(load_modulation_fx_chorus(default_params_node)?),
+            ModulationFxType::Phaser => ModulationFx::Phaser(load_modulation_fx_phaser(default_params_node)?),
         },
         None => ModulationFx::Flanger(Flanger::default()),
     })
