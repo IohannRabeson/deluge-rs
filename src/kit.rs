@@ -1,5 +1,5 @@
 use crate::{
-    values::{CvGateChannel, FilterType, LpfMode, MidiChannel, Polyphony, HexU50},
+    values::{CvGateChannel, FilterType, LpfMode, MidiChannel, Polyphony, HexU50, Pan},
     Delay, Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone, Sidechain, Equalizer, ModulationFx, Flanger,
 };
 
@@ -17,6 +17,9 @@ pub struct Kit {
 
     pub selected_drum_index: Option<u32>,
 
+    pub volume: HexU50,
+    pub pan: Pan,
+    pub reverb_amount: HexU50,
     pub lpf_mode: LpfMode,
     /// The current type of filter controled by the gold buttons
     pub current_filter_type: FilterType,
@@ -52,6 +55,9 @@ impl Kit {
                 rate: 19.into(),
                 feedback: 0.into(),
             }),
+            volume: 35.into(),
+            pan: Pan::default(),
+            reverb_amount: 0.into(),
             current_filter_type: FilterType::Lpf,
             bit_crush: 0.into(),
             decimation: 0.into(),
