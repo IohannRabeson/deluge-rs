@@ -123,6 +123,9 @@ fn load_subtractive_sound(root: &Element) -> Result<SoundGenerator, Serializatio
 
     let mut osc1 = load_oscillator(osc1_node, &DefaultParams::new(TwinSelector::A, default_params_node))?;
     let mut osc2 = load_oscillator(osc2_node, &DefaultParams::new(TwinSelector::B, default_params_node))?;
+    
+    // Support for oscillatorReset. 
+    // I think at this version this was only reset or not reset.
     let retrig_phase = xml::parse_opt_children_element_content::<OnOff>(root, keys::OSCILLATOR_RESET)
         .map(convert_oscillator_reset_to_retrig_phase)?;
 
