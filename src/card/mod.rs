@@ -15,6 +15,7 @@ mod patch_name;
 #[cfg(test)]
 mod tests;
 
+use std::path::StripPrefixError;
 use std::str::FromStr;
 use std::{
     collections::BTreeSet,
@@ -130,9 +131,24 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
         })
     }
 
+    /// Make a path relative to the card root
+    pub fn make_card_file_path<'a>(&self, path: &'a Path) -> Result<&'a Path, StripPrefixError> {
+        path.strip_prefix(&self.root_directory)
+    }
+
     /// Get one of the card's directory path
     pub fn get_directory_path(&self, folder: CardFolder) -> PathBuf {
         self.root_directory.join(folder.directory_name())
+    }
+
+    pub fn get_next_standard_patch_path(&self, patch_type: PatchType) -> Result<PathBuf, CardError> {
+        let base_name = self.get_next_standard_patch_name(patch_type)?;
+        let mut result = self.get_directory_path(patch_type.get_card_folder());
+
+        result.push(base_name);
+        result.set_extension("XML");
+
+        Ok(result)
     }
 
     /// Gets the next standard patch name
@@ -143,11 +159,7 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
     /// The other names not respecting this pattern I call them custom patch names.
     /// Those can also have a number but this is optional and they can't have a letter (I'm not sure of that).
     pub fn get_next_standard_patch_name(&self, patch_type: PatchType) -> Result<String, CardError> {
-        let folder = match patch_type {
-            PatchType::Kit => CardFolder::Kits,
-            PatchType::Synth => CardFolder::Synths,
-        };
-
+        let folder = patch_type.get_card_folder();
         let mut max_number: Option<u16> = None;
 
         for path in &self.file_system.get_directory_entries(&self.get_directory_path(folder))? {

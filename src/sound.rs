@@ -42,6 +42,20 @@ impl Sound {
         }
     }
 
+    pub fn new_sample(sample: Sample) -> Self {
+        let mut osc2 = Oscillator::new_sample(Sample::OneZone(SampleOneZone {
+            file_path: String::new(),
+            zone: None,
+        }));
+
+        osc2.set_volume(0.into());
+
+        Self {
+            generator: SoundGenerator::Subtractive(SubtractiveGenerator::new(Oscillator::new_sample(sample), osc2)),
+            ..Default::default()
+        }
+    }
+
     pub fn new_ringmod(osc1: Oscillator, osc2: Oscillator) -> Self {
         Self {
             generator: SoundGenerator::RingMod(RingModGenerator::new(osc1, osc2)),
@@ -266,17 +280,23 @@ pub enum Sample {
     SampleRanges(Vec<SampleRange>),
 }
 
-impl Default for Sample {
-    fn default() -> Self {
-        Sample::OneZone(SampleOneZone {
-            file_path: String::new(),
+impl Sample {
+    pub fn new(file_path: &str, start: SamplePosition, end: SamplePosition) -> Self {
+        Self::OneZone(SampleOneZone {
+            file_path: file_path.to_string(),
             zone: Some(SampleZone {
-                start: SamplePosition::new(0),
-                end: SamplePosition::new(9999999),
+                start,
+                end,
                 start_loop: None,
                 end_loop: None,
             }),
         })
+    }
+}
+
+impl Default for Sample {
+    fn default() -> Self {
+        Sample::new("", SamplePosition::new(0), SamplePosition::new(9999999))
     }
 }
 
@@ -580,7 +600,7 @@ impl Default for Equalizer {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, EnumAsInner)]
 pub enum ModulationFx {
     Off,
     Flanger(Flanger),
@@ -592,6 +612,15 @@ pub enum ModulationFx {
 pub struct Flanger {
     pub rate: HexU50,
     pub feedback: HexU50,
+}
+
+impl Default for Flanger {
+    fn default() -> Self {
+        Self {
+            rate: 25.into(),
+            feedback: 0.into(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]

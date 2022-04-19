@@ -71,6 +71,8 @@ pub fn save_kit(kit: &Kit) -> Result<String, SerializationError> {
 
 #[cfg(test)]
 mod tests {
+    use crate::values::{HexU50, LpfMode};
+
     use super::*;
     use pretty_assertions::assert_eq;
 
@@ -126,15 +128,6 @@ mod tests {
         assert_eq!(&version_info.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
     }
 
-    #[test]
-    fn test_load_version_3_kit() {
-        let (kit, version_info) = load_kit_with_version(include_str!("../data_tests/KITS/KIT057.XML")).unwrap();
-
-        assert_eq!(&version_info.firmware_version.unwrap(), "3.1.5");
-        assert_eq!(&version_info.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
-        assert_eq!(kit.rows.len(), 7);
-    }
-
     /// This test require the same patch saved under different version.
     #[test]
     fn test_convert_version_2_to_actual_synth() {
@@ -174,12 +167,43 @@ mod tests {
     }
 
     #[test]
+    fn test_load_version_3_kit() {
+        let (kit, version_info) = load_kit_with_version(include_str!("../data_tests/KITS/KIT057.XML")).unwrap();
+
+        assert_eq!(&version_info.firmware_version.unwrap(), "3.1.5");
+        assert_eq!(&version_info.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
+
+        assert_eq!(kit.rows.len(), 7);
+        assert_eq!(kit.lpf_mode, LpfMode::Lpf24);
+        assert_eq!(
+            kit.modulation_fx.as_flanger().unwrap().rate,
+            HexU50::parse("0xE0000000").unwrap()
+        );
+        assert_eq!(
+            kit.modulation_fx.as_flanger().unwrap().feedback,
+            HexU50::parse("0x80000000").unwrap()
+        );
+        assert_eq!(kit.selected_drum_index, Some(4));
+    }
+
+    #[test]
     fn test_load_version_2_kit() {
         let (kit, version_info) = load_kit_with_version(include_str!("../data_tests/KITS/KIT026.XML")).unwrap();
 
         assert_eq!(&version_info.firmware_version.unwrap(), "2.1.0");
         assert_eq!(&version_info.earliest_compatible_firmware.unwrap(), "2.0.0");
+
         assert_eq!(kit.rows.len(), 16);
+        assert_eq!(kit.lpf_mode, LpfMode::Lpf24);
+        assert_eq!(
+            kit.modulation_fx.as_flanger().unwrap().rate,
+            HexU50::parse("0xE0000000").unwrap()
+        );
+        assert_eq!(
+            kit.modulation_fx.as_flanger().unwrap().feedback,
+            HexU50::parse("0x80000000").unwrap()
+        );
+        assert_eq!(kit.selected_drum_index, Some(15));
     }
 
     #[test]
@@ -188,7 +212,18 @@ mod tests {
 
         assert_eq!(&version_info.firmware_version, &None);
         assert_eq!(&version_info.earliest_compatible_firmware, &None);
+
         assert_eq!(kit.rows.len(), 16);
+        assert_eq!(kit.lpf_mode, LpfMode::Lpf24);
+        assert_eq!(
+            kit.modulation_fx.as_flanger().unwrap().rate,
+            HexU50::parse("0xE0000000").unwrap()
+        );
+        assert_eq!(
+            kit.modulation_fx.as_flanger().unwrap().feedback,
+            HexU50::parse("0x80000000").unwrap()
+        );
+        assert_eq!(kit.selected_drum_index, Some(14));
     }
 
     #[test]

@@ -1,6 +1,6 @@
 use crate::{
-    values::{CvGateChannel, MidiChannel, Polyphony},
-    Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone,
+    values::{CvGateChannel, FilterType, HexU50, LpfMode, MidiChannel, Pan, Polyphony},
+    Delay, Equalizer, Flanger, ModulationFx, Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone, Sidechain,
 };
 
 use super::Sound;
@@ -14,56 +14,84 @@ use super::Sound;
 #[derive(Clone, Debug, PartialEq)]
 pub struct Kit {
     pub rows: Vec<RowKit>,
+
+    pub selected_drum_index: Option<u32>,
+
+    pub volume: HexU50,
+    pub pan: Pan,
+    pub reverb_amount: HexU50,
+    pub lpf_mode: LpfMode,
+    /// The current type of filter controled by the gold buttons
+    pub current_filter_type: FilterType,
+
+    pub bit_crush: HexU50,
+    pub decimation: HexU50,
+    pub stutter_rate: HexU50,
+
+    /// The modulation FX global for the kit
+    pub modulation_fx: ModulationFx,
+    /// The global delay
+    pub delay: Delay,
+
+    pub sidechain: Sidechain,
+
+    /// The global low pass filter
+    pub lpf: Lpf,
+
+    /// The global high pass filter
+    pub hpf: Hpf,
+
+    pub equalizer: Equalizer,
 }
 
 impl Kit {
     pub fn new(rows: Vec<RowKit>) -> Self {
-        Self { rows }
+        let has_rows = rows.is_empty();
+
+        Self {
+            rows,
+            lpf_mode: LpfMode::Lpf24,
+            modulation_fx: ModulationFx::Flanger(Flanger {
+                rate: 19.into(),
+                feedback: 0.into(),
+            }),
+            volume: 35.into(),
+            pan: Pan::default(),
+            reverb_amount: 0.into(),
+            current_filter_type: FilterType::Lpf,
+            bit_crush: 0.into(),
+            decimation: 0.into(),
+            stutter_rate: 25.into(),
+            selected_drum_index: if has_rows { None } else { Some(0) },
+            delay: Delay::default(),
+            sidechain: Sidechain::default(),
+            lpf: Lpf::default(),
+            hpf: Hpf::default(),
+            equalizer: Equalizer::default(),
+        }
+    }
+
+    pub fn add_row(&mut self, row: RowKit) -> usize {
+        let index = self.rows.len();
+        self.rows.push(row);
+
+        index
     }
 
     pub fn add_sound_row(&mut self, sound: Sound) -> usize {
-        let index = self.rows.len();
-        let source = RowKit::AudioOutput(AudioOutput {
-            name: format!("U{}", index + 1),
-            sound: Box::new(sound),
-        });
-
-        self.rows.push(source);
-
-        index
+        self.add_row(RowKit::new_audio(sound, &format!("U{}", self.rows.len() + 1)))
     }
 
     pub fn add_sound_row_with_name(&mut self, sound: Sound, name: &str) -> usize {
-        let source = RowKit::AudioOutput(AudioOutput {
-            name: name.to_string(),
-            sound: Box::new(sound),
-        });
-
-        let index = self.rows.len();
-
-        self.rows.push(source);
-
-        index
+        self.add_row(RowKit::new_audio(sound, name))
     }
 
     pub fn add_midi_row(&mut self, channel: MidiChannel, note: u8) -> usize {
-        let source = RowKit::MidiOutput(MidiOutput { channel, note });
-
-        let index = self.rows.len();
-
-        self.rows.push(source);
-
-        index
+        self.add_row(RowKit::new_midi(channel, note))
     }
 
     pub fn add_gate_row(&mut self, channel: CvGateChannel) -> usize {
-        let source = RowKit::CvGateOutput(CvGateOutput { channel });
-
-        let index = self.rows.len();
-
-        self.rows.push(source);
-
-        index
+        self.add_row(RowKit::new_cv_gate(channel))
     }
 }
 
@@ -97,6 +125,36 @@ impl Default for Kit {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct Lpf {
+    pub frequency: HexU50,
+    pub resonance: HexU50,
+}
+
+impl Default for Lpf {
+    fn default() -> Self {
+        Self {
+            frequency: 50.into(),
+            resonance: 0.into(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Hpf {
+    pub frequency: HexU50,
+    pub resonance: HexU50,
+}
+
+impl Default for Hpf {
+    fn default() -> Self {
+        Self {
+            frequency: 0.into(),
+            resonance: 0.into(),
+        }
+    }
+}
+
 /// An output
 ///
 /// There are 3 different types of physical outputs for the Deluge:
@@ -110,6 +168,20 @@ pub enum RowKit {
     AudioOutput(AudioOutput),
     MidiOutput(MidiOutput),
     CvGateOutput(CvGateOutput),
+}
+
+impl RowKit {
+    pub fn new_audio(sound: Sound, name: &str) -> Self {
+        RowKit::AudioOutput(AudioOutput::new(sound, name))
+    }
+
+    pub fn new_midi(channel: MidiChannel, note: u8) -> Self {
+        RowKit::MidiOutput(MidiOutput { channel, note })
+    }
+
+    pub fn new_cv_gate(channel: CvGateChannel) -> Self {
+        RowKit::CvGateOutput(CvGateOutput { channel })
+    }
 }
 
 /// Audio output is a regular synth patch with a name.
@@ -152,7 +224,7 @@ impl CvGateOutput {
 
 #[cfg(test)]
 mod tests {
-    use crate::{load_kit, Kit};
+    use crate::{load_kit, save_kit, Kit};
     use pretty_assertions::assert_eq;
 
     #[test]
@@ -161,5 +233,15 @@ mod tests {
         let expected_default_kit = load_kit(include_str!("data_tests/default/KIT Default Test.XML")).unwrap();
 
         assert_eq!(expected_default_kit, default_kit)
+    }
+
+    #[test]
+    fn test_load_write_load_kit_community_patches_synth_hats() {
+        let kit = load_kit(include_str!("data_tests/KITS/Synth Hats.XML")).unwrap();
+        let xml = save_kit(&kit).unwrap();
+        println!("{}", xml);
+        let reloaded_kit = load_kit(&xml).unwrap();
+
+        assert_eq!(reloaded_kit, kit);
     }
 }

@@ -9,8 +9,8 @@ use crate::{
         xml,
     },
     values::*,
-    Arpeggiator, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Kit,
-    Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit, Sample,
+    Arpeggiator, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Hpf,
+    Kit, Lfo1, Lfo2, Lpf, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit, Sample,
     SampleOneZone, SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator,
     SubtractiveGenerator, Synth, Unison, WaveformOscillator,
 };
@@ -39,7 +39,36 @@ pub fn write_kit(kit: &Kit) -> Result<Element, SerializationError> {
         keys::EARLIEST_COMPATIBLE_FIRMWARE,
         &LATEST_SUPPORTED_FIRMWARE_VERSION,
     )?;
+
+    xml::insert_attribute(&mut kit_node, keys::LPF_MODE, &kit.lpf_mode)?;
+    xml::insert_attribute(&mut kit_node, keys::CURRENT_FILTER_TYPE, &kit.current_filter_type)?;
+
+    let default_params_node = Rc::new(RefCell::new(Element::new(keys::DEFAULT_PARAMS)));
+    let default_delay_node = Rc::new(RefCell::new(Element::new(keys::DELAY)));
+    xml::insert_child(&mut kit_node, write_global_delay(&kit.delay, &default_delay_node)?)?;
+    xml::insert_child(&mut kit_node, write_global_sidechain(&kit.sidechain, &default_params_node)?)?;
+
+    write_modulation_fx(&kit.modulation_fx, &mut kit_node, &default_params_node)?;
+
     xml::insert_child(&mut kit_node, write_sound_sources(&kit.rows)?)?;
+
+    if let Some(index) = kit.selected_drum_index {
+        xml::insert_child(&mut kit_node, write_selected_drum_index(index)?)?;
+    }
+
+    // Must be done at the end to ensure 'default_params_node' has all his children added.
+    xml::insert_attribute_rc(&default_params_node, keys::BIT_CRUSH, &kit.bit_crush)?;
+    xml::insert_attribute_rc(&default_params_node, keys::DECIMATION, &kit.decimation)?;
+    xml::insert_attribute_rc(&default_params_node, keys::STUTTER_RATE, &kit.stutter_rate)?;
+    xml::insert_attribute_rc(&default_params_node, keys::VOLUME, &kit.volume)?;
+    xml::insert_attribute_rc(&default_params_node, keys::PAN, &kit.pan)?;
+    xml::insert_attribute_rc(&default_params_node, keys::REVERB_AMOUNT, &kit.reverb_amount)?;
+    xml::insert_child_rc(&default_params_node, write_global_lpf(&kit.lpf)?);
+    xml::insert_child_rc(&default_params_node, write_global_hpf(&kit.hpf)?);
+    xml::insert_child_rc(&default_params_node, write_equalizer(&kit.equalizer)?);
+    xml::insert_child(&mut default_params_node.borrow_mut(), default_delay_node.borrow().clone())?;
+    xml::insert_child(&mut kit_node, default_params_node.borrow().clone())?;
+
     Ok(kit_node)
 }
 
@@ -56,6 +85,16 @@ fn write_sound_sources(rows: &[RowKit]) -> Result<Element, SerializationError> {
         xml::insert_child(&mut sound_source_node, node)?;
     }
     Ok(sound_source_node)
+}
+
+fn write_selected_drum_index(index: u32) -> Result<Element, SerializationError> {
+    let mut selected_drum_index_node = Element::new(keys::SELECTED_DRUM_INDEX);
+
+    selected_drum_index_node
+        .children
+        .push(xmltree::XMLNode::Text(index.to_string()));
+
+    Ok(selected_drum_index_node)
 }
 
 fn write_gate_output(gate: &CvGateOutput) -> Result<Element, SerializationError> {
@@ -447,6 +486,18 @@ fn write_delay(delay: &Delay, default_params_node: &Rc<RefCell<Element>>) -> Res
     Ok(delay_node)
 }
 
+fn write_global_delay(delay: &Delay, default_params_node: &Rc<RefCell<Element>>) -> Result<Element, SerializationError> {
+    let mut delay_node = Element::new(keys::DELAY);
+
+    xml::insert_attribute(&mut delay_node, keys::PING_PONG, &delay.ping_pong)?;
+    xml::insert_attribute(&mut delay_node, keys::ANALOG, &delay.analog)?;
+    xml::insert_attribute(&mut delay_node, keys::SYNC_LEVEL, &delay.sync_level)?;
+    xml::insert_attribute_rc(default_params_node, keys::FEEDBACK, &delay.amount)?;
+    xml::insert_attribute_rc(default_params_node, keys::RATE, &delay.rate)?;
+
+    Ok(delay_node)
+}
+
 fn write_sidechain(sidechain: &Sidechain, default_params_node: &Rc<RefCell<Element>>) -> Result<Element, SerializationError> {
     let mut sidechain_node = Element::new(keys::COMPRESSOR);
 
@@ -456,6 +507,38 @@ fn write_sidechain(sidechain: &Sidechain, default_params_node: &Rc<RefCell<Eleme
     xml::insert_attribute_rc(default_params_node, keys::COMPRESSOR_SHAPE, &sidechain.shape)?;
 
     Ok(sidechain_node)
+}
+
+fn write_global_sidechain(
+    sidechain: &Sidechain,
+    default_params_node: &Rc<RefCell<Element>>,
+) -> Result<Element, SerializationError> {
+    let mut sidechain_node = Element::new(keys::COMPRESSOR);
+
+    xml::insert_attribute(&mut sidechain_node, keys::COMPRESSOR_ATTACK, &sidechain.attack)?;
+    xml::insert_attribute(&mut sidechain_node, keys::COMPRESSOR_RELEASE, &sidechain.release)?;
+    xml::insert_attribute(&mut sidechain_node, keys::COMPRESSOR_SYNCLEVEL, &sidechain.sync)?;
+    xml::insert_attribute_rc(default_params_node, keys::SIDECHAIN_COMPRESSOR_SHAPE, &sidechain.shape)?;
+
+    Ok(sidechain_node)
+}
+
+fn write_global_lpf(lpf: &Lpf) -> Result<Element, SerializationError> {
+    let mut lpf_node = Element::new(keys::LPF);
+
+    xml::insert_attribute(&mut lpf_node, keys::FREQUENCY, &lpf.frequency)?;
+    xml::insert_attribute(&mut lpf_node, keys::RESONANCE, &lpf.resonance)?;
+
+    Ok(lpf_node)
+}
+
+fn write_global_hpf(hpf: &Hpf) -> Result<Element, SerializationError> {
+    let mut hpf_node = Element::new(keys::HPF);
+
+    xml::insert_attribute(&mut hpf_node, keys::FREQUENCY, &hpf.frequency)?;
+    xml::insert_attribute(&mut hpf_node, keys::RESONANCE, &hpf.resonance)?;
+
+    Ok(hpf_node)
 }
 
 fn write_cables(patch_cables: &[PatchCable]) -> Result<Element, SerializationError> {

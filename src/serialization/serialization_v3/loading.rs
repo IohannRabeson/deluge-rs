@@ -7,8 +7,8 @@ use crate::{
         xml,
     },
     values::*,
-    Arpeggiator, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Kit,
-    Lfo1, Lfo2, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit, Sample,
+    Arpeggiator, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Hpf,
+    Kit, Lfo1, Lfo2, Lpf, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit, Sample,
     SampleOneZone, SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain, Sound,
     SoundGenerator, SubtractiveGenerator, Synth, Unison, WaveformOscillator,
 };
@@ -40,6 +40,21 @@ pub fn load_kit_nodes(root_nodes: &[Element]) -> Result<Kit, SerializationError>
 
     return Ok(Kit {
         rows: sources.iter().flatten().cloned().collect::<Vec<RowKit>>(),
+        lpf_mode: xml::parse_attribute(kit_node, keys::LPF_MODE)?,
+        modulation_fx: load_modulation_fx(kit_node)?,
+        current_filter_type: xml::parse_attribute(kit_node, keys::CURRENT_FILTER_TYPE)?,
+        selected_drum_index: xml::parse_opt_children_element_content(kit_node, keys::SELECTED_DRUM_INDEX)?,
+        volume: load_global_hexu(kit_node, keys::VOLUME)?,
+        reverb_amount: load_global_hexu(kit_node, keys::REVERB_AMOUNT)?,
+        pan: load_global_pan(kit_node)?,
+        bit_crush: load_global_hexu(kit_node, keys::BIT_CRUSH)?,
+        decimation: load_global_hexu(kit_node, keys::DECIMATION)?,
+        stutter_rate: load_global_hexu(kit_node, keys::STUTTER_RATE)?,
+        delay: load_global_delay(kit_node)?,
+        sidechain: load_global_sidechain(kit_node)?,
+        lpf: load_global_lpf(kit_node)?,
+        hpf: load_global_hpf(kit_node)?,
+        equalizer: load_global_equalizer(kit_node)?,
     });
 }
 
@@ -330,6 +345,24 @@ fn load_delay(root: &Element, default_params_node: &Element) -> Result<Delay, Se
     })
 }
 
+fn load_global_delay(kit_node: &Element) -> Result<Delay, SerializationError> {
+    Ok(match xml::get_opt_children_element(kit_node, keys::DELAY) {
+        Some(delay_node) => {
+            let default_params_node = xml::get_children_element(kit_node, keys::DEFAULT_PARAMS)?;
+            let default_delay_node = xml::get_children_element(default_params_node, keys::DELAY)?;
+
+            Delay {
+                ping_pong: xml::parse_attribute(delay_node, keys::PING_PONG)?,
+                analog: xml::parse_attribute(delay_node, keys::ANALOG)?,
+                sync_level: xml::parse_attribute(delay_node, keys::SYNC_LEVEL)?,
+                amount: xml::parse_attribute(default_delay_node, keys::FEEDBACK)?,
+                rate: xml::parse_attribute(default_delay_node, keys::RATE)?,
+            }
+        }
+        None => Delay::default(),
+    })
+}
+
 fn load_arpeggiator(root: &Element, default_params_node: &Element) -> Result<Arpeggiator, SerializationError> {
     Ok(Arpeggiator {
         mode: xml::parse_attribute(root, keys::ARPEGGIATOR_MODE)?,
@@ -357,16 +390,38 @@ fn load_equalizer(root: &Element) -> Result<Equalizer, SerializationError> {
     })
 }
 
-fn load_modulation_fx(root: &Element) -> Result<ModulationFx, SerializationError> {
-    let modulation_fx_type = xml::parse_attribute(root, keys::MOD_FX_TYPE)?;
-    let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
+fn load_global_equalizer(kit_node: &Element) -> Result<Equalizer, SerializationError> {
+    Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
+        Some(default_params_node) => load_equalizer(xml::get_children_element(default_params_node, keys::EQUALIZER)?)?,
+        None => Equalizer::default(),
+    })
+}
 
-    Ok(match modulation_fx_type {
-        keys::MODULATION_FX_OFF => ModulationFx::Off,
-        keys::MODULATION_FX_FLANGER => ModulationFx::Flanger(load_modulation_fx_flanger(default_params_node)?),
-        keys::MODULATION_FX_CHORUS => ModulationFx::Chorus(load_modulation_fx_chorus(default_params_node)?),
-        keys::MODULATION_FX_PHASER => ModulationFx::Phaser(load_modulation_fx_phaser(default_params_node)?),
-        &_ => return Err(SerializationError::UnsupportedModulationFx(modulation_fx_type.to_owned())),
+fn load_global_hexu(kit_node: &Element, key: &str) -> Result<HexU50, SerializationError> {
+    Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
+        Some(default_params_node) => xml::parse_attribute(default_params_node, key)?,
+        None => 0.into(),
+    })
+}
+
+fn load_global_pan(kit_node: &Element) -> Result<Pan, SerializationError> {
+    Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
+        Some(default_params_node) => xml::parse_attribute(default_params_node, keys::PAN)?,
+        None => Pan::default(),
+    })
+}
+
+fn load_modulation_fx(root: &Element) -> Result<ModulationFx, SerializationError> {
+    let modulation_fx_type: ModulationFxType = xml::parse_attribute(root, keys::MOD_FX_TYPE)?;
+
+    Ok(match xml::get_opt_children_element(root, keys::DEFAULT_PARAMS) {
+        Some(default_params_node) => match modulation_fx_type {
+            ModulationFxType::Off => ModulationFx::Off,
+            ModulationFxType::Flanger => ModulationFx::Flanger(load_modulation_fx_flanger(default_params_node)?),
+            ModulationFxType::Chorus => ModulationFx::Chorus(load_modulation_fx_chorus(default_params_node)?),
+            ModulationFxType::Phaser => ModulationFx::Phaser(load_modulation_fx_phaser(default_params_node)?),
+        },
+        None => ModulationFx::Flanger(Flanger::default()),
     })
 }
 
@@ -436,6 +491,50 @@ fn load_sidechain(root: &Element, default_params_node: &Element) -> Result<Sidec
         release: xml::parse_attribute(root, keys::COMPRESSOR_RELEASE)?,
         shape: xml::parse_attribute(default_params_node, keys::COMPRESSOR_SHAPE)?,
         sync: xml::parse_attribute(root, keys::COMPRESSOR_SYNCLEVEL)?,
+    })
+}
+
+fn load_global_sidechain(kit_node: &Element) -> Result<Sidechain, SerializationError> {
+    Ok(match xml::get_opt_children_element(kit_node, keys::COMPRESSOR) {
+        Some(compressor_node) => {
+            let default_params_node = xml::get_children_element(kit_node, keys::DEFAULT_PARAMS)?;
+
+            Sidechain {
+                attack: xml::parse_attribute(compressor_node, keys::COMPRESSOR_ATTACK)?,
+                release: xml::parse_attribute(compressor_node, keys::COMPRESSOR_RELEASE)?,
+                shape: xml::parse_attribute(default_params_node, keys::SIDECHAIN_COMPRESSOR_SHAPE)?,
+                sync: xml::parse_attribute(compressor_node, keys::COMPRESSOR_SYNCLEVEL)?,
+            }
+        }
+        None => Sidechain::default(),
+    })
+}
+
+fn load_global_lpf(kit_node: &Element) -> Result<Lpf, SerializationError> {
+    Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
+        Some(default_params_node) => {
+            let default_lpf_node = xml::get_children_element(default_params_node, keys::LPF)?;
+
+            Lpf {
+                frequency: xml::parse_attribute(default_lpf_node, keys::FREQUENCY)?,
+                resonance: xml::parse_attribute(default_lpf_node, keys::RESONANCE)?,
+            }
+        }
+        None => Lpf::default(),
+    })
+}
+
+fn load_global_hpf(kit_node: &Element) -> Result<Hpf, SerializationError> {
+    Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
+        Some(default_params_node) => {
+            let default_lpf_node = xml::get_children_element(default_params_node, keys::HPF)?;
+
+            Hpf {
+                frequency: xml::parse_attribute(default_lpf_node, keys::FREQUENCY)?,
+                resonance: xml::parse_attribute(default_lpf_node, keys::RESONANCE)?,
+            }
+        }
+        None => Hpf::default(),
     })
 }
 

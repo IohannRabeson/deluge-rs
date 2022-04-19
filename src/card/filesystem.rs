@@ -17,6 +17,9 @@ pub trait FileSystem {
     /// Check if a directory exists
     fn directory_exists(&self, path: &Path) -> bool;
 
+    /// Check if a file exists
+    fn file_exists(&self, path: &Path) -> bool;
+
     /// Check if a path points on a file
     fn is_file(&self, path: &Path) -> Result<bool, CardError>;
 }
@@ -48,6 +51,10 @@ impl FileSystem for LocalFileSystem {
 
     fn directory_exists(&self, path: &Path) -> bool {
         path.exists() && path.is_dir()
+    }
+
+    fn file_exists(&self, path: &Path) -> bool {
+        path.exists() && path.is_file()
     }
 
     fn is_file(&self, path: &Path) -> Result<bool, CardError> {
