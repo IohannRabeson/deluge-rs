@@ -46,6 +46,7 @@ pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, SerializationError> {
         modulation_fx: load_modulation_fx(kit_node)?,
         current_filter_type: xml::parse_children_element_content(kit_node, keys::CURRENT_FILTER_TYPE)?,
         selected_drum_index: xml::parse_children_element_content(kit_node, keys::SELECTED_DRUM_INDEX)?,
+        bit_crush: load_global_bit_crush(kit_node)?,
         delay: load_global_delay(kit_node)?,
         sidechain: Sidechain::default(),
         lpf: load_global_lpf(kit_node)?,
@@ -505,6 +506,15 @@ fn load_global_equalizer(kit_node: &Element) -> Result<Equalizer, SerializationE
             load_equalizer(xml::get_children_element(default_params_node, keys::EQUALIZER)?)?
         },
         None => Equalizer::default(),
+    })
+}
+
+fn load_global_bit_crush(kit_node: &Element) -> Result<HexU50, SerializationError> {
+    Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
+        Some(default_params_node) => {
+            xml::parse_children_element_content(default_params_node, keys::BIT_CRUSH)?
+        },
+        None => 0.into(),
     })
 }
 

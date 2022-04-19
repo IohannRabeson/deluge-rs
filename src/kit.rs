@@ -20,6 +20,9 @@ pub struct Kit {
     pub lpf_mode: LpfMode,
     /// The current type of filter controled by the gold buttons
     pub current_filter_type: FilterType,
+
+    pub bit_crush: HexU50,
+
     /// The modulation FX global for the kit
     pub modulation_fx: ModulationFx,
     /// The global delay
@@ -48,6 +51,7 @@ impl Kit {
                 feedback: 0.into(),
             }),
             current_filter_type: FilterType::Lpf,
+            bit_crush: 0.into(),
             selected_drum_index: if has_rows { None } else { Some(0) },
             delay: Delay::default(),
             sidechain: Sidechain::default(),
