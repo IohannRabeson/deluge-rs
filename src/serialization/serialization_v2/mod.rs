@@ -1,18 +1,18 @@
 use crate::{
-    values::{
-        ArpeggiatorMode, AttackSidechain, OctavesCount, OnOff,
-        ReleaseSidechain, SoundType, SyncLevel, TableIndex,
-    },
-    Arpeggiator, Delay, Kit,
-    RowKit, SerializationError, Sidechain,
-    Sound, SoundGenerator, SubtractiveGenerator, Synth,
+    values::{ArpeggiatorMode, AttackSidechain, OctavesCount, OnOff, ReleaseSidechain, SoundType, SyncLevel, TableIndex},
+    Arpeggiator, Delay, Kit, RowKit, SerializationError, Sidechain, Sound, SoundGenerator, SubtractiveGenerator, Synth,
 };
 use xmltree::Element;
 
 use super::{
     default_params::{DefaultParams, TwinSelector},
     keys,
-    xml, serialization_v1::{load_ringmode_sound, load_fm_sound, load_distorsion, load_equalizer, load_modulation_fx, load_global_hexu, load_global_pan, load_global_lpf, load_global_hpf, load_global_equalizer, load_mod_knobs, load_patch_cables, load_envelope, load_lfo1, load_lfo2, load_unison, load_sound_source, load_oscillator},
+    serialization_v1::{
+        load_distorsion, load_envelope, load_equalizer, load_fm_sound, load_global_equalizer, load_global_hexu, load_global_hpf,
+        load_global_lpf, load_global_pan, load_lfo1, load_lfo2, load_mod_knobs, load_modulation_fx, load_oscillator,
+        load_patch_cables, load_ringmode_sound, load_sound_source, load_unison,
+    },
+    xml,
 };
 
 /// Load a deluge synth XML file
@@ -184,9 +184,10 @@ mod tests {
     use crate::{
         load_synth, save_synth,
         values::{
-            AttackSidechain, ClippingAmount, FineTranspose, HexU50, LfoShape, LpfMode, Pan, Polyphony, ReleaseSidechain,
-            RetrigPhase, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority, OscType,
-        }, ModulationFx,
+            AttackSidechain, ClippingAmount, FineTranspose, HexU50, LfoShape, LpfMode, OscType, Pan, Polyphony, ReleaseSidechain,
+            RetrigPhase, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
+        },
+        ModulationFx,
     };
 
     use super::*;
