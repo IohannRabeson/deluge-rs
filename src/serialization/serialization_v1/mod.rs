@@ -156,7 +156,7 @@ fn assign_retrig_phase(mut osc: &mut Oscillator, retrig_phase: RetrigPhase) {
     }
 }
 
-fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
+pub(crate) fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
     let osc1_node = xml::get_children_element(root, keys::OSC1)?;
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
@@ -169,7 +169,7 @@ fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, SerializationEr
     }))
 }
 
-fn load_fm_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
+pub(crate) fn load_fm_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
     let osc1_node = xml::get_children_element(root, keys::OSC1)?;
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
     let mod1_node = xml::get_children_element(root, keys::FM_MODULATOR1)?;
@@ -396,7 +396,7 @@ fn load_global_delay(kit_node: &Element) -> Result<Delay, SerializationError> {
     })
 }
 
-fn load_distorsion(root: &Element, default_params_node: &Element) -> Result<Distorsion, SerializationError> {
+pub(crate) fn load_distorsion(root: &Element, default_params_node: &Element) -> Result<Distorsion, SerializationError> {
     Ok(Distorsion {
         saturation: xml::parse_opt_children_element_content(root, keys::CLIPPING_AMOUNT)?.unwrap_or_default(),
         bit_crush: xml::parse_children_element_content(default_params_node, keys::BIT_CRUSH)?,
@@ -404,7 +404,7 @@ fn load_distorsion(root: &Element, default_params_node: &Element) -> Result<Dist
     })
 }
 
-fn load_equalizer(root: &Element) -> Result<Equalizer, SerializationError> {
+pub(crate) fn load_equalizer(root: &Element) -> Result<Equalizer, SerializationError> {
     Ok(Equalizer {
         bass_level: xml::parse_children_element_content(root, keys::EQ_BASS)?,
         bass_frequency: xml::parse_children_element_content(root, keys::EQ_BASS_FREQUENCY)?,
@@ -413,7 +413,7 @@ fn load_equalizer(root: &Element) -> Result<Equalizer, SerializationError> {
     })
 }
 
-fn load_modulation_fx(root: &Element) -> Result<ModulationFx, SerializationError> {
+pub(crate) fn load_modulation_fx(root: &Element) -> Result<ModulationFx, SerializationError> {
     let modulation_fx_type: ModulationFxType = xml::parse_children_element_content(root, keys::MOD_FX_TYPE)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
 
@@ -485,7 +485,7 @@ fn load_patch_cable(root: &Element) -> Result<PatchCable, SerializationError> {
     })
 }
 
-fn load_global_lpf(kit_node: &Element) -> Result<Lpf, SerializationError> {
+pub(crate) fn load_global_lpf(kit_node: &Element) -> Result<Lpf, SerializationError> {
     let default_params_node = xml::get_children_element(kit_node, keys::DEFAULT_PARAMS)?;
     let default_lpf_node = xml::get_children_element(default_params_node, keys::LPF)?;
 
@@ -495,7 +495,7 @@ fn load_global_lpf(kit_node: &Element) -> Result<Lpf, SerializationError> {
     })
 }
 
-fn load_global_hpf(kit_node: &Element) -> Result<Hpf, SerializationError> {
+pub(crate) fn load_global_hpf(kit_node: &Element) -> Result<Hpf, SerializationError> {
     let default_params_node = xml::get_children_element(kit_node, keys::DEFAULT_PARAMS)?;
     let default_lpf_node = xml::get_children_element(default_params_node, keys::HPF)?;
 
@@ -505,21 +505,21 @@ fn load_global_hpf(kit_node: &Element) -> Result<Hpf, SerializationError> {
     })
 }
 
-fn load_global_equalizer(kit_node: &Element) -> Result<Equalizer, SerializationError> {
+pub(crate) fn load_global_equalizer(kit_node: &Element) -> Result<Equalizer, SerializationError> {
     Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
         Some(default_params_node) => load_equalizer(xml::get_children_element(default_params_node, keys::EQUALIZER)?)?,
         None => Equalizer::default(),
     })
 }
 
-fn load_global_hexu(kit_node: &Element, key: &str) -> Result<HexU50, SerializationError> {
+pub(crate) fn load_global_hexu(kit_node: &Element, key: &str) -> Result<HexU50, SerializationError> {
     Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
         Some(default_params_node) => xml::parse_children_element_content(default_params_node, key)?,
         None => 0.into(),
     })
 }
 
-fn load_global_pan(kit_node: &Element) -> Result<Pan, SerializationError> {
+pub(crate) fn load_global_pan(kit_node: &Element) -> Result<Pan, SerializationError> {
     Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
         Some(default_params_node) => xml::parse_children_element_content(default_params_node, keys::PAN)?,
         None => Pan::default(),
