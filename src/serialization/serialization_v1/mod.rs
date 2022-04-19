@@ -187,7 +187,7 @@ pub(crate) fn load_fm_sound(root: &Element) -> Result<SoundGenerator, Serializat
     }))
 }
 
-fn load_oscillator(root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
+pub(crate) fn load_oscillator(root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
     let osc_type: OscType = xml::parse_children_element_content(root, keys::TYPE)?;
 
     match osc_type {
@@ -333,7 +333,7 @@ fn load_sound_output(root: &Element) -> Result<AudioOutput, SerializationError> 
     })
 }
 
-fn load_sound_source(root: &Element) -> Result<RowKit, SerializationError> {
+pub(crate) fn load_sound_source(root: &Element) -> Result<RowKit, SerializationError> {
     Ok(match root.name.as_str() {
         keys::SOUND => RowKit::AudioOutput(load_sound_output(root)?),
         keys::MIDI_OUTPUT => RowKit::MidiOutput(load_midi_output(root)?),
@@ -342,7 +342,7 @@ fn load_sound_source(root: &Element) -> Result<RowKit, SerializationError> {
     })
 }
 
-fn load_envelope(root: &Element) -> Result<Envelope, SerializationError> {
+pub(crate) fn load_envelope(root: &Element) -> Result<Envelope, SerializationError> {
     Ok(Envelope {
         attack: xml::parse_children_element_content(root, keys::ENV_ATTACK)?,
         decay: xml::parse_children_element_content(root, keys::ENV_DECAY)?,
@@ -351,7 +351,7 @@ fn load_envelope(root: &Element) -> Result<Envelope, SerializationError> {
     })
 }
 
-fn load_lfo1(root: &Element, default_params_node: &Element) -> Result<Lfo1, SerializationError> {
+pub(crate) fn load_lfo1(root: &Element, default_params_node: &Element) -> Result<Lfo1, SerializationError> {
     Ok(Lfo1 {
         shape: xml::parse_children_element_content(root, keys::LFO_SHAPE)?,
         sync_level: xml::parse_children_element_content(root, keys::SYNC_LEVEL)?,
@@ -359,21 +359,21 @@ fn load_lfo1(root: &Element, default_params_node: &Element) -> Result<Lfo1, Seri
     })
 }
 
-fn load_lfo2(root: &Element, default_params_node: &Element) -> Result<Lfo2, SerializationError> {
+pub(crate) fn load_lfo2(root: &Element, default_params_node: &Element) -> Result<Lfo2, SerializationError> {
     Ok(Lfo2 {
         shape: xml::parse_children_element_content(root, keys::LFO_SHAPE)?,
         rate: xml::parse_children_element_content(default_params_node, keys::LFO2_RATE)?,
     })
 }
 
-fn load_unison(root: &Element) -> Result<Unison, SerializationError> {
+pub(crate) fn load_unison(root: &Element) -> Result<Unison, SerializationError> {
     Ok(Unison {
         voice_count: xml::parse_children_element_content(root, keys::UNISON_VOICE_COUNT)?,
         detune: xml::parse_children_element_content(root, keys::UNISON_DETUNE)?,
     })
 }
 
-fn load_delay(root: &Element, default_params_node: &Element) -> Result<Delay, SerializationError> {
+pub(crate) fn load_delay(root: &Element, default_params_node: &Element) -> Result<Delay, SerializationError> {
     Ok(Delay {
         ping_pong: xml::parse_children_element_content(root, keys::PING_PONG)?,
         analog: xml::parse_children_element_content(root, keys::ANALOG)?,
@@ -448,7 +448,7 @@ fn load_modulation_fx_phaser(default_params_node: &Element) -> Result<Phaser, Se
     })
 }
 
-fn load_patch_cables(root: &Element) -> Result<Vec<PatchCable>, SerializationError> {
+pub(crate) fn load_patch_cables(root: &Element) -> Result<Vec<PatchCable>, SerializationError> {
     let cables = xml::get_all_children_element_with_name(root, keys::PATCH_CABLE);
     let mut patch_cables = Vec::new();
 
@@ -466,7 +466,7 @@ fn load_mod_knob(element: &Element) -> Result<ModKnob, SerializationError> {
     })
 }
 
-fn load_mod_knobs(root: &Element) -> Result<Vec<ModKnob>, SerializationError> {
+pub(crate) fn load_mod_knobs(root: &Element) -> Result<Vec<ModKnob>, SerializationError> {
     let mod_knob_nodes = xml::get_all_children_element_with_name(root, keys::MOD_KNOB);
     let mut mod_knobs = Vec::new();
 

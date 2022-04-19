@@ -1,19 +1,18 @@
 use crate::{
     values::{
-        ArpeggiatorMode, AttackSidechain, MidiChannel, OctavesCount, OnOff, OscType,
-        ReleaseSidechain, RetrigPhase, SoundType, SyncLevel, TableIndex,
+        ArpeggiatorMode, AttackSidechain, OctavesCount, OnOff,
+        ReleaseSidechain, SoundType, SyncLevel, TableIndex,
     },
-    Arpeggiator, AudioOutput, CvGateOutput, Delay, Envelope, Kit, Lfo1, Lfo2, MidiOutput, ModKnob, Oscillator, PatchCable,
-    RowKit, Sample, SampleOneZone, SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain,
-    Sound, SoundGenerator, SubtractiveGenerator, Synth, Unison, WaveformOscillator,
+    Arpeggiator, Delay, Kit,
+    RowKit, SerializationError, Sidechain,
+    Sound, SoundGenerator, SubtractiveGenerator, Synth,
 };
 use xmltree::Element;
 
 use super::{
     default_params::{DefaultParams, TwinSelector},
     keys,
-    serialization_common::convert_milliseconds_to_samples,
-    xml, serialization_v1::{load_ringmode_sound, load_fm_sound, load_distorsion, load_equalizer, load_modulation_fx, load_global_hexu, load_global_pan, load_global_lpf, load_global_hpf, load_global_equalizer},
+    xml, serialization_v1::{load_ringmode_sound, load_fm_sound, load_distorsion, load_equalizer, load_modulation_fx, load_global_hexu, load_global_pan, load_global_lpf, load_global_hpf, load_global_equalizer, load_mod_knobs, load_patch_cables, load_envelope, load_lfo1, load_lfo2, load_unison, load_sound_source, load_oscillator},
 };
 
 /// Load a deluge synth XML file
@@ -114,172 +113,6 @@ fn load_subtractive_sound(root: &Element) -> Result<SoundGenerator, Serializatio
     }))
 }
 
-fn load_oscillator(root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
-    let osc_type = xml::parse_children_element_content(root, keys::TYPE)?;
-
-    match osc_type {
-        OscType::Sample => load_sample_oscillator(root, params),
-        OscType::AnalogSaw => load_waveform_oscillator(osc_type, root, params),
-        OscType::AnalogSquare => load_waveform_oscillator(osc_type, root, params),
-        OscType::Saw => load_waveform_oscillator(osc_type, root, params),
-        OscType::Sine => load_waveform_oscillator(osc_type, root, params),
-        OscType::Square => load_waveform_oscillator(osc_type, root, params),
-        OscType::Triangle => load_waveform_oscillator(osc_type, root, params),
-    }
-}
-
-fn load_sample_oscillator(root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
-    Ok(Oscillator::Sample(SampleOscillator {
-        transpose: xml::parse_opt_children_element_content(root, keys::TRANSPOSE)?.unwrap_or_default(),
-        fine_transpose: xml::parse_opt_children_element_content(root, keys::CENTS)?.unwrap_or_default(),
-        reversed: xml::parse_children_element_content(root, keys::REVERSED)?,
-        mode: xml::parse_children_element_content(root, keys::LOOP_MODE)?,
-        pitch_speed: xml::parse_children_element_content(root, keys::TIME_STRETCH_ENABLE)?,
-        time_stretch_amount: xml::parse_children_element_content(root, keys::TIME_STRETCH_AMOUNT)?,
-        sample: load_sample(root)?,
-        linear_interpolation: xml::parse_opt_children_element_content(root, keys::LINEAR_INTERPOLATION)?.unwrap_or_default(),
-        volume: params.parse_twin_children_content(keys::VOLUME_OSC_A, keys::VOLUME_OSC_B)?,
-    }))
-}
-
-fn load_sample(root: &Element) -> Result<Sample, SerializationError> {
-    Ok(
-        if let Some(sample_ranges_node) = xml::get_opt_children_element(root, keys::SAMPLE_RANGES) {
-            let mut ranges: Vec<SampleRange> = Vec::new();
-            let sample_range_nodes = xml::get_all_children_element_with_name(sample_ranges_node, keys::SAMPLE_RANGE);
-
-            for sample_range_node in sample_range_nodes {
-                let zone_node = xml::get_children_element(sample_range_node, keys::ZONE)?;
-                let range = SampleRange {
-                    range_top_note: xml::parse_opt_children_element_content(sample_range_node, keys::SAMPLE_RANGE_TOP_NOTE)?,
-                    file_path: xml::parse_children_element_content(sample_range_node, keys::FILE_NAME)?,
-                    transpose: xml::parse_opt_children_element_content(sample_range_node, keys::TRANSPOSE)?.unwrap_or_default(),
-                    fine_transpose: xml::parse_opt_children_element_content(sample_range_node, keys::CENTS)?.unwrap_or_default(),
-                    zone: parse_sample_zone(zone_node)?,
-                };
-
-                ranges.push(range);
-            }
-
-            Sample::SampleRanges(ranges)
-        } else if let Some(sample_zone_node) = xml::get_opt_children_element(root, "zone") {
-            Sample::OneZone(SampleOneZone {
-                file_path: xml::parse_opt_children_element_content(root, keys::FILE_NAME)?.unwrap_or_default(),
-                zone: Some(parse_sample_zone(sample_zone_node)?),
-            })
-        } else {
-            Sample::OneZone(SampleOneZone {
-                file_path: xml::parse_opt_children_element_content(root, keys::FILE_NAME)?.unwrap_or_default(),
-                zone: None,
-            })
-        },
-    )
-}
-
-/// Parse a sample zone
-///
-/// The root element must be a "zone" node.
-/// We try to get start and end positions as samples if possible, and as milliseconds if forced.
-/// If both are missing then SamplePosition(0) is assigned.
-fn parse_sample_zone(root: &Element) -> Result<SampleZone, SerializationError> {
-    let start = SamplePosition::new(
-        match xml::parse_opt_children_element_content::<u64>(root, keys::START_SAMPLES_POS)? {
-            Some(samples) => samples,
-            None => xml::parse_opt_children_element_content::<u64>(root, keys::START_MILLISECONDS_POS)?
-                .map(convert_milliseconds_to_samples)
-                .unwrap_or_default(),
-        },
-    );
-
-    let end = SamplePosition::new(
-        match xml::parse_opt_children_element_content::<u64>(root, keys::END_SAMPLES_POS)? {
-            Some(samples) => samples,
-            None => xml::parse_opt_children_element_content::<u64>(root, keys::END_MILLISECONDS_POS)?
-                .map(convert_milliseconds_to_samples)
-                .unwrap_or_default(),
-        },
-    );
-
-    let start_loop = xml::parse_opt_children_element_content::<u64>(root, keys::START_LOOP_SAMPLES_POS)?.map(SamplePosition::new);
-    let end_loop = xml::parse_opt_children_element_content::<u64>(root, keys::END_LOOP_SAMPLES_POS)?.map(SamplePosition::new);
-
-    Ok(SampleZone {
-        start,
-        end,
-        start_loop,
-        end_loop,
-    })
-}
-
-fn load_waveform_oscillator(osc_type: OscType, root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
-    Ok(Oscillator::Waveform(WaveformOscillator {
-        osc_type,
-        transpose: xml::parse_children_element_content(root, keys::TRANSPOSE)?,
-        fine_transpose: xml::parse_children_element_content(root, keys::CENTS)?,
-        retrig_phase: xml::parse_opt_children_element_content(root, keys::RETRIG_PHASE)?.unwrap_or(RetrigPhase::Off),
-        volume: params.parse_twin_children_content(keys::VOLUME_OSC_A, keys::VOLUME_OSC_B)?,
-        pulse_width: params.parse_twin_children_content(keys::PULSE_WIDTH_OSC_A, keys::PULSE_WIDTH_OSC_B)?,
-    }))
-}
-
-fn load_midi_output(root: &Element) -> Result<MidiOutput, SerializationError> {
-    let channel: MidiChannel = xml::parse_children_element_content(root, keys::CHANNEL)?;
-    let note = xml::parse_children_element_content(root, keys::NOTE)?;
-
-    Ok(MidiOutput { channel, note })
-}
-
-fn load_gate_output(root: &Element) -> Result<CvGateOutput, SerializationError> {
-    Ok(CvGateOutput::new(xml::parse_children_element_content(root, keys::CHANNEL)?))
-}
-
-fn load_sound_output(root: &Element) -> Result<AudioOutput, SerializationError> {
-    Ok(AudioOutput {
-        sound: Box::new(load_sound(root)?),
-        name: xml::parse_children_element_content(root, keys::NAME)?,
-    })
-}
-
-fn load_sound_source(root: &Element) -> Result<RowKit, SerializationError> {
-    Ok(match root.name.as_str() {
-        keys::SOUND => RowKit::AudioOutput(load_sound_output(root)?),
-        keys::MIDI_OUTPUT => RowKit::MidiOutput(load_midi_output(root)?),
-        keys::GATE_OUTPUT => RowKit::CvGateOutput(load_gate_output(root)?),
-        _ => return Err(SerializationError::UnsupportedSoundSource(root.name.clone())),
-    })
-}
-
-fn load_envelope(root: &Element) -> Result<Envelope, SerializationError> {
-    Ok(Envelope {
-        attack: xml::parse_children_element_content(root, keys::ENV_ATTACK)?,
-        decay: xml::parse_children_element_content(root, keys::ENV_DECAY)?,
-        sustain: xml::parse_children_element_content(root, keys::ENV_SUSTAIN)?,
-        release: xml::parse_children_element_content(root, keys::ENV_RELEASE)?,
-    })
-}
-
-fn load_lfo1(root: &Element, default_params_node: &Element) -> Result<Lfo1, SerializationError> {
-    Ok(Lfo1 {
-        shape: xml::parse_children_element_content(root, keys::LFO_SHAPE)?,
-        sync_level: xml::parse_children_element_content(root, keys::SYNC_LEVEL)?,
-        rate: xml::parse_children_element_content(default_params_node, keys::LFO1_RATE)?,
-    })
-}
-
-fn load_lfo2(root: &Element, default_params_node: &Element) -> Result<Lfo2, SerializationError> {
-    Ok(Lfo2 {
-        shape: xml::parse_children_element_content(root, keys::LFO_SHAPE)?,
-        rate: xml::parse_children_element_content(default_params_node, keys::LFO2_RATE)?,
-    })
-}
-
-fn load_unison(root: &Element) -> Result<Unison, SerializationError> {
-    Ok(Unison {
-        voice_count: xml::parse_children_element_content(root, keys::UNISON_VOICE_COUNT)?,
-        detune: xml::parse_children_element_content(root, keys::UNISON_DETUNE)?,
-    })
-}
-
 fn load_delay(root: &Element, default_params_node: &Element) -> Result<Delay, SerializationError> {
     Ok(Delay {
         ping_pong: xml::parse_children_element_content(root, keys::PING_PONG)?,
@@ -325,43 +158,6 @@ fn load_arpeggiator(root: &Element, default_params_node: &Element) -> Result<Arp
     })
 }
 
-fn load_patch_cables(root: &Element) -> Result<Vec<PatchCable>, SerializationError> {
-    let cables = xml::get_all_children_element_with_name(root, keys::PATCH_CABLE);
-    let mut patch_cables = Vec::new();
-
-    for cable in cables {
-        patch_cables.push(load_patch_cable(cable)?);
-    }
-
-    Ok(patch_cables)
-}
-
-fn load_mod_knob(element: &Element) -> Result<ModKnob, SerializationError> {
-    Ok(ModKnob {
-        control_param: xml::parse_children_element_content(element, keys::MOD_KNOB_CONTROL_PARAM)?,
-        patch_amount_from_source: xml::parse_opt_children_element_content(element, keys::MOD_KNOB_PATCH_AMOUNT_FROM_SOURCE)?,
-    })
-}
-
-fn load_mod_knobs(root: &Element) -> Result<Vec<ModKnob>, SerializationError> {
-    let mod_knob_nodes = xml::get_all_children_element_with_name(root, keys::MOD_KNOB);
-    let mut mod_knobs = Vec::new();
-
-    for mod_knob_node in mod_knob_nodes {
-        mod_knobs.push(load_mod_knob(mod_knob_node)?);
-    }
-
-    Ok(mod_knobs)
-}
-
-fn load_patch_cable(root: &Element) -> Result<PatchCable, SerializationError> {
-    Ok(PatchCable {
-        source: xml::parse_children_element_content(root, keys::PATCH_CABLE_SOURCE)?,
-        destination: xml::parse_children_element_content(root, keys::PATCH_CABLE_DESTINATION)?,
-        amount: xml::parse_children_element_content(root, keys::PATCH_CABLE_AMOUNT)?,
-    })
-}
-
 fn load_sidechain(root: &Element, default_params_node: &Element) -> Result<Sidechain, SerializationError> {
     Ok(Sidechain {
         attack: xml::parse_children_element_content(root, keys::COMPRESSOR_ATTACK)?,
@@ -389,7 +185,7 @@ mod tests {
         load_synth, save_synth,
         values::{
             AttackSidechain, ClippingAmount, FineTranspose, HexU50, LfoShape, LpfMode, Pan, Polyphony, ReleaseSidechain,
-            RetrigPhase, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
+            RetrigPhase, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority, OscType,
         }, ModulationFx,
     };
 
