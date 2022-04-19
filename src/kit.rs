@@ -1,5 +1,3 @@
-use nom::HexDisplay;
-
 use crate::{
     values::{CvGateChannel, FilterType, LpfMode, MidiChannel, Polyphony, HexU50},
     Delay, Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone, Sidechain, Equalizer, ModulationFx, Flanger,
@@ -25,6 +23,7 @@ pub struct Kit {
 
     pub bit_crush: HexU50,
     pub decimation: HexU50,
+    pub stutter_rate: HexU50,
 
     /// The modulation FX global for the kit
     pub modulation_fx: ModulationFx,
@@ -56,6 +55,7 @@ impl Kit {
             current_filter_type: FilterType::Lpf,
             bit_crush: 0.into(),
             decimation: 0.into(),
+            stutter_rate: 25.into(),
             selected_drum_index: if has_rows { None } else { Some(0) },
             delay: Delay::default(),
             sidechain: Sidechain::default(),

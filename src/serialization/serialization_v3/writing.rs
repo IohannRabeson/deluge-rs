@@ -59,6 +59,7 @@ pub fn write_kit(kit: &Kit) -> Result<Element, SerializationError> {
     // Must be done at the end to ensure 'default_params_node' has all his children added.
     xml::insert_attribute_rc(&mut default_params_node, keys::BIT_CRUSH, &kit.bit_crush)?;
     xml::insert_attribute_rc(&mut default_params_node, keys::DECIMATION, &kit.decimation)?;
+    xml::insert_attribute_rc(&mut default_params_node, keys::STUTTER_RATE, &kit.stutter_rate)?;
     xml::insert_child_rc(&mut default_params_node, write_global_lpf(&kit.lpf)?);
     xml::insert_child_rc(&mut default_params_node, write_global_hpf(&kit.hpf)?);
     xml::insert_child_rc(&mut default_params_node, write_equalizer(&kit.equalizer)?);

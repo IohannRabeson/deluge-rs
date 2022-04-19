@@ -46,8 +46,9 @@ pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, SerializationError> {
         modulation_fx: load_modulation_fx(kit_node)?,
         current_filter_type: xml::parse_children_element_content(kit_node, keys::CURRENT_FILTER_TYPE)?,
         selected_drum_index: xml::parse_children_element_content(kit_node, keys::SELECTED_DRUM_INDEX)?,
-        bit_crush: load_global_bit_crush(kit_node)?,
-        decimation: load_global_decimation(kit_node)?,
+        bit_crush: load_global_hexu(kit_node, keys::BIT_CRUSH)?,
+        decimation: load_global_hexu(kit_node, keys::DECIMATION)?,
+        stutter_rate: load_global_hexu(kit_node, keys::STUTTER_RATE)?,
         delay: load_global_delay(kit_node)?,
         sidechain: load_global_sidechain(kit_node)?,
         lpf: load_global_lpf(kit_node)?,
@@ -510,19 +511,10 @@ fn load_global_equalizer(kit_node: &Element) -> Result<Equalizer, SerializationE
     })
 }
 
-fn load_global_bit_crush(kit_node: &Element) -> Result<HexU50, SerializationError> {
+fn load_global_hexu(kit_node: &Element, key: &str) -> Result<HexU50, SerializationError> {
     Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
         Some(default_params_node) => {
-            xml::parse_children_element_content(default_params_node, keys::BIT_CRUSH)?
-        },
-        None => 0.into(),
-    })
-}
-
-fn load_global_decimation(kit_node: &Element) -> Result<HexU50, SerializationError> {
-    Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
-        Some(default_params_node) => {
-            xml::parse_children_element_content(default_params_node, keys::DECIMATION)?
+            xml::parse_children_element_content(default_params_node, key)?
         },
         None => 0.into(),
     })
