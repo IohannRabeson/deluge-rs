@@ -3,19 +3,19 @@
 <earliestCompatibleFirmware>2.0.0-beta</earliestCompatibleFirmware>
 <sound>
 	<osc1>
-		<type>square</type>
+		<type>analogSquare</type>
 		<transpose>0</transpose>
 		<cents>0</cents>
 		<retrigPhase>0</retrigPhase>
 	</osc1>
 	<osc2>
-		<type>saw</type>
-		<transpose>0</transpose>
-		<cents>8</cents>
+		<type>square</type>
+		<transpose>-12</transpose>
+		<cents>-2</cents>
 		<retrigPhase>0</retrigPhase>
 	</osc2>
-	<polyphonic>poly</polyphonic>
-	<clippingAmount>5</clippingAmount>
+	<polyphonic>auto</polyphonic>
+	<clippingAmount>0</clippingAmount>
 	<voicePriority>1</voicePriority>
 	<lfo1>
 		<type>triangle</type>
@@ -25,9 +25,10 @@
 		<type>triangle</type>
 	</lfo2>
 	<mode>subtractive</mode>
+	<transpose>-24</transpose>
 	<unison>
-		<num>3</num>
-		<detune>13</detune>
+		<num>2</num>
+		<detune>2</detune>
 	</unison>
 	<compressor>
 		<syncLevel>6</syncLevel>
@@ -38,37 +39,37 @@
 	<modFXType>none</modFXType>
 	<delay>
 		<pingPong>1</pingPong>
-		<analog>0</analog>
-		<syncLevel>6</syncLevel>
+		<analog>1</analog>
+		<syncLevel>7</syncLevel>
 	</delay>
 	<defaultParams>
 		<arpeggiatorGate>0x00000000</arpeggiatorGate>
 		<portamento>0x80000000</portamento>
 		<compressorShape>0xDC28F5B2</compressorShape>
-		<oscAVolume>0x70A3D6DF</oscAVolume>
+		<oscAVolume>0x7FFFFFFF</oscAVolume>
 		<oscAPulseWidth>0x00000000</oscAPulseWidth>
-		<oscBVolume>0x7FFFFFD2</oscBVolume>
+		<oscBVolume>0x80000000</oscBVolume>
 		<oscBPulseWidth>0x00000000</oscBPulseWidth>
-		<noiseVolume>0x7FFFFFFF</noiseVolume>
-		<volume>0x6C000000</volume>
-		<pan>0x00000000</pan>
-		<lpfFrequency>0x24000000</lpfFrequency>
-		<lpfResonance>0x82000000</lpfResonance>
-		<hpfFrequency>0x1C000000</hpfFrequency>
-		<hpfResonance>0x80000000</hpfResonance>
+		<noiseVolume>0x80000000</noiseVolume>
+		<volume>0x47A30000</volume>
+		<pan>0xF8000000</pan>
+		<lpfFrequency>0xE8000000</lpfFrequency>
+		<lpfResonance>0xCA000000</lpfResonance>
+		<hpfFrequency>0x80000000</hpfFrequency>
+		<hpfResonance>0xE147AE03</hpfResonance>
 		<envelope1>
-			<attack>0x12000000</attack>
-			<decay>0xF5C28F47</decay>
-			<sustain>0x51EB84F9</sustain>
-			<release>0xF8000000</release>
+			<attack>0xAC000000</attack>
+			<decay>0xA3D70A37</decay>
+			<sustain>0x6147ADEC</sustain>
+			<release>0xD70A3D61</release>
 		</envelope1>
 		<envelope2>
-			<attack>0x80000000</attack>
-			<decay>0x8C000000</decay>
-			<sustain>0xC7AE146E</sustain>
-			<release>0x51EB84F9</release>
+			<attack>0x9EB851E6</attack>
+			<decay>0x99999995</decay>
+			<sustain>0xE147AE03</sustain>
+			<release>0xD70A3D61</release>
 		</envelope2>
-		<lfo1Rate>0x20000000</lfo1Rate>
+		<lfo1Rate>0x26000000</lfo1Rate>
 		<lfo2Rate>0x33333313</lfo2Rate>
 		<modulator1Amount>0xA8F5C288</modulator1Amount>
 		<modulator1Feedback>0x80000000</modulator1Feedback>
@@ -76,11 +77,11 @@
 		<modulator2Feedback>0x80000000</modulator2Feedback>
 		<carrier1Feedback>0x80000000</carrier1Feedback>
 		<carrier2Feedback>0x80000000</carrier2Feedback>
-		<modFXRate>0x1999997E</modFXRate>
-		<modFXDepth>0xB333332A</modFXDepth>
-		<delayRate>0xFFFFFFE9</delayRate>
+		<modFXRate>0xEB851EA5</modFXRate>
+		<modFXDepth>0xC7AE146E</modFXDepth>
+		<delayRate>0x04000000</delayRate>
 		<delayFeedback>0x80000000</delayFeedback>
-		<reverbAmount>0xD0000000</reverbAmount>
+		<reverbAmount>0x80000000</reverbAmount>
 		<arpeggiatorRate>0x00000000</arpeggiatorRate>
 		<patchCables>
 			<patchCable>
@@ -89,14 +90,14 @@
 				<amount>0x3FFFFFE8</amount>
 			</patchCable>
 			<patchCable>
-				<source>lfo1</source>
-				<destination>pitch</destination>
-				<amount>0x03000000</amount>
-			</patchCable>
-			<patchCable>
 				<source>envelope2</source>
 				<destination>lpfFrequency</destination>
-				<amount>0x251EB844</amount>
+				<amount>0x33333320</amount>
+			</patchCable>
+			<patchCable>
+				<source>note</source>
+				<destination>lpfFrequency</destination>
+				<amount>0x19999990</amount>
 			</patchCable>
 		</patchCables>
 		<stutterRate>0x00000000</stutterRate>
@@ -108,8 +109,8 @@
 			<bassFrequency>0x00000000</bassFrequency>
 			<trebleFrequency>0x00000000</trebleFrequency>
 		</equalizer>
-		<modFXOffset>0xFFC00000</modFXOffset>
-		<modFXFeedback>0xFFFFFFAA</modFXFeedback>
+		<modFXOffset>0x23851E00</modFXOffset>
+		<modFXFeedback>0x80733D70</modFXFeedback>
 	</defaultParams>
 	<midiKnobs>
 	</midiKnobs>
@@ -121,10 +122,10 @@
 			<controlsParam>volumePostFX</controlsParam>
 		</modKnob>
 		<modKnob>
-			<controlsParam>hpfResonance</controlsParam>
+			<controlsParam>lpfResonance</controlsParam>
 		</modKnob>
 		<modKnob>
-			<controlsParam>hpfFrequency</controlsParam>
+			<controlsParam>lpfFrequency</controlsParam>
 		</modKnob>
 		<modKnob>
 			<controlsParam>env1Release</controlsParam>

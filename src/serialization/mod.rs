@@ -139,13 +139,51 @@ mod tests {
         assert_eq!(synth_v2, synth_v3);
     }
 
-    /// This test require the same patch saved under different version.
     #[test]
-    fn test_convert_version_2_to_actual_synt008() {
-        let synth_v2 = load_synth(include_str!("../data_tests/SYNTHS/SYNT008.XML")).unwrap();
-        let synth_v3 = load_synth(include_str!("../data_tests/SYNTHS/SYNT008A.XML")).unwrap();
+    fn test_convert_version_2_to_actual_synth_synt61() {
+        let synth_v2 = load_synth(include_str!("../data_tests/SYNTHS/SYNT061.XML")).unwrap();
+        let synth_v3 = load_synth(include_str!("../data_tests/SYNTHS/SYNT061A.XML")).unwrap();
 
         assert_eq!(synth_v2, synth_v3);
+    }
+
+    #[test]
+    fn test_convert_version_2_to_actual_synth_synt002() {
+        let synth_v2 = load_synth(include_str!("../data_tests/Version conver/SYNT002.XML")).unwrap();
+        let synth_v3 = load_synth(include_str!("../data_tests/Version conver/SYNT002A.XML")).unwrap();
+
+        assert_eq!(synth_v2, synth_v3);
+    }
+
+    // I can figure out why this one can't work.
+    // The original value for the global volume in SYNT039 should be 40 (0x4CCCCCA8 in the file)
+    // but with the deluge it becomes 50!
+    // So when I save with the Deluge, the value for the global volume jump to 50 accordingly.
+    // #[test]
+    // fn test_convert_version_synt039() {
+    //     let synth_v1 = load_synth(include_str!("../data_tests/Version conver/SYNT039.XML")).unwrap();
+    //     let synth_v3 = load_synth(include_str!("../data_tests/Version conver/SYNT039C.XML")).unwrap();
+
+    //     assert_eq!(synth_v1.sound.generator.as_ring_mod().unwrap().osc1.as_waveform().unwrap().retrig_phase, RetrigPhase::Degrees(0));
+    //     assert_eq!(synth_v1, synth_v3);
+    // }
+
+    /// This test require the same patch saved under different version.
+    #[test]
+    fn test_convert_version_synt008() {
+        let synth_v1 = load_synth(include_str!("../data_tests/SYNTHS/SYNT008.XML")).unwrap();
+        let synth_v3 = load_synth(include_str!("../data_tests/SYNTHS/SYNT008A.XML")).unwrap();
+
+        assert_eq!(synth_v1, synth_v3);
+    }
+
+    /// This test require the same patch saved under different version.
+    #[test]
+    fn test_convert_version_synt004() {
+        let synth_v1 = load_synth(include_str!("../data_tests/SYNTHS/SYNT004.XML")).unwrap();
+        let synth_v3 = load_synth(include_str!("../data_tests/SYNTHS/SYNT004A.XML")).unwrap();
+
+        assert_eq!(synth_v1, synth_v3);
     }
 
     #[test]

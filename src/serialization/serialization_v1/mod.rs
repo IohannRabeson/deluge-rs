@@ -1,7 +1,7 @@
 use crate::{
     values::{
-        ArpeggiatorMode, AttackSidechain, HexU50, MidiChannel, ModulationFxType, OctavesCount, OnOff, OscType, Pan,
-        ReleaseSidechain, RetrigPhase, SoundType, SyncLevel,
+        ArpeggiatorMode, AttackSidechain, HexU50, MidiChannel, ModulationFxType, OnOff, OscType, Pan, ReleaseSidechain,
+        RetrigPhase, SoundType, SyncLevel,
     },
     Arpeggiator, AudioOutput, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator,
     FmModulator, Hpf, Kit, Lfo1, Lfo2, Lpf, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator,
@@ -101,7 +101,7 @@ fn create_default_arpeggiator() -> Arpeggiator {
     Arpeggiator {
         mode: ArpeggiatorMode::Off,
         sync_level: SyncLevel::Sixteenth,
-        octaves_count: OctavesCount::new(2),
+        octaves_count: 2.into(),
         rate: 25.into(),
         gate: 25.into(),
     }
@@ -123,11 +123,16 @@ fn load_subtractive_sound(root: &Element) -> Result<SoundGenerator, Serializatio
 
     let mut osc1 = load_oscillator(osc1_node, &DefaultParams::new(TwinSelector::A, default_params_node))?;
     let mut osc2 = load_oscillator(osc2_node, &DefaultParams::new(TwinSelector::B, default_params_node))?;
-    let retrig_phase = xml::parse_opt_children_element_content::<OnOff>(root, keys::OSCILLATOR_RESET)
-        .map(convert_oscillator_reset_to_retrig_phase)?;
 
-    assign_retrig_phase(&mut osc1, retrig_phase);
-    assign_retrig_phase(&mut osc2, retrig_phase);
+    if let Some(oscillator_reset_node) = xml::parse_opt_children_element_content::<OnOff>(root, keys::OSCILLATOR_RESET)? {
+        let retrig_phase = match oscillator_reset_node {
+            OnOff::On => RetrigPhase::Degrees(0),
+            OnOff::Off => RetrigPhase::Off,
+        };
+
+        assign_retrig_phase(&mut osc1, retrig_phase);
+        assign_retrig_phase(&mut osc2, retrig_phase);
+    }
 
     Ok(SoundGenerator::Subtractive(SubtractiveGenerator {
         osc1,
@@ -142,14 +147,6 @@ fn load_subtractive_sound(root: &Element) -> Result<SoundGenerator, Serializatio
     }))
 }
 
-fn convert_oscillator_reset_to_retrig_phase(value: Option<OnOff>) -> RetrigPhase {
-    match value {
-        None => RetrigPhase::Degrees(0),
-        Some(OnOff::On) => RetrigPhase::Degrees(0),
-        Some(OnOff::Off) => RetrigPhase::Off,
-    }
-}
-
 fn assign_retrig_phase(mut osc: &mut Oscillator, retrig_phase: RetrigPhase) {
     if let Oscillator::Waveform(osc) = &mut osc {
         osc.retrig_phase = retrig_phase;
@@ -160,10 +157,22 @@ pub(crate) fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, Seri
     let osc1_node = xml::get_children_element(root, keys::OSC1)?;
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
+    let mut osc1 = load_oscillator(osc1_node, &DefaultParams::new(TwinSelector::A, default_params_node))?;
+    let mut osc2 = load_oscillator(osc2_node, &DefaultParams::new(TwinSelector::B, default_params_node))?;
+
+    if let Some(oscillator_reset_node) = xml::parse_opt_children_element_content::<OnOff>(root, keys::OSCILLATOR_RESET)? {
+        let retrig_phase = match oscillator_reset_node {
+            OnOff::On => RetrigPhase::Degrees(0),
+            OnOff::Off => RetrigPhase::Off,
+        };
+
+        assign_retrig_phase(&mut osc1, retrig_phase);
+        assign_retrig_phase(&mut osc2, retrig_phase);
+    }
 
     Ok(SoundGenerator::RingMod(RingModGenerator {
-        osc1: load_oscillator(osc1_node, &DefaultParams::new(TwinSelector::A, default_params_node))?,
-        osc2: load_oscillator(osc2_node, &DefaultParams::new(TwinSelector::B, default_params_node))?,
+        osc1,
+        osc2,
         osc2_sync: xml::parse_opt_children_element_content::<OnOff>(osc2_node, keys::OSCILLATOR_SYNC)?.unwrap_or(OnOff::Off),
         noise: xml::parse_children_element_content(default_params_node, keys::NOISE_VOLUME)?,
     }))
@@ -177,6 +186,18 @@ pub(crate) fn load_fm_sound(root: &Element) -> Result<SoundGenerator, Serializat
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
     let params_a = &DefaultParams::new(TwinSelector::A, default_params_node);
     let params_b = &DefaultParams::new(TwinSelector::B, default_params_node);
+    let mut osc1 = load_carrier(osc1_node, params_a)?;
+    let mut osc2 = load_carrier(osc2_node, params_b)?;
+
+    if let Some(oscillator_reset_node) = xml::parse_opt_children_element_content::<OnOff>(root, keys::OSCILLATOR_RESET)? {
+        let retrig_phase = match oscillator_reset_node {
+            OnOff::On => RetrigPhase::Degrees(0),
+            OnOff::Off => RetrigPhase::Off,
+        };
+
+        osc1.retrig_phase = retrig_phase;
+        osc2.retrig_phase = retrig_phase;
+    }
 
     Ok(SoundGenerator::Fm(FmGenerator {
         osc1: load_carrier(osc1_node, params_a)?,
@@ -608,7 +629,7 @@ mod tests {
         assert_eq!(sound.equalizer.treble_frequency, HexU50::parse("0x00000000").unwrap());
 
         assert_eq!(sound.arpeggiator.mode, ArpeggiatorMode::Off);
-        assert_eq!(sound.arpeggiator.octaves_count, OctavesCount::new(2));
+        assert_eq!(sound.arpeggiator.octaves_count, 2.into());
         assert_eq!(sound.arpeggiator.gate, HexU50::parse("0x00000000").unwrap());
         assert_eq!(sound.arpeggiator.rate, HexU50::parse("0x00000000").unwrap());
 

@@ -1,5 +1,5 @@
 use crate::{
-    values::{ArpeggiatorMode, AttackSidechain, OctavesCount, OnOff, ReleaseSidechain, SoundType, SyncLevel, TableIndex},
+    values::{AttackSidechain, OnOff, ReleaseSidechain, SoundType, TableIndex},
     Arpeggiator, Delay, Kit, RowKit, SerializationError, Sidechain, Sound, SoundGenerator, SubtractiveGenerator, Synth,
 };
 use xmltree::Element;
@@ -148,13 +148,7 @@ fn load_arpeggiator(root: &Element, default_params_node: &Element) -> Result<Arp
             rate: xml::parse_children_element_content(default_params_node, keys::ARPEGGIATOR_RATE)?,
             gate: xml::parse_children_element_content(default_params_node, keys::ARPEGGIATOR_GATE)?,
         },
-        None => Arpeggiator {
-            mode: ArpeggiatorMode::Off,
-            sync_level: SyncLevel::Sixteenth,
-            octaves_count: OctavesCount::default(),
-            rate: 25.into(),
-            gate: 25.into(),
-        },
+        None => Arpeggiator::default(),
     })
 }
 
@@ -184,8 +178,8 @@ mod tests {
     use crate::{
         load_synth, save_synth,
         values::{
-            AttackSidechain, ClippingAmount, FineTranspose, HexU50, LfoShape, LpfMode, OscType, Pan, Polyphony, ReleaseSidechain,
-            RetrigPhase, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
+            ArpeggiatorMode, AttackSidechain, ClippingAmount, FineTranspose, HexU50, LfoShape, LpfMode, OscType, Pan, Polyphony,
+            ReleaseSidechain, RetrigPhase, SyncLevel, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
         },
         ModulationFx,
     };
@@ -261,7 +255,7 @@ mod tests {
         assert_eq!(sound.equalizer.treble_frequency, HexU50::parse("0x00000000").unwrap());
 
         assert_eq!(sound.arpeggiator.mode, ArpeggiatorMode::Off);
-        assert_eq!(sound.arpeggiator.octaves_count, OctavesCount::new(1));
+        assert_eq!(sound.arpeggiator.octaves_count, 2.into());
         assert_eq!(sound.arpeggiator.gate, HexU50::parse("0x00000000").unwrap());
         assert_eq!(sound.arpeggiator.rate, HexU50::parse("0x00000000").unwrap());
 
