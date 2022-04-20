@@ -65,9 +65,9 @@ impl Serialize for RetrigPhase {
     }
 }
 
-struct PhaseVisitor;
+struct RetrigPhaseVisitor;
 
-impl<'de> Visitor<'de> for PhaseVisitor {
+impl<'de> Visitor<'de> for RetrigPhaseVisitor {
     type Value = RetrigPhase;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::result::Result<(), std::fmt::Error> {
@@ -87,7 +87,7 @@ impl<'de> Deserialize<'de> for RetrigPhase {
     where
         D: Deserializer<'de>,
     {
-        deserializer.deserialize_str(PhaseVisitor)
+        deserializer.deserialize_str(RetrigPhaseVisitor)
     }
 }
 
