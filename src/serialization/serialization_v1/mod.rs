@@ -120,19 +120,10 @@ fn load_subtractive_sound(root: &Element) -> Result<SoundGenerator, Serializatio
     let osc1_node = xml::get_children_element(root, keys::OSC1)?;
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
-
     let mut osc1 = load_oscillator(osc1_node, &DefaultParams::new(TwinSelector::A, default_params_node))?;
     let mut osc2 = load_oscillator(osc2_node, &DefaultParams::new(TwinSelector::B, default_params_node))?;
 
-    if let Some(oscillator_reset_node) = xml::parse_opt_children_element_content::<OnOff>(root, keys::OSCILLATOR_RESET)? {
-        let retrig_phase = match oscillator_reset_node {
-            OnOff::On => RetrigPhase::Degrees(0),
-            OnOff::Off => RetrigPhase::Off,
-        };
-
-        assign_retrig_phase(&mut osc1, retrig_phase);
-        assign_retrig_phase(&mut osc2, retrig_phase);
-    }
+    load_oscillator_reset_osc(root, &mut osc1, &mut osc2)?;
 
     Ok(SoundGenerator::Subtractive(SubtractiveGenerator {
         osc1,
@@ -160,15 +151,7 @@ pub(crate) fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, Seri
     let mut osc1 = load_oscillator(osc1_node, &DefaultParams::new(TwinSelector::A, default_params_node))?;
     let mut osc2 = load_oscillator(osc2_node, &DefaultParams::new(TwinSelector::B, default_params_node))?;
 
-    if let Some(oscillator_reset_node) = xml::parse_opt_children_element_content::<OnOff>(root, keys::OSCILLATOR_RESET)? {
-        let retrig_phase = match oscillator_reset_node {
-            OnOff::On => RetrigPhase::Degrees(0),
-            OnOff::Off => RetrigPhase::Off,
-        };
-
-        assign_retrig_phase(&mut osc1, retrig_phase);
-        assign_retrig_phase(&mut osc2, retrig_phase);
-    }
+    load_oscillator_reset_osc(root, &mut osc1, &mut osc2)?;
 
     Ok(SoundGenerator::RingMod(RingModGenerator {
         osc1,
@@ -176,6 +159,17 @@ pub(crate) fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, Seri
         osc2_sync: xml::parse_opt_children_element_content::<OnOff>(osc2_node, keys::OSCILLATOR_SYNC)?.unwrap_or(OnOff::Off),
         noise: xml::parse_children_element_content(default_params_node, keys::NOISE_VOLUME)?,
     }))
+}
+
+fn load_oscillator_reset_osc(root: &Element, osc1: &mut Oscillator, osc2: &mut Oscillator) -> Result<(), SerializationError> {
+    if let Some(oscillator_reset_node) = xml::parse_opt_children_element_content::<OnOff>(root, keys::OSCILLATOR_RESET)? {
+        let retrig_phase = retrig_phase_from_oscillator_reset(oscillator_reset_node);
+
+        assign_retrig_phase(osc1, retrig_phase);
+        assign_retrig_phase(osc2, retrig_phase);
+    }
+
+    Ok(())
 }
 
 pub(crate) fn load_fm_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
@@ -189,15 +183,7 @@ pub(crate) fn load_fm_sound(root: &Element) -> Result<SoundGenerator, Serializat
     let mut osc1 = load_carrier(osc1_node, params_a)?;
     let mut osc2 = load_carrier(osc2_node, params_b)?;
 
-    if let Some(oscillator_reset_node) = xml::parse_opt_children_element_content::<OnOff>(root, keys::OSCILLATOR_RESET)? {
-        let retrig_phase = match oscillator_reset_node {
-            OnOff::On => RetrigPhase::Degrees(0),
-            OnOff::Off => RetrigPhase::Off,
-        };
-
-        osc1.retrig_phase = retrig_phase;
-        osc2.retrig_phase = retrig_phase;
-    }
+    load_oscillator_reset_carrier(root, &mut osc1, &mut osc2)?;
 
     Ok(SoundGenerator::Fm(FmGenerator {
         osc1: load_carrier(osc1_node, params_a)?,
@@ -206,6 +192,24 @@ pub(crate) fn load_fm_sound(root: &Element) -> Result<SoundGenerator, Serializat
         modulator2: load_fm_modulation(mod2_node, params_b)?,
         modulator2_to_modulator1: xml::parse_children_element_content(mod2_node, keys::FM_MOD1_TO_MOD2)?,
     }))
+}
+
+fn load_oscillator_reset_carrier(root: &Element, mut osc1: &mut FmCarrier, mut osc2: &mut FmCarrier) -> Result<(), SerializationError> {
+    if let Some(oscillator_reset_node) = xml::parse_opt_children_element_content::<OnOff>(root, keys::OSCILLATOR_RESET)? {
+        let retrig_phase = retrig_phase_from_oscillator_reset(oscillator_reset_node);
+
+        osc1.retrig_phase = retrig_phase;
+        osc2.retrig_phase = retrig_phase;
+    }
+
+    Ok(())
+}
+
+fn retrig_phase_from_oscillator_reset(oscillator_reset_node: OnOff) -> RetrigPhase {
+    match oscillator_reset_node {
+        OnOff::On => RetrigPhase::Degrees(0),
+        OnOff::Off => RetrigPhase::Off,
+    }
 }
 
 pub(crate) fn load_oscillator(root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
