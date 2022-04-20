@@ -155,10 +155,12 @@ mod tests {
         assert_eq!(synth_v2, synth_v3);
     }
 
-    // I can figure out why this one can't work.
+    // I can't figure out why this one can't work.
     // The original value for the global volume in SYNT039 should be 40 (0x4CCCCCA8 in the file)
     // but with the deluge it becomes 50!
     // So when I save with the Deluge, the value for the global volume jump to 50 accordingly.
+    // I tried to change the value to 0x00000000 and Deluge displayed 40 this time. So I'm lost here.
+    // Though it's not that important.
     // #[test]
     // fn test_convert_version_synt039() {
     //     let synth_v1 = load_synth(include_str!("../data_tests/Version conver/SYNT039.XML")).unwrap();
