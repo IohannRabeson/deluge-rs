@@ -1,7 +1,7 @@
 use crate::{
     values::{
-        ArpeggiatorMode, AttackSidechain, HexU50, MidiChannel, ModulationFxType, OctavesCount, OnOff, OscType, Pan,
-        ReleaseSidechain, RetrigPhase, SoundType, SyncLevel,
+        ArpeggiatorMode, AttackSidechain, HexU50, MidiChannel, ModulationFxType, OnOff, OscType, Pan, ReleaseSidechain,
+        RetrigPhase, SoundType, SyncLevel,
     },
     Arpeggiator, AudioOutput, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator,
     FmModulator, Hpf, Kit, Lfo1, Lfo2, Lpf, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator,
@@ -101,7 +101,7 @@ fn create_default_arpeggiator() -> Arpeggiator {
     Arpeggiator {
         mode: ArpeggiatorMode::Off,
         sync_level: SyncLevel::Sixteenth,
-        octaves_count: OctavesCount::new(2),
+        octaves_count: 2.into(),
         rate: 25.into(),
         gate: 25.into(),
     }
@@ -120,17 +120,10 @@ fn load_subtractive_sound(root: &Element) -> Result<SoundGenerator, Serializatio
     let osc1_node = xml::get_children_element(root, keys::OSC1)?;
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
-
     let mut osc1 = load_oscillator(osc1_node, &DefaultParams::new(TwinSelector::A, default_params_node))?;
     let mut osc2 = load_oscillator(osc2_node, &DefaultParams::new(TwinSelector::B, default_params_node))?;
-    
-    // Support for oscillatorReset. 
-    // I think at this version this was only reset or not reset.
-    let retrig_phase = xml::parse_opt_children_element_content::<OnOff>(root, keys::OSCILLATOR_RESET)
-        .map(convert_oscillator_reset_to_retrig_phase)?;
 
-    assign_retrig_phase(&mut osc1, retrig_phase);
-    assign_retrig_phase(&mut osc2, retrig_phase);
+    load_oscillator_reset_osc(root, &mut osc1, &mut osc2)?;
 
     Ok(SoundGenerator::Subtractive(SubtractiveGenerator {
         osc1,
@@ -145,34 +138,41 @@ fn load_subtractive_sound(root: &Element) -> Result<SoundGenerator, Serializatio
     }))
 }
 
-fn convert_oscillator_reset_to_retrig_phase(value: Option<OnOff>) -> RetrigPhase {
-    match value {
-        None => RetrigPhase::Degrees(0),
-        Some(OnOff::On) => RetrigPhase::Degrees(0),
-        Some(OnOff::Off) => RetrigPhase::Off,
-    }
-}
-
 fn assign_retrig_phase(mut osc: &mut Oscillator, retrig_phase: RetrigPhase) {
     if let Oscillator::Waveform(osc) = &mut osc {
         osc.retrig_phase = retrig_phase;
     }
 }
 
-fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
+pub(crate) fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
     let osc1_node = xml::get_children_element(root, keys::OSC1)?;
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
+    let mut osc1 = load_oscillator(osc1_node, &DefaultParams::new(TwinSelector::A, default_params_node))?;
+    let mut osc2 = load_oscillator(osc2_node, &DefaultParams::new(TwinSelector::B, default_params_node))?;
+
+    load_oscillator_reset_osc(root, &mut osc1, &mut osc2)?;
 
     Ok(SoundGenerator::RingMod(RingModGenerator {
-        osc1: load_oscillator(osc1_node, &DefaultParams::new(TwinSelector::A, default_params_node))?,
-        osc2: load_oscillator(osc2_node, &DefaultParams::new(TwinSelector::B, default_params_node))?,
+        osc1,
+        osc2,
         osc2_sync: xml::parse_opt_children_element_content::<OnOff>(osc2_node, keys::OSCILLATOR_SYNC)?.unwrap_or(OnOff::Off),
         noise: xml::parse_children_element_content(default_params_node, keys::NOISE_VOLUME)?,
     }))
 }
 
-fn load_fm_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
+fn load_oscillator_reset_osc(root: &Element, osc1: &mut Oscillator, osc2: &mut Oscillator) -> Result<(), SerializationError> {
+    if let Some(oscillator_reset_node) = xml::parse_opt_children_element_content::<OnOff>(root, keys::OSCILLATOR_RESET)? {
+        let retrig_phase = retrig_phase_from_oscillator_reset(oscillator_reset_node);
+
+        assign_retrig_phase(osc1, retrig_phase);
+        assign_retrig_phase(osc2, retrig_phase);
+    }
+
+    Ok(())
+}
+
+pub(crate) fn load_fm_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
     let osc1_node = xml::get_children_element(root, keys::OSC1)?;
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
     let mod1_node = xml::get_children_element(root, keys::FM_MODULATOR1)?;
@@ -180,6 +180,10 @@ fn load_fm_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
     let params_a = &DefaultParams::new(TwinSelector::A, default_params_node);
     let params_b = &DefaultParams::new(TwinSelector::B, default_params_node);
+    let mut osc1 = load_carrier(osc1_node, params_a)?;
+    let mut osc2 = load_carrier(osc2_node, params_b)?;
+
+    load_oscillator_reset_carrier(root, &mut osc1, &mut osc2)?;
 
     Ok(SoundGenerator::Fm(FmGenerator {
         osc1: load_carrier(osc1_node, params_a)?,
@@ -190,7 +194,25 @@ fn load_fm_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
     }))
 }
 
-fn load_oscillator(root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
+fn load_oscillator_reset_carrier(root: &Element, mut osc1: &mut FmCarrier, mut osc2: &mut FmCarrier) -> Result<(), SerializationError> {
+    if let Some(oscillator_reset_node) = xml::parse_opt_children_element_content::<OnOff>(root, keys::OSCILLATOR_RESET)? {
+        let retrig_phase = retrig_phase_from_oscillator_reset(oscillator_reset_node);
+
+        osc1.retrig_phase = retrig_phase;
+        osc2.retrig_phase = retrig_phase;
+    }
+
+    Ok(())
+}
+
+fn retrig_phase_from_oscillator_reset(oscillator_reset_node: OnOff) -> RetrigPhase {
+    match oscillator_reset_node {
+        OnOff::On => RetrigPhase::Degrees(0),
+        OnOff::Off => RetrigPhase::Off,
+    }
+}
+
+pub(crate) fn load_oscillator(root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
     let osc_type: OscType = xml::parse_children_element_content(root, keys::TYPE)?;
 
     match osc_type {
@@ -336,7 +358,7 @@ fn load_sound_output(root: &Element) -> Result<AudioOutput, SerializationError> 
     })
 }
 
-fn load_sound_source(root: &Element) -> Result<RowKit, SerializationError> {
+pub(crate) fn load_sound_source(root: &Element) -> Result<RowKit, SerializationError> {
     Ok(match root.name.as_str() {
         keys::SOUND => RowKit::AudioOutput(load_sound_output(root)?),
         keys::MIDI_OUTPUT => RowKit::MidiOutput(load_midi_output(root)?),
@@ -345,7 +367,7 @@ fn load_sound_source(root: &Element) -> Result<RowKit, SerializationError> {
     })
 }
 
-fn load_envelope(root: &Element) -> Result<Envelope, SerializationError> {
+pub(crate) fn load_envelope(root: &Element) -> Result<Envelope, SerializationError> {
     Ok(Envelope {
         attack: xml::parse_children_element_content(root, keys::ENV_ATTACK)?,
         decay: xml::parse_children_element_content(root, keys::ENV_DECAY)?,
@@ -354,7 +376,7 @@ fn load_envelope(root: &Element) -> Result<Envelope, SerializationError> {
     })
 }
 
-fn load_lfo1(root: &Element, default_params_node: &Element) -> Result<Lfo1, SerializationError> {
+pub(crate) fn load_lfo1(root: &Element, default_params_node: &Element) -> Result<Lfo1, SerializationError> {
     Ok(Lfo1 {
         shape: xml::parse_children_element_content(root, keys::LFO_SHAPE)?,
         sync_level: xml::parse_children_element_content(root, keys::SYNC_LEVEL)?,
@@ -362,21 +384,21 @@ fn load_lfo1(root: &Element, default_params_node: &Element) -> Result<Lfo1, Seri
     })
 }
 
-fn load_lfo2(root: &Element, default_params_node: &Element) -> Result<Lfo2, SerializationError> {
+pub(crate) fn load_lfo2(root: &Element, default_params_node: &Element) -> Result<Lfo2, SerializationError> {
     Ok(Lfo2 {
         shape: xml::parse_children_element_content(root, keys::LFO_SHAPE)?,
         rate: xml::parse_children_element_content(default_params_node, keys::LFO2_RATE)?,
     })
 }
 
-fn load_unison(root: &Element) -> Result<Unison, SerializationError> {
+pub(crate) fn load_unison(root: &Element) -> Result<Unison, SerializationError> {
     Ok(Unison {
         voice_count: xml::parse_children_element_content(root, keys::UNISON_VOICE_COUNT)?,
         detune: xml::parse_children_element_content(root, keys::UNISON_DETUNE)?,
     })
 }
 
-fn load_delay(root: &Element, default_params_node: &Element) -> Result<Delay, SerializationError> {
+pub(crate) fn load_delay(root: &Element, default_params_node: &Element) -> Result<Delay, SerializationError> {
     Ok(Delay {
         ping_pong: xml::parse_children_element_content(root, keys::PING_PONG)?,
         analog: xml::parse_children_element_content(root, keys::ANALOG)?,
@@ -399,7 +421,7 @@ fn load_global_delay(kit_node: &Element) -> Result<Delay, SerializationError> {
     })
 }
 
-fn load_distorsion(root: &Element, default_params_node: &Element) -> Result<Distorsion, SerializationError> {
+pub(crate) fn load_distorsion(root: &Element, default_params_node: &Element) -> Result<Distorsion, SerializationError> {
     Ok(Distorsion {
         saturation: xml::parse_opt_children_element_content(root, keys::CLIPPING_AMOUNT)?.unwrap_or_default(),
         bit_crush: xml::parse_children_element_content(default_params_node, keys::BIT_CRUSH)?,
@@ -407,7 +429,7 @@ fn load_distorsion(root: &Element, default_params_node: &Element) -> Result<Dist
     })
 }
 
-fn load_equalizer(root: &Element) -> Result<Equalizer, SerializationError> {
+pub(crate) fn load_equalizer(root: &Element) -> Result<Equalizer, SerializationError> {
     Ok(Equalizer {
         bass_level: xml::parse_children_element_content(root, keys::EQ_BASS)?,
         bass_frequency: xml::parse_children_element_content(root, keys::EQ_BASS_FREQUENCY)?,
@@ -416,7 +438,7 @@ fn load_equalizer(root: &Element) -> Result<Equalizer, SerializationError> {
     })
 }
 
-fn load_modulation_fx(root: &Element) -> Result<ModulationFx, SerializationError> {
+pub(crate) fn load_modulation_fx(root: &Element) -> Result<ModulationFx, SerializationError> {
     let modulation_fx_type: ModulationFxType = xml::parse_children_element_content(root, keys::MOD_FX_TYPE)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
 
@@ -451,7 +473,7 @@ fn load_modulation_fx_phaser(default_params_node: &Element) -> Result<Phaser, Se
     })
 }
 
-fn load_patch_cables(root: &Element) -> Result<Vec<PatchCable>, SerializationError> {
+pub(crate) fn load_patch_cables(root: &Element) -> Result<Vec<PatchCable>, SerializationError> {
     let cables = xml::get_all_children_element_with_name(root, keys::PATCH_CABLE);
     let mut patch_cables = Vec::new();
 
@@ -469,7 +491,7 @@ fn load_mod_knob(element: &Element) -> Result<ModKnob, SerializationError> {
     })
 }
 
-fn load_mod_knobs(root: &Element) -> Result<Vec<ModKnob>, SerializationError> {
+pub(crate) fn load_mod_knobs(root: &Element) -> Result<Vec<ModKnob>, SerializationError> {
     let mod_knob_nodes = xml::get_all_children_element_with_name(root, keys::MOD_KNOB);
     let mut mod_knobs = Vec::new();
 
@@ -488,7 +510,7 @@ fn load_patch_cable(root: &Element) -> Result<PatchCable, SerializationError> {
     })
 }
 
-fn load_global_lpf(kit_node: &Element) -> Result<Lpf, SerializationError> {
+pub(crate) fn load_global_lpf(kit_node: &Element) -> Result<Lpf, SerializationError> {
     let default_params_node = xml::get_children_element(kit_node, keys::DEFAULT_PARAMS)?;
     let default_lpf_node = xml::get_children_element(default_params_node, keys::LPF)?;
 
@@ -498,7 +520,7 @@ fn load_global_lpf(kit_node: &Element) -> Result<Lpf, SerializationError> {
     })
 }
 
-fn load_global_hpf(kit_node: &Element) -> Result<Hpf, SerializationError> {
+pub(crate) fn load_global_hpf(kit_node: &Element) -> Result<Hpf, SerializationError> {
     let default_params_node = xml::get_children_element(kit_node, keys::DEFAULT_PARAMS)?;
     let default_lpf_node = xml::get_children_element(default_params_node, keys::HPF)?;
 
@@ -508,21 +530,21 @@ fn load_global_hpf(kit_node: &Element) -> Result<Hpf, SerializationError> {
     })
 }
 
-fn load_global_equalizer(kit_node: &Element) -> Result<Equalizer, SerializationError> {
+pub(crate) fn load_global_equalizer(kit_node: &Element) -> Result<Equalizer, SerializationError> {
     Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
         Some(default_params_node) => load_equalizer(xml::get_children_element(default_params_node, keys::EQUALIZER)?)?,
         None => Equalizer::default(),
     })
 }
 
-fn load_global_hexu(kit_node: &Element, key: &str) -> Result<HexU50, SerializationError> {
+pub(crate) fn load_global_hexu(kit_node: &Element, key: &str) -> Result<HexU50, SerializationError> {
     Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
         Some(default_params_node) => xml::parse_children_element_content(default_params_node, key)?,
         None => 0.into(),
     })
 }
 
-fn load_global_pan(kit_node: &Element) -> Result<Pan, SerializationError> {
+pub(crate) fn load_global_pan(kit_node: &Element) -> Result<Pan, SerializationError> {
     Ok(match xml::get_opt_children_element(kit_node, keys::DEFAULT_PARAMS) {
         Some(default_params_node) => xml::parse_children_element_content(default_params_node, keys::PAN)?,
         None => Pan::default(),
@@ -611,7 +633,7 @@ mod tests {
         assert_eq!(sound.equalizer.treble_frequency, HexU50::parse("0x00000000").unwrap());
 
         assert_eq!(sound.arpeggiator.mode, ArpeggiatorMode::Off);
-        assert_eq!(sound.arpeggiator.octaves_count, OctavesCount::new(2));
+        assert_eq!(sound.arpeggiator.octaves_count, 2.into());
         assert_eq!(sound.arpeggiator.gate, HexU50::parse("0x00000000").unwrap());
         assert_eq!(sound.arpeggiator.rate, HexU50::parse("0x00000000").unwrap());
 
