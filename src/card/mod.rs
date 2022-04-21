@@ -15,7 +15,6 @@ mod patch_name;
 #[cfg(test)]
 mod tests;
 
-use std::path::StripPrefixError;
 use std::str::FromStr;
 use std::{
     collections::BTreeSet,
@@ -27,19 +26,32 @@ pub use card_folder::CardFolder;
 pub use filesystem::{FileSystem, LocalFileSystem};
 pub use patch_name::PatchName;
 
+use crate::values::SamplePath;
 use crate::PatchType;
 
 #[derive(thiserror::Error, Debug, PartialEq, Clone)]
 pub enum CardError {
-    #[error("directory '{0}' does not exists")]
+    #[error("Directory '{0}' does not exists")]
     DirectoryDoesNotExists(PathBuf),
 
-    #[error("missing root directory '{0}'")]
+    #[error("Missing root directory '{0}'")]
     MissingRootDirectory(String),
-
+    
     // Store a String instead of std::io::Error to be able to derive PartialEq.
     #[error("I/O error: {0}")]
     IoError(String),
+
+    #[error("The file '{0}' is not located on a Deluge card")]
+    FileNotInCard(PathBuf),
+
+    #[error("The path '{0}' is not relative")]
+    PathNotRelative(PathBuf),
+
+    #[error("No more standard name available")]
+    NoMoreStandardName,
+
+    #[error("No more postfix letter available")]
+    NoMorePostfixLetter,
 }
 
 fn make_io_error(error: std::io::Error) -> CardError {
@@ -131,9 +143,23 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
         })
     }
 
-    /// Make a path relative to the card root
-    pub fn make_card_file_path<'a>(&self, path: &'a Path) -> Result<&'a Path, StripPrefixError> {
-        path.strip_prefix(&self.root_directory)
+    /// Create a SamplePath relative to the card root
+    pub fn sample_path(&self, path: &Path) -> Result<SamplePath, CardError> {
+        match path.starts_with(self.root_directory()) {
+            true => Ok(SamplePath::new(
+                &path
+                    .strip_prefix(self.root_directory())
+                    .unwrap_or_else(|e|panic!("strip prefix of '{:?}': {:?}", self.root_directory(), e))
+                    .to_string_lossy()
+                    .to_string(),
+            )?),
+            false => Err(CardError::FileNotInCard(path.to_path_buf())),
+        }
+    }
+
+    /// Get the absolute path of a sample on the card
+    pub fn absolute_path(&self, path: &SamplePath) -> PathBuf {
+        self.root_directory.as_path().join(path.to_path())
     }
 
     /// Get one of the card's directory path
@@ -141,6 +167,7 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
         self.root_directory.join(folder.directory_name())
     }
 
+    /// Get the next standard patch path with name and extension
     pub fn get_next_standard_patch_path(&self, patch_type: PatchType) -> Result<PathBuf, CardError> {
         let base_name = self.get_next_standard_patch_name(patch_type)?;
         let mut result = self.get_directory_path(patch_type.get_card_folder());
@@ -159,6 +186,8 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
     /// The other names not respecting this pattern I call them custom patch names.
     /// Those can also have a number but this is optional and they can't have a letter (I'm not sure of that).
     pub fn get_next_standard_patch_name(&self, patch_type: PatchType) -> Result<String, CardError> {
+        //! I assume the maximum is 3 digits but actually Deluge has a 4 digits screen so I'm not sure.
+        const MAX_STANDARD_PATCH_NUMBER: u16 = 999;
         let folder = patch_type.get_card_folder();
         let mut max_number: Option<u16> = None;
 
@@ -177,11 +206,21 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
             }
         }
 
+        if let Some(max_number) = max_number {
+            if max_number >= MAX_STANDARD_PATCH_NUMBER {
+                return Err(CardError::NoMoreStandardName)
+            }
+        }
+
         Ok(PatchName::Standard {
             patch_type,
             number: max_number.map(|n| n + 1).unwrap_or(0u16),
             suffix: None,
         }
         .to_string())
+    }
+
+    pub fn root_directory(&self) -> &Path {
+        self.root_directory.as_path()
     }
 }

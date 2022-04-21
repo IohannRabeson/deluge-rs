@@ -71,7 +71,7 @@ pub fn save_kit(kit: &Kit) -> Result<String, SerializationError> {
 
 #[cfg(test)]
 mod tests {
-    use crate::values::{HexU50, LpfMode};
+    use crate::values::{FineTranspose, HexU50, LpfMode, Transpose};
 
     use super::*;
     use pretty_assertions::assert_eq;
@@ -275,5 +275,32 @@ mod tests {
         let reloaded_kit = load_kit(&xml).unwrap();
 
         assert_eq!(reloaded_kit, kit);
+    }
+
+    #[test]
+    fn test_load_version_sample_range() {
+        let synth = load_synth(include_str!("../data_tests/SYNTHS/SYNT170.XML")).unwrap();
+        let sample_ranges = synth
+            .sound
+            .generator
+            .as_subtractive()
+            .unwrap()
+            .osc1
+            .as_sample()
+            .unwrap()
+            .sample
+            .as_sample_ranges()
+            .unwrap();
+
+        assert_eq!(21, sample_ranges.len());
+        assert_eq!(
+            "SAMPLES/Artists/Michael Bulaw/Sitar/Freeze Sitar [2018-12-06 224345].wav",
+            sample_ranges[0].file_path.to_string_lossy()
+        );
+        assert_eq!(Some(53), sample_ranges[0].range_top_note);
+        assert_eq!(0, *sample_ranges[0].zone.start);
+        assert_eq!(264600, *sample_ranges[0].zone.end);
+        assert_eq!(Transpose::new(7), sample_ranges[0].transpose);
+        assert_eq!(FineTranspose::new(8), sample_ranges[0].fine_transpose);
     }
 }

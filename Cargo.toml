@@ -1,6 +1,6 @@
 [package]
 name = "deluge"
-version = "0.3.2"
+version = "0.3.3"
 edition = "2021"
 
 [dev-dependencies]
@@ -21,3 +21,5 @@ strum = { version = "0.24", features = ["derive"] }
 strum_macros = "0.24.0"
 nom = { version = "7.1.1" }
 enum-as-inner = "0.4.0"
+# For join()
+itertools = "0.10.3"

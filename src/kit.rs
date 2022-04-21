@@ -1,5 +1,5 @@
 use crate::{
-    values::{CvGateChannel, FilterType, HexU50, LpfMode, MidiChannel, Pan, Polyphony},
+    values::{CvGateChannel, FilterType, HexU50, LpfMode, MidiChannel, Pan, Polyphony, SamplePath},
     Delay, Equalizer, Flanger, ModulationFx, Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone, Sidechain,
 };
 
@@ -21,6 +21,7 @@ pub struct Kit {
     pub pan: Pan,
     pub reverb_amount: HexU50,
     pub lpf_mode: LpfMode,
+
     /// The current type of filter controled by the gold buttons
     pub current_filter_type: FilterType,
 
@@ -30,9 +31,11 @@ pub struct Kit {
 
     /// The modulation FX global for the kit
     pub modulation_fx: ModulationFx,
+
     /// The global delay
     pub delay: Delay,
 
+    /// The global sidechain
     pub sidechain: Sidechain,
 
     /// The global low pass filter
@@ -41,6 +44,7 @@ pub struct Kit {
     /// The global high pass filter
     pub hpf: Hpf,
 
+    /// The global equalizer
     pub equalizer: Equalizer,
 }
 
@@ -101,7 +105,7 @@ impl Kit {
 impl Default for Kit {
     fn default() -> Self {
         let osc1 = Oscillator::new_sample(Sample::OneZone(SampleOneZone {
-            file_path: String::new(),
+            file_path: SamplePath::default(),
             zone: Some(SampleZone {
                 start: SamplePosition::new(0),
                 end: SamplePosition::new(9999999),
@@ -110,7 +114,7 @@ impl Default for Kit {
             }),
         }));
         let mut osc2 = Oscillator::new_sample(Sample::OneZone(SampleOneZone {
-            file_path: String::new(),
+            file_path: SamplePath::default(),
             zone: None,
         }));
 

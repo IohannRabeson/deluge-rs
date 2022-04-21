@@ -194,7 +194,11 @@ pub(crate) fn load_fm_sound(root: &Element) -> Result<SoundGenerator, Serializat
     }))
 }
 
-fn load_oscillator_reset_carrier(root: &Element, mut osc1: &mut FmCarrier, mut osc2: &mut FmCarrier) -> Result<(), SerializationError> {
+fn load_oscillator_reset_carrier(
+    root: &Element,
+    mut osc1: &mut FmCarrier,
+    mut osc2: &mut FmCarrier,
+) -> Result<(), SerializationError> {
     if let Some(oscillator_reset_node) = xml::parse_opt_children_element_content::<OnOff>(root, keys::OSCILLATOR_RESET)? {
         let retrig_phase = retrig_phase_from_oscillator_reset(oscillator_reset_node);
 
