@@ -54,10 +54,6 @@ pub enum CardError {
     NoMorePostfixLetter,
 }
 
-fn make_io_error(error: std::io::Error) -> CardError {
-    CardError::IoError(error.to_string())
-}
-
 /// A deluge card
 ///
 /// Represents the card on the file system.
@@ -143,6 +139,11 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
         })
     }
 
+    /// Get the root directory
+    pub fn root_directory(&self) -> &Path {
+        self.root_directory.as_path()
+    }
+
     /// Create a SamplePath relative to the card root
     pub fn sample_path(&self, path: &Path) -> Result<SamplePath, CardError> {
         match path.starts_with(self.root_directory()) {
@@ -218,9 +219,5 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
             suffix: None,
         }
         .to_string())
-    }
-
-    pub fn root_directory(&self) -> &Path {
-        self.root_directory.as_path()
     }
 }

@@ -1,9 +1,13 @@
 use std::path::{Path, PathBuf};
 
-use super::{make_io_error, CardError};
+use super::CardError;
 
 #[cfg(test)]
 use mockall::{automock, predicate::*};
+
+fn make_io_error(error: std::io::Error) -> CardError {
+    CardError::IoError(error.to_string())
+}
 
 /// This trait exists to make unit testing possible.
 #[cfg_attr(test, automock)]
