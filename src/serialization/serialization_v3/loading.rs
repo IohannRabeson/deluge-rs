@@ -826,7 +826,7 @@ mod tests {
 
         assert_eq!(
             sample_one_zone.file_path,
-            String::from("SAMPLES/IDEAS/indicaymolena_bass_8882.wav")
+            SamplePath::new("SAMPLES/IDEAS/indicaymolena_bass_8882.wav").unwrap()
         );
         assert_eq!(SamplePosition::new(1449984), sample_one_zone.zone.as_ref().unwrap().start);
         assert_eq!(SamplePosition::new(1511424), sample_one_zone.zone.as_ref().unwrap().end);
@@ -923,7 +923,10 @@ mod tests {
         let sample_range = &sample_ranges[0];
 
         assert_eq!(sample_range.range_top_note.unwrap(), 72);
-        assert_eq!(sample_range.file_path, "SAMPLES/Artists/Leonard Ludvigsen/Hangdrum/1.wav");
+        assert_eq!(
+            sample_range.file_path.to_string_lossy(),
+            "SAMPLES/Artists/Leonard Ludvigsen/Hangdrum/1.wav"
+        );
         assert_eq!(sample_range.zone.start, SamplePosition::new(0));
         assert_eq!(sample_range.zone.end, SamplePosition::new(146506));
         assert_eq!(sample_range.zone.start_loop.unwrap(), SamplePosition::new(19101));
@@ -932,7 +935,10 @@ mod tests {
         let sample_range = &sample_ranges[1];
 
         assert_eq!(sample_range.range_top_note, None);
-        assert_eq!(sample_range.file_path, "SAMPLES/Artists/Leonard Ludvigsen/Hangdrum/2.wav");
+        assert_eq!(
+            sample_range.file_path.to_string_lossy(),
+            "SAMPLES/Artists/Leonard Ludvigsen/Hangdrum/2.wav"
+        );
         assert_eq!(sample_range.transpose, Transpose::new(-12));
         assert_eq!(sample_range.fine_transpose, FineTranspose::default());
         assert_eq!(sample_range.zone.start, SamplePosition::new(0));

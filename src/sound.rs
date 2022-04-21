@@ -1,7 +1,9 @@
+use std::ops::Deref;
+
 use crate::values::{
     ArpeggiatorMode, AttackSidechain, ClippingAmount, DecU50, FineTranspose, HexU50, LfoShape, LpfMode, OctavesCount, OnOff,
-    OscType, Pan, PitchSpeed, Polyphony, ReleaseSidechain, RetrigPhase, SamplePlayMode, SoundType, SyncLevel, TableIndex,
-    TimeStretchAmount, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
+    OscType, Pan, PitchSpeed, Polyphony, ReleaseSidechain, RetrigPhase, SamplePath, SamplePlayMode, SoundType, SyncLevel,
+    TableIndex, TimeStretchAmount, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
 };
 use enum_as_inner::EnumAsInner;
 use serde::{Deserialize, Serialize};
@@ -44,7 +46,7 @@ impl Sound {
 
     pub fn new_sample(sample: Sample) -> Self {
         let mut osc2 = Oscillator::new_sample(Sample::OneZone(SampleOneZone {
-            file_path: String::new(),
+            file_path: SamplePath::default(),
             zone: None,
         }));
 
@@ -281,9 +283,9 @@ pub enum Sample {
 }
 
 impl Sample {
-    pub fn new(file_path: &str, start: SamplePosition, end: SamplePosition) -> Self {
+    pub fn new(file_path: SamplePath, start: SamplePosition, end: SamplePosition) -> Self {
         Self::OneZone(SampleOneZone {
-            file_path: file_path.to_string(),
+            file_path,
             zone: Some(SampleZone {
                 start,
                 end,
@@ -296,13 +298,13 @@ impl Sample {
 
 impl Default for Sample {
     fn default() -> Self {
-        Sample::new("", SamplePosition::new(0), SamplePosition::new(9999999))
+        Sample::new(SamplePath::default(), SamplePosition::new(0), SamplePosition::new(9999999))
     }
 }
 
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct SampleOneZone {
-    pub file_path: String,
+    pub file_path: SamplePath,
     pub zone: Option<SampleZone>,
 }
 
@@ -311,7 +313,7 @@ pub struct SampleRange {
     pub range_top_note: Option<u8>,
     pub transpose: Transpose,
     pub fine_transpose: FineTranspose,
-    pub file_path: String,
+    pub file_path: SamplePath,
     pub zone: SampleZone,
 }
 
@@ -321,6 +323,14 @@ pub struct SamplePosition(u64);
 impl SamplePosition {
     pub fn new(value: u64) -> Self {
         Self(value)
+    }
+}
+
+impl Deref for SamplePosition {
+    type Target = u64;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 

@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use test_case::test_case;
 
-use crate::PatchType;
+use crate::{PatchType, values::SamplePath, FileSystem};
 
 use super::{filesystem::MockFileSystem, Card, CardError};
 
@@ -111,11 +111,13 @@ fn create_valid_card(mut fs: MockFileSystem, root_directory: &'static Path) -> M
     fs
 }
 
-#[test_case("KIT000", "KIT001" ; "KIT000")]
-#[test_case("KIT", "KIT000" ; "KIT")]
-#[test_case("alariabiata", "KIT000" ; "not default kit")]
-#[test_case("KIT000A", "KIT001" ; "KIT000A")]
-fn test_get_next_patch_name(existing_patch_name: &str, expected_patch_name: &str) {
+#[test_case("KIT000", Ok("KIT001") ; "KIT000")]
+#[test_case("KIT", Ok("KIT000") ; "KIT")]
+#[test_case("alariabiata", Ok("KIT000") ; "not default kit")]
+#[test_case("KIT000A", Ok("KIT001") ; "KIT000A")]
+#[test_case("KIT000Z", Ok("KIT001") ; "KIT000Z")]
+#[test_case("KIT999", Err(CardError::NoMoreStandardName) ; "KIT999")]
+fn test_get_next_patch_name(existing_patch_name: &str, expected_result: Result<&str, CardError>) {
     // let fs = &mut MockFileSystem::default();
     let root_directory = Path::new("I_exist");
     let mut fs = create_valid_card(MockFileSystem::default(), root_directory);
@@ -130,11 +132,13 @@ fn test_get_next_patch_name(existing_patch_name: &str, expected_patch_name: &str
     fs.expect_is_file().return_once(|_path| Ok(true));
 
     let card = Card::open(&fs, &Path::new("I_exist")).expect("open mocked card");
-    let patch_name = card.get_next_standard_patch_name(PatchType::Kit).unwrap();
+    let result = card.get_next_standard_patch_name(PatchType::Kit);
 
-    assert_eq!(expected_patch_name, patch_name);
+    assert_eq!(expected_result.map(|s|s.to_string()), result);
 }
 
+/// Check the next name always have a number greater than the
+/// bigger number in the list of patches. 
 #[test]
 fn test_get_next_patch_name_max() {
     let fs = &mut MockFileSystem::default();
@@ -168,4 +172,32 @@ fn test_get_next_patch_name_max() {
     let patch_name = card.get_next_standard_patch_name(PatchType::Kit).unwrap();
 
     assert_eq!("KIT008", patch_name);
+}
+
+fn create_mocked_card<'l>(filesystem:  &'l mut MockFileSystem, root_directory: &'static Path) -> Card<'l, MockFileSystem> {
+    filesystem.expect_directory_exists().return_const(true);
+    filesystem.expect_get_directory_entries()
+        .with(mockall::predicate::eq(root_directory))
+        .returning(|path| {
+            let mut paths: Vec<PathBuf> = Vec::new();
+
+            paths.push(path.join("KITS"));
+            paths.push(path.join("SAMPLES"));
+            paths.push(path.join("SYNTHS"));
+
+            Ok(paths)
+        });
+
+    Card::open(filesystem, root_directory).expect("open mocked card")
+}
+
+#[test_case("root_dir/SAMPLES/A.WAV", Ok("SAMPLES/A.WAV"))]
+#[test_case("OHLALA", Err(CardError::FileNotInCard(PathBuf::from("OHLALA"))))]
+fn test_sample_path(input: &str, expected_result: Result<&str, CardError>) {
+    let mut filesystem = MockFileSystem::new();
+    let card = create_mocked_card(&mut filesystem, Path::new("root_dir"));
+    let result = card.sample_path(Path::new(input));
+    let expected_result = expected_result.map(|path|SamplePath::new(path).unwrap());
+
+    assert_eq!(expected_result, result);
 }
