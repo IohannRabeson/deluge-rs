@@ -97,7 +97,7 @@ impl ToString for PatchName {
 mod parser {
     use std::num::ParseIntError;
 
-    use super::*;
+    use super::{FromStr, PatchName, PatchType};
 
     use nom::{
         branch::alt,
