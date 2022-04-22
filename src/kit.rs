@@ -133,8 +133,6 @@ impl Default for Kit {
             zone: None,
         }));
 
-        osc2.set_volume(0.into());
-
         let mut default_sound = Sound::new_substractive(osc1, osc2);
 
         default_sound.polyphonic = Polyphony::Auto;

@@ -118,6 +118,8 @@ fn load_subtractive_sound(root: &Element) -> Result<SoundGenerator, Serializatio
         lpf_resonance: xml::parse_attribute(default_params_node, keys::LPF_RESONANCE)?,
         hpf_frequency: xml::parse_attribute(default_params_node, keys::HPF_FREQUENCY)?,
         hpf_resonance: xml::parse_attribute(default_params_node, keys::HPF_RESONANCE)?,
+        osc1_volume: xml::parse_attribute(default_params_node, keys::VOLUME_OSC_A)?,
+        osc2_volume: xml::parse_attribute(default_params_node, keys::VOLUME_OSC_B)?,
     }))
 }
 
@@ -149,6 +151,8 @@ fn load_fm_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
         modulator1: load_fm_modulation(mod1_node, params_a)?,
         modulator2: load_fm_modulation(mod2_node, params_b)?,
         modulator2_to_modulator1: xml::parse_attribute(mod2_node, keys::FM_MOD1_TO_MOD2)?,
+        osc1_volume: xml::parse_attribute(default_params_node, keys::VOLUME_OSC_A)?,
+        osc2_volume: xml::parse_attribute(default_params_node, keys::VOLUME_OSC_B)?,
     }))
 }
 
@@ -171,7 +175,6 @@ fn load_carrier(root: &Element, params: &DefaultParams) -> Result<FmCarrier, Ser
         transpose: xml::parse_attribute(root, keys::TRANSPOSE)?,
         fine_transpose: xml::parse_attribute(root, keys::CENTS)?,
         retrig_phase: xml::parse_attribute(root, keys::RETRIG_PHASE)?,
-        volume: params.parse_twin_attribute(keys::VOLUME_OSC_A, keys::VOLUME_OSC_B)?,
         feedback: params.parse_twin_attribute(keys::FEEDBACK_CARRIER1, keys::FEEDBACK_CARRIER2)?,
     })
 }
@@ -196,7 +199,6 @@ fn load_sample_oscillator(root: &Element, params: &DefaultParams) -> Result<Osci
         time_stretch_amount: xml::parse_attribute(root, keys::TIME_STRETCH_AMOUNT)?,
         sample: load_sample(root)?,
         linear_interpolation: xml::parse_opt_attribute(root, keys::LINEAR_INTERPOLATION)?.unwrap_or_default(),
-        volume: params.parse_twin_attribute(keys::VOLUME_OSC_A, keys::VOLUME_OSC_B)?,
     }))
 }
 
@@ -272,7 +274,6 @@ fn load_waveform_oscillator(osc_type: OscType, root: &Element, params: &DefaultP
         transpose: xml::parse_attribute(root, keys::TRANSPOSE)?,
         fine_transpose: xml::parse_attribute(root, keys::CENTS)?,
         retrig_phase: xml::parse_attribute(root, keys::RETRIG_PHASE)?,
-        volume: params.parse_twin_attribute(keys::VOLUME_OSC_A, keys::VOLUME_OSC_B)?,
         pulse_width: params.parse_twin_attribute(keys::PULSE_WIDTH_OSC_A, keys::PULSE_WIDTH_OSC_B)?,
     }))
 }
@@ -660,7 +661,8 @@ mod tests {
         assert_eq!(generator.lpf_resonance, HexU50::parse("0x80000000").unwrap());
         assert_eq!(generator.hpf_frequency, HexU50::parse("0x80000000").unwrap());
         assert_eq!(generator.hpf_resonance, HexU50::parse("0x80000000").unwrap());
-
+        assert_eq!(generator.osc1_volume, HexU50::parse("0x7FFFFFFF").unwrap());
+        assert_eq!(generator.osc2_volume, HexU50::parse("0x80000000").unwrap());
         assert_eq!(generator.osc2_sync, OnOff::Off);
 
         let waveform = generator.osc1.as_waveform().unwrap();
@@ -669,7 +671,7 @@ mod tests {
         assert_eq!(waveform.transpose, Transpose::new(0));
         assert_eq!(waveform.fine_transpose, FineTranspose::new(0));
         assert_eq!(waveform.retrig_phase, RetrigPhase::default());
-        assert_eq!(waveform.volume, HexU50::parse("0x7FFFFFFF").unwrap());
+
         assert_eq!(waveform.pulse_width, HexU50::parse("0x00000000").unwrap());
 
         assert_eq!(1, sound.cables.len());
@@ -719,16 +721,17 @@ mod tests {
 
         let generator = sound.generator.as_fm().unwrap();
 
+        assert_eq!(generator.osc1_volume, HexU50::parse("0x7FFFFFFF").unwrap());
+        assert_eq!(generator.osc2_volume, HexU50::parse("0x6B851E8E").unwrap());
+
         assert_eq!(generator.osc1.transpose, Transpose::new(0));
         assert_eq!(generator.osc1.fine_transpose, FineTranspose::new(0));
         assert_eq!(generator.osc1.retrig_phase, RetrigPhase::default());
-        assert_eq!(generator.osc1.volume, HexU50::parse("0x7FFFFFFF").unwrap());
         assert_eq!(generator.osc1.feedback, HexU50::parse("0xCCCCCCBF").unwrap());
 
         assert_eq!(generator.osc2.transpose, Transpose::new(32));
         assert_eq!(generator.osc2.fine_transpose, FineTranspose::new(0));
         assert_eq!(generator.osc2.retrig_phase, RetrigPhase::default());
-        assert_eq!(generator.osc2.volume, HexU50::parse("0x6B851E8E").unwrap());
         assert_eq!(generator.osc2.feedback, HexU50::parse("0x80000000").unwrap());
 
         assert_eq!(generator.modulator1.transpose, Transpose::new(0));
@@ -811,6 +814,8 @@ mod tests {
         assert_eq!(generator.lpf_resonance, HexU50::parse("0x80000000").unwrap());
         assert_eq!(generator.hpf_frequency, HexU50::parse("0x80000000").unwrap());
         assert_eq!(generator.hpf_resonance, HexU50::parse("0x80000000").unwrap());
+        assert_eq!(generator.osc1_volume, HexU50::parse("0x7FFFFFFF").unwrap());
+        assert_eq!(generator.osc2_volume, HexU50::parse("0x80000000").unwrap());
 
         let sample = generator.osc1.as_sample().unwrap();
 
@@ -820,8 +825,8 @@ mod tests {
         assert_eq!(sample.reversed, OnOff::Off);
         assert_eq!(sample.pitch_speed, PitchSpeed::Independent);
         assert_eq!(sample.time_stretch_amount, TimeStretchAmount::new(0));
-        assert_eq!(sample.volume, HexU50::parse("0x7FFFFFFF").unwrap());
-
+        
+        
         let sample_one_zone = sample.sample.as_one_zone().unwrap();
 
         assert_eq!(
@@ -837,7 +842,6 @@ mod tests {
         assert_eq!(waveform.transpose, Transpose::new(0));
         assert_eq!(waveform.fine_transpose, FineTranspose::new(0));
         assert_eq!(waveform.retrig_phase, RetrigPhase::default());
-        assert_eq!(waveform.volume, HexU50::parse("0x80000000").unwrap());
     }
 
     #[test]
@@ -905,6 +909,7 @@ mod tests {
         assert_eq!(generator.lpf_resonance, HexU50::parse("0x80000000").unwrap());
         assert_eq!(generator.hpf_frequency, HexU50::parse("0x80000000").unwrap());
         assert_eq!(generator.hpf_resonance, HexU50::parse("0x80000000").unwrap());
+        assert_eq!(generator.osc1_volume, HexU50::parse("0x7FFFFFFF").unwrap());
 
         let sample = generator.osc1.as_sample().unwrap();
 
@@ -914,7 +919,6 @@ mod tests {
         assert_eq!(sample.reversed, OnOff::Off);
         assert_eq!(sample.pitch_speed, PitchSpeed::Independent);
         assert_eq!(sample.time_stretch_amount, TimeStretchAmount::new(0));
-        assert_eq!(sample.volume, HexU50::parse("0x7FFFFFFF").unwrap());
 
         let sample_ranges = sample.sample.as_sample_ranges().unwrap();
 
@@ -952,6 +956,7 @@ mod tests {
         assert_eq!(waveform.transpose, Transpose::new(0));
         assert_eq!(waveform.fine_transpose, FineTranspose::new(0));
         assert_eq!(waveform.retrig_phase, RetrigPhase::default());
-        assert_eq!(waveform.volume, HexU50::parse("0x80000000").unwrap());
+
+        assert_eq!(generator.osc2_volume, HexU50::parse("0x80000000").unwrap());
     }
 }

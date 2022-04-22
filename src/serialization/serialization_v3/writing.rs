@@ -272,6 +272,9 @@ fn write_subtractive_sound(
     xml::insert_attribute_rc(default_params_node, keys::LPF_RESONANCE, &generator.lpf_resonance)?;
     xml::insert_attribute_rc(default_params_node, keys::HPF_FREQUENCY, &generator.hpf_frequency)?;
     xml::insert_attribute_rc(default_params_node, keys::HPF_RESONANCE, &generator.hpf_resonance)?;
+    xml::insert_attribute_rc(default_params_node, keys::VOLUME_OSC_A, &generator.osc1_volume)?;
+    xml::insert_attribute_rc(default_params_node, keys::VOLUME_OSC_B, &generator.osc2_volume)?;
+
     xml::insert_attribute(sound_node, keys::LPF_MODE, &generator.lpf_mode)?;
 
     Ok(())
@@ -290,7 +293,6 @@ fn write_carrier(osc: &FmCarrier, default_params: &DefaultParamsMut) -> Result<E
     xml::insert_attribute(&mut node, keys::TRANSPOSE, &osc.transpose)?;
     xml::insert_attribute(&mut node, keys::CENTS, &osc.fine_transpose)?;
     xml::insert_attribute(&mut node, keys::RETRIG_PHASE, &osc.retrig_phase)?;
-    default_params.insert_attribute(keys::VOLUME_OSC_A, keys::VOLUME_OSC_B, &osc.volume)?;
     default_params.insert_attribute(keys::FEEDBACK_CARRIER1, keys::FEEDBACK_CARRIER2, &osc.feedback)?;
 
     Ok(node)
@@ -321,8 +323,6 @@ fn write_sample_oscillator(sample: &SampleOscillator, default_params: &DefaultPa
     xml::insert_attribute(&mut node, keys::LINEAR_INTERPOLATION, &sample.linear_interpolation)?;
 
     write_sample(&mut node, &sample.sample)?;
-
-    default_params.insert_attribute(keys::VOLUME_OSC_A, keys::VOLUME_OSC_B, &sample.volume)?;
 
     Ok(node)
 }
@@ -390,7 +390,6 @@ fn write_waveform_oscillator(
     xml::insert_attribute(&mut node, keys::TRANSPOSE, &oscillator.transpose)?;
     xml::insert_attribute(&mut node, keys::CENTS, &oscillator.fine_transpose)?;
     xml::insert_attribute(&mut node, keys::RETRIG_PHASE, &oscillator.retrig_phase)?;
-    default_params.insert_attribute(keys::VOLUME_OSC_A, keys::VOLUME_OSC_B, &oscillator.volume)?;
     default_params.insert_attribute(keys::PULSE_WIDTH_OSC_A, keys::PULSE_WIDTH_OSC_B, &oscillator.pulse_width)?;
 
     Ok(node)
@@ -410,6 +409,8 @@ fn write_fm_sound(
     xml::insert_child(sound_node, write_modulator(&generator.modulator1, &default_params_a)?)?;
     xml::insert_attribute(&mut mod2_node, keys::FM_MOD1_TO_MOD2, &generator.modulator2_to_modulator1)?;
     xml::insert_child(sound_node, mod2_node)?;
+    xml::insert_attribute_rc(default_params_node, keys::VOLUME_OSC_A, &generator.osc1_volume)?;
+    xml::insert_attribute_rc(default_params_node, keys::VOLUME_OSC_B, &generator.osc2_volume)?;
 
     Ok(())
 }

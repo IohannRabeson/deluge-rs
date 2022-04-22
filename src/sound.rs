@@ -227,13 +227,6 @@ impl Oscillator {
     pub fn new_sample(sample: Sample) -> Self {
         Oscillator::Sample(SampleOscillator::new(sample))
     }
-
-    pub fn set_volume(&mut self, volume: HexU50) {
-        match self {
-            Oscillator::Waveform(osc) => osc.volume = volume,
-            Oscillator::Sample(osc) => osc.volume = volume,
-        }
-    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -242,7 +235,6 @@ pub struct WaveformOscillator {
     pub transpose: Transpose,
     pub fine_transpose: FineTranspose,
     pub retrig_phase: RetrigPhase,
-    pub volume: HexU50,
     pub pulse_width: HexU50,
 }
 
@@ -257,7 +249,6 @@ pub struct SampleOscillator {
     /// When set to On, the low quality linear interpolation is used.
     /// The false Off enable high quality interpolation.
     pub linear_interpolation: OnOff,
-    pub volume: HexU50,
     pub sample: Sample,
 }
 
@@ -279,7 +270,6 @@ impl Default for SampleOscillator {
             pitch_speed: PitchSpeed::Independent,
             time_stretch_amount: Default::default(),
             linear_interpolation: OnOff::Off,
-            volume: 50.into(),
             sample: Default::default(),
         }
     }
@@ -357,6 +347,8 @@ pub struct SubtractiveGenerator {
     pub osc1: Oscillator,
     pub osc2: Oscillator,
     pub osc2_sync: OnOff,
+    pub osc1_volume: HexU50,
+    pub osc2_volume: HexU50,
     pub noise: HexU50,
     pub lpf_mode: LpfMode,
     pub lpf_frequency: HexU50,
@@ -382,7 +374,6 @@ impl Default for SubtractiveGenerator {
             transpose: Transpose::default(),
             fine_transpose: FineTranspose::default(),
             retrig_phase: RetrigPhase::Off,
-            volume: 50.into(),
             pulse_width: 25.into(),
         });
 
@@ -391,7 +382,6 @@ impl Default for SubtractiveGenerator {
             transpose: Transpose::default(),
             fine_transpose: FineTranspose::default(),
             retrig_phase: RetrigPhase::Off,
-            volume: 0.into(),
             pulse_width: 25.into(),
         });
 
@@ -399,6 +389,8 @@ impl Default for SubtractiveGenerator {
             osc1,
             osc2,
             osc2_sync: OnOff::Off,
+            osc1_volume: 50.into(),
+            osc2_volume: 0.into(),
             noise: 0.into(),
             lpf_mode: LpfMode::Lpf24,
             lpf_frequency: 50.into(),
@@ -434,7 +426,6 @@ impl Default for RingModGenerator {
             transpose: Transpose::default(),
             fine_transpose: FineTranspose::default(),
             retrig_phase: RetrigPhase::Off,
-            volume: 50.into(),
             pulse_width: 25.into(),
         });
 
@@ -443,7 +434,6 @@ impl Default for RingModGenerator {
             transpose: Transpose::default(),
             fine_transpose: FineTranspose::default(),
             retrig_phase: RetrigPhase::Off,
-            volume: 0.into(),
             pulse_width: 25.into(),
         });
 
@@ -462,6 +452,8 @@ pub struct FmGenerator {
     pub osc2: FmCarrier,
     pub modulator1: FmModulator,
     pub modulator2: FmModulator,
+    pub osc1_volume: HexU50,
+    pub osc2_volume: HexU50,
     /// Parameter "Destination"
     /// If On modulator 2 modulates the modulator 1, otherwise it modulates the carrier 2.
     pub modulator2_to_modulator1: OnOff,
@@ -475,6 +467,8 @@ impl FmGenerator {
             modulator1: FmModulator::default(),
             modulator2: FmModulator::default(),
             modulator2_to_modulator1: OnOff::Off,
+            osc1_volume: 50.into(),
+            osc2_volume: 39.into(),
         }
     }
 }
@@ -484,7 +478,6 @@ pub struct FmCarrier {
     pub transpose: Transpose,
     pub fine_transpose: FineTranspose,
     pub retrig_phase: RetrigPhase,
-    pub volume: HexU50,
     pub feedback: HexU50,
 }
 
@@ -494,7 +487,6 @@ impl Default for FmCarrier {
             transpose: Default::default(),
             fine_transpose: Default::default(),
             retrig_phase: Default::default(),
-            volume: 50.into(),
             feedback: 0.into(),
         }
     }
