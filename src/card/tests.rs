@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use test_case::test_case;
 
-use crate::{PatchType, values::SamplePath};
+use crate::{values::SamplePath, PatchType};
 
 use super::{filesystem::MockFileSystem, Card, CardError};
 
@@ -133,11 +133,11 @@ fn test_get_next_patch_name(existing_patch_name: &str, expected_result: Result<&
     let card = Card::open(&fs, &Path::new("I_exist")).expect("open mocked card");
     let result = card.get_next_standard_patch_name(PatchType::Kit);
 
-    assert_eq!(expected_result.map(|s|s.to_string()), result);
+    assert_eq!(expected_result.map(|s| s.to_string()), result);
 }
 
 /// Check the next name always have a number greater than the
-/// bigger number in the list of patches. 
+/// bigger number in the list of patches.
 #[test]
 fn test_get_next_patch_name_max() {
     let fs = &mut MockFileSystem::default();
@@ -173,9 +173,10 @@ fn test_get_next_patch_name_max() {
     assert_eq!("KIT008", patch_name);
 }
 
-fn create_mocked_card<'l>(filesystem:  &'l mut MockFileSystem, root_directory: &'static Path) -> Card<'l, MockFileSystem> {
+fn create_mocked_card<'l>(filesystem: &'l mut MockFileSystem, root_directory: &'static Path) -> Card<'l, MockFileSystem> {
     filesystem.expect_directory_exists().return_const(true);
-    filesystem.expect_get_directory_entries()
+    filesystem
+        .expect_get_directory_entries()
         .with(mockall::predicate::eq(root_directory))
         .returning(|path| {
             let mut paths: Vec<PathBuf> = Vec::new();
@@ -196,7 +197,7 @@ fn test_sample_path(input: &str, expected_result: Result<&str, CardError>) {
     let mut filesystem = MockFileSystem::new();
     let card = create_mocked_card(&mut filesystem, Path::new("root_dir"));
     let result = card.sample_path(Path::new(input));
-    let expected_result = expected_result.map(|path|SamplePath::new(path).unwrap());
+    let expected_result = expected_result.map(|path| SamplePath::new(path).unwrap());
 
     assert_eq!(expected_result, result);
 }

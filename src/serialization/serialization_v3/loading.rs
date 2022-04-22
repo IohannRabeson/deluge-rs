@@ -825,8 +825,7 @@ mod tests {
         assert_eq!(sample.reversed, OnOff::Off);
         assert_eq!(sample.pitch_speed, PitchSpeed::Independent);
         assert_eq!(sample.time_stretch_amount, TimeStretchAmount::new(0));
-        
-        
+
         let sample_one_zone = sample.sample.as_one_zone().unwrap();
 
         assert_eq!(

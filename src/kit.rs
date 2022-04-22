@@ -81,7 +81,6 @@ impl Kit {
         self.rows.last_mut().unwrap()
     }
 
-
     pub fn add_sound_row(&mut self, sound: Sound) -> &mut Sound {
         match self.add_row(RowKit::new_audio(sound, &format!("U{}", self.rows.len() + 1))) {
             RowKit::AudioOutput(audio) => &mut audio.sound,
@@ -90,13 +89,10 @@ impl Kit {
         }
     }
 
-
     pub fn add_sound_row_with_name(&mut self, sound: Sound, name: &str) -> &mut Sound {
         self.add_row(RowKit::new_audio(sound, name));
-        
-        let row = self.rows
-            .last_mut()
-            .unwrap();
+
+        let row = self.rows.last_mut().unwrap();
 
         match row {
             RowKit::AudioOutput(audio) => &mut audio.sound,
@@ -128,7 +124,7 @@ impl Default for Kit {
                 end_loop: None,
             }),
         }));
-        let mut osc2 = Oscillator::new_sample(Sample::OneZone(SampleOneZone {
+        let osc2 = Oscillator::new_sample(Sample::OneZone(SampleOneZone {
             file_path: SamplePath::default(),
             zone: None,
         }));
