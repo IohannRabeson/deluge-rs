@@ -1,6 +1,6 @@
 use crate::{
     values::{CvGateChannel, FilterType, HexU50, LpfMode, MidiChannel, Pan, Polyphony, SamplePath},
-    Delay, Equalizer, Flanger, ModulationFx, Oscillator, Sample, SampleOneZone, SampleZone, Sidechain,
+    Delay, Equalizer, Flanger, ModulationFx, Sample, SampleOneZone, SampleZone, Sidechain, SubtractiveOscillator,
 };
 
 use super::Sound;
@@ -115,7 +115,7 @@ impl Kit {
 /// This implementation returns a Kit exactly like the Deluge would create it without any user changes.
 impl Default for Kit {
     fn default() -> Self {
-        let osc1 = Oscillator::new_sample(Sample::OneZone(SampleOneZone {
+        let osc1 = SubtractiveOscillator::new_sample(Sample::OneZone(SampleOneZone {
             file_path: SamplePath::default(),
             zone: Some(SampleZone {
                 start: 0.into(),
@@ -124,7 +124,7 @@ impl Default for Kit {
                 end_loop: None,
             }),
         }));
-        let osc2 = Oscillator::new_sample(Sample::OneZone(SampleOneZone {
+        let osc2 = SubtractiveOscillator::new_sample(Sample::OneZone(SampleOneZone {
             file_path: SamplePath::default(),
             zone: None,
         }));

@@ -8,9 +8,9 @@ use crate::{
     },
     values::{HexU50, MidiChannel, ModulationFxType, OnOff, OscType, Pan, SamplePosition, SoundType},
     Arpeggiator, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Hpf,
-    Kit, Lfo1, Lfo2, Lpf, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit, Sample,
-    SampleOneZone, SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator,
-    SubtractiveGenerator, Synth, Unison, WaveformOscillator,
+    Kit, Lfo1, Lfo2, Lpf, MidiOutput, ModKnob, ModulationFx, PatchCable, Phaser, RingModGenerator, RowKit, Sample, SampleOneZone,
+    SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator, SubtractiveGenerator,
+    SubtractiveOscillator, Synth, Unison, WaveformOscillator,
 };
 
 use xmltree::Element;
@@ -166,7 +166,7 @@ fn load_fm_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
     }))
 }
 
-fn load_oscillator(root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
+fn load_oscillator(root: &Element, params: &DefaultParams) -> Result<SubtractiveOscillator, SerializationError> {
     let osc_type = xml::parse_attribute(root, keys::TYPE)?;
 
     match osc_type {
@@ -199,8 +199,8 @@ fn load_fm_modulation(root: &Element, params: &DefaultParams) -> Result<FmModula
     })
 }
 
-fn load_sample_oscillator(root: &Element) -> Result<Oscillator, SerializationError> {
-    Ok(Oscillator::Sample(SampleOscillator {
+fn load_sample_oscillator(root: &Element) -> Result<SubtractiveOscillator, SerializationError> {
+    Ok(SubtractiveOscillator::Sample(SampleOscillator {
         transpose: xml::parse_opt_attribute(root, keys::TRANSPOSE)?.unwrap_or_default(),
         fine_transpose: xml::parse_opt_attribute(root, keys::CENTS)?.unwrap_or_default(),
         reversed: xml::parse_attribute(root, keys::REVERSED)?,
@@ -278,8 +278,14 @@ fn parse_sample_zone(root: &Element) -> Result<SampleZone, SerializationError> {
     })
 }
 
-fn load_waveform_oscillator(osc_type: OscType, root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
-    Ok(Oscillator::Waveform(load_waveform_oscillator_imp(osc_type, root, params)?))
+fn load_waveform_oscillator(
+    osc_type: OscType,
+    root: &Element,
+    params: &DefaultParams,
+) -> Result<SubtractiveOscillator, SerializationError> {
+    Ok(SubtractiveOscillator::Waveform(load_waveform_oscillator_imp(
+        osc_type, root, params,
+    )?))
 }
 
 fn load_waveform_oscillator_imp(

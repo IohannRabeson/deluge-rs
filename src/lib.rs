@@ -23,7 +23,7 @@ pub use kit::{AudioOutput, CvGateOutput, Hpf, Kit, Lpf, MidiOutput, RowKit};
 pub use serialization::{load_kit, load_synth, save_kit, save_synth, PatchType, SerializationError};
 pub use sound::{
     Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Lfo1, Lfo2,
-    ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone, SampleOscillator,
-    SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SubtractiveGenerator, Unison, WaveformOscillator,
+    ModKnob, ModulationFx, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone, SampleOscillator, SampleRange,
+    SampleZone, Sidechain, Sound, SoundGenerator, SubtractiveGenerator, SubtractiveOscillator, Unison, WaveformOscillator,
 };
 pub use synth::Synth;

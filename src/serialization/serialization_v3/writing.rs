@@ -10,9 +10,9 @@ use crate::{
     },
     values::*,
     Arpeggiator, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Hpf,
-    Kit, Lfo1, Lfo2, Lpf, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit, Sample,
-    SampleOneZone, SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator,
-    SubtractiveGenerator, Synth, Unison, WaveformOscillator,
+    Kit, Lfo1, Lfo2, Lpf, MidiOutput, ModKnob, ModulationFx, PatchCable, Phaser, RingModGenerator, RowKit, Sample, SampleOneZone,
+    SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator, SubtractiveGenerator,
+    SubtractiveOscillator, Synth, Unison, WaveformOscillator,
 };
 
 use xmltree::Element;
@@ -280,10 +280,10 @@ fn write_subtractive_sound(
     Ok(())
 }
 
-fn write_oscillator(osc: &Oscillator, default_params: &DefaultParamsMut) -> Result<Element, SerializationError> {
+fn write_oscillator(osc: &SubtractiveOscillator, default_params: &DefaultParamsMut) -> Result<Element, SerializationError> {
     Ok(match &osc {
-        Oscillator::Waveform(oscillator) => write_waveform_oscillator(oscillator, default_params)?,
-        Oscillator::Sample(oscillator) => write_sample_oscillator(oscillator, default_params)?,
+        SubtractiveOscillator::Waveform(oscillator) => write_waveform_oscillator(oscillator, default_params)?,
+        SubtractiveOscillator::Sample(oscillator) => write_sample_oscillator(oscillator, default_params)?,
     })
 }
 

@@ -4,9 +4,9 @@ use crate::{
         RetrigPhase, SamplePosition, SoundType, SyncLevel,
     },
     Arpeggiator, AudioOutput, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator,
-    FmModulator, Hpf, Kit, Lfo1, Lfo2, Lpf, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator,
-    RowKit, Sample, SampleOneZone, SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound,
-    SoundGenerator, SubtractiveGenerator, Synth, Unison, WaveformOscillator,
+    FmModulator, Hpf, Kit, Lfo1, Lfo2, Lpf, MidiOutput, ModKnob, ModulationFx, PatchCable, Phaser, RingModGenerator, RowKit,
+    Sample, SampleOneZone, SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator,
+    SubtractiveGenerator, SubtractiveOscillator, Synth, Unison, WaveformOscillator,
 };
 use xmltree::Element;
 
@@ -140,8 +140,8 @@ fn load_subtractive_sound(root: &Element) -> Result<SoundGenerator, Serializatio
     }))
 }
 
-fn assign_retrig_phase(mut osc: &mut Oscillator, retrig_phase: RetrigPhase) {
-    if let Oscillator::Waveform(osc) = &mut osc {
+fn assign_retrig_phase(mut osc: &mut SubtractiveOscillator, retrig_phase: RetrigPhase) {
+    if let SubtractiveOscillator::Waveform(osc) = &mut osc {
         osc.retrig_phase = retrig_phase;
     }
 }
@@ -173,7 +173,11 @@ pub(crate) fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, Seri
     }))
 }
 
-fn load_oscillator_reset_osc(root: &Element, osc1: &mut Oscillator, osc2: &mut Oscillator) -> Result<(), SerializationError> {
+fn load_oscillator_reset_osc(
+    root: &Element,
+    osc1: &mut SubtractiveOscillator,
+    osc2: &mut SubtractiveOscillator,
+) -> Result<(), SerializationError> {
     if let Some(oscillator_reset_node) = xml::parse_opt_children_element_content::<OnOff>(root, keys::OSCILLATOR_RESET)? {
         let retrig_phase = retrig_phase_from_oscillator_reset(oscillator_reset_node);
 
@@ -245,7 +249,7 @@ fn retrig_phase_from_oscillator_reset(oscillator_reset_node: OnOff) -> RetrigPha
     }
 }
 
-pub(crate) fn load_oscillator(root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
+pub(crate) fn load_oscillator(root: &Element, params: &DefaultParams) -> Result<SubtractiveOscillator, SerializationError> {
     let osc_type: OscType = xml::parse_children_element_content(root, keys::TYPE)?;
 
     match osc_type {
@@ -278,8 +282,8 @@ fn load_fm_modulation(root: &Element, params: &DefaultParams) -> Result<FmModula
     })
 }
 
-fn load_sample_oscillator(root: &Element) -> Result<Oscillator, SerializationError> {
-    Ok(Oscillator::Sample(SampleOscillator {
+fn load_sample_oscillator(root: &Element) -> Result<SubtractiveOscillator, SerializationError> {
+    Ok(SubtractiveOscillator::Sample(SampleOscillator {
         transpose: xml::parse_opt_children_element_content(root, keys::TRANSPOSE)?.unwrap_or_default(),
         fine_transpose: xml::parse_opt_children_element_content(root, keys::CENTS)?.unwrap_or_default(),
         reversed: xml::parse_children_element_content(root, keys::REVERSED)?,
@@ -360,8 +364,14 @@ fn parse_sample_zone(root: &Element) -> Result<SampleZone, SerializationError> {
     })
 }
 
-fn load_waveform_oscillator(osc_type: OscType, root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
-    Ok(Oscillator::Waveform(load_waveform_oscillator_imp(osc_type, root, params)?))
+fn load_waveform_oscillator(
+    osc_type: OscType,
+    root: &Element,
+    params: &DefaultParams,
+) -> Result<SubtractiveOscillator, SerializationError> {
+    Ok(SubtractiveOscillator::Waveform(load_waveform_oscillator_imp(
+        osc_type, root, params,
+    )?))
 }
 
 fn load_waveform_oscillator_imp(
