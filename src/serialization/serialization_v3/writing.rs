@@ -422,10 +422,10 @@ fn write_ringmod_sound(
 ) -> Result<(), SerializationError> {
     let default_params_a = DefaultParamsMut::new(TwinSelector::A, default_params_node.clone());
     let default_params_b = DefaultParamsMut::new(TwinSelector::B, default_params_node.clone());
-    let mut osc2_node = write_oscillator(&generator.osc2, &default_params_b)?;
+    let mut osc2_node = write_waveform_oscillator(&generator.osc2, &default_params_b)?;
 
     xml::insert_attribute(&mut osc2_node, keys::OSCILLATOR_SYNC, &generator.osc2_sync)?;
-    xml::insert_child(sound_node, write_oscillator(&generator.osc1, &default_params_a)?)?;
+    xml::insert_child(sound_node, write_waveform_oscillator(&generator.osc1, &default_params_a)?)?;
     xml::insert_child(sound_node, osc2_node)?;
     xml::insert_attribute_rc(default_params_node, keys::NOISE_VOLUME, &generator.noise)?;
 

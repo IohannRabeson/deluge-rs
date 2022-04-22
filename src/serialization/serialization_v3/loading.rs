@@ -126,11 +126,13 @@ fn load_subtractive_sound(root: &Element) -> Result<SoundGenerator, Serializatio
 fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
     let osc1_node = xml::get_children_element(root, keys::OSC1)?;
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
+    let osc1_type = xml::parse_attribute(osc1_node, keys::TYPE)?;
+    let osc2_type = xml::parse_attribute(osc2_node, keys::TYPE)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
 
     Ok(SoundGenerator::RingMod(RingModGenerator {
-        osc1: load_oscillator(osc1_node, &DefaultParams::new(TwinSelector::A, default_params_node))?,
-        osc2: load_oscillator(osc2_node, &DefaultParams::new(TwinSelector::B, default_params_node))?,
+        osc1: load_waveform_oscillator_imp(osc1_type, osc1_node, &DefaultParams::new(TwinSelector::A, default_params_node))?,
+        osc2: load_waveform_oscillator_imp(osc2_type, osc2_node, &DefaultParams::new(TwinSelector::B, default_params_node))?,
         osc2_sync: xml::parse_opt_attribute::<OnOff>(osc2_node, keys::OSCILLATOR_SYNC)?.unwrap_or(OnOff::Off),
         noise: xml::parse_attribute(default_params_node, keys::NOISE_VOLUME)?,
     }))
@@ -269,13 +271,17 @@ fn parse_sample_zone(root: &Element) -> Result<SampleZone, SerializationError> {
 }
 
 fn load_waveform_oscillator(osc_type: OscType, root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
-    Ok(Oscillator::Waveform(WaveformOscillator {
+    Ok(Oscillator::Waveform(load_waveform_oscillator_imp(osc_type, root, params)?))
+}
+
+fn load_waveform_oscillator_imp(osc_type: OscType, root: &Element, params: &DefaultParams) -> Result<WaveformOscillator, SerializationError> {
+    Ok(WaveformOscillator {
         osc_type,
         transpose: xml::parse_attribute(root, keys::TRANSPOSE)?,
         fine_transpose: xml::parse_attribute(root, keys::CENTS)?,
         retrig_phase: xml::parse_attribute(root, keys::RETRIG_PHASE)?,
         pulse_width: params.parse_twin_attribute(keys::PULSE_WIDTH_OSC_A, keys::PULSE_WIDTH_OSC_B)?,
-    }))
+    })
 }
 
 fn load_midi_output(root: &Element) -> Result<MidiOutput, SerializationError> {
@@ -541,6 +547,8 @@ fn load_global_hpf(kit_node: &Element) -> Result<Hpf, SerializationError> {
 
 #[cfg(test)]
 mod tests {
+    use crate::values::{RetrigPhase, FineTranspose, Transpose, PitchSpeed, SamplePlayMode, LpfMode, OctavesCount, ArpeggiatorMode, ReleaseSidechain, AttackSidechain, SyncLevel, UnisonDetune, ClippingAmount, UnisonVoiceCount, VoicePriority, Polyphony, TimeStretchAmount, LfoShape, SamplePath};
+
     use super::*;
 
     #[test]

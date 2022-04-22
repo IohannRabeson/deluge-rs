@@ -1,11 +1,19 @@
 use std::collections::HashSet;
 
 use crate::values::{
-    ArpeggiatorMode, AttackSidechain, ClippingAmount, DecU50, FineTranspose, HexU50, LfoShape, LpfMode, OctavesCount, OnOff,
+    ArpeggiatorMode, AttackSidechain, ClippingAmount, DecU50, FineTranspose, HexU50, LfoShape, OctavesCount, OnOff,
     OscType, Pan, PitchSpeed, Polyphony, ReleaseSidechain, RetrigPhase, SamplePath, SamplePlayMode, SamplePosition, SoundType,
     SyncLevel, TableIndex, TimeStretchAmount, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
 };
 use enum_as_inner::EnumAsInner;
+
+mod subtractive;
+mod ring_mod;
+mod fm;
+
+pub use subtractive::SubtractiveGenerator;
+pub use ring_mod::RingModGenerator;
+pub use fm::{FmCarrier, FmModulator, FmGenerator};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Sound {
@@ -43,7 +51,7 @@ impl Sound {
         }
     }
 
-    pub fn new_ringmod(osc1: Oscillator, osc2: Oscillator) -> Self {
+    pub fn new_ringmod(osc1: WaveformOscillator, osc2: WaveformOscillator) -> Self {
         Self {
             generator: SoundGenerator::RingMod(RingModGenerator::new(osc1, osc2)),
             ..Default::default()
@@ -322,177 +330,6 @@ pub struct SampleZone {
     pub end: SamplePosition,
     pub start_loop: Option<SamplePosition>,
     pub end_loop: Option<SamplePosition>,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct SubtractiveGenerator {
-    pub osc1: Oscillator,
-    pub osc2: Oscillator,
-    pub osc2_sync: OnOff,
-    pub osc1_volume: HexU50,
-    pub osc2_volume: HexU50,
-    pub noise: HexU50,
-    pub lpf_mode: LpfMode,
-    pub lpf_frequency: HexU50,
-    pub lpf_resonance: HexU50,
-    pub hpf_frequency: HexU50,
-    pub hpf_resonance: HexU50,
-}
-
-impl SubtractiveGenerator {
-    pub fn new(osc1: Oscillator, osc2: Oscillator) -> Self {
-        Self {
-            osc1,
-            osc2,
-            ..Default::default()
-        }
-    }
-}
-
-impl Default for SubtractiveGenerator {
-    fn default() -> Self {
-        let osc1 = Oscillator::Waveform(WaveformOscillator {
-            osc_type: OscType::Square,
-            transpose: Transpose::default(),
-            fine_transpose: FineTranspose::default(),
-            retrig_phase: RetrigPhase::Off,
-            pulse_width: 25.into(),
-        });
-
-        let osc2 = Oscillator::Waveform(WaveformOscillator {
-            osc_type: OscType::Square,
-            transpose: Transpose::default(),
-            fine_transpose: FineTranspose::default(),
-            retrig_phase: RetrigPhase::Off,
-            pulse_width: 25.into(),
-        });
-
-        Self {
-            osc1,
-            osc2,
-            osc2_sync: OnOff::Off,
-            osc1_volume: 50.into(),
-            osc2_volume: 0.into(),
-            noise: 0.into(),
-            lpf_mode: LpfMode::Lpf24,
-            lpf_frequency: 50.into(),
-            lpf_resonance: 0.into(),
-            hpf_frequency: 0.into(),
-            hpf_resonance: 0.into(),
-        }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct RingModGenerator {
-    pub osc1: Oscillator,
-    pub osc2: Oscillator,
-    pub osc2_sync: OnOff,
-    pub noise: HexU50,
-}
-
-impl RingModGenerator {
-    pub fn new(osc1: Oscillator, osc2: Oscillator) -> Self {
-        Self {
-            osc1,
-            osc2,
-            ..Default::default()
-        }
-    }
-}
-
-impl Default for RingModGenerator {
-    fn default() -> Self {
-        let osc1 = Oscillator::Waveform(WaveformOscillator {
-            osc_type: OscType::Square,
-            transpose: Transpose::default(),
-            fine_transpose: FineTranspose::default(),
-            retrig_phase: RetrigPhase::Off,
-            pulse_width: 25.into(),
-        });
-
-        let osc2 = Oscillator::Waveform(WaveformOscillator {
-            osc_type: OscType::Square,
-            transpose: Transpose::default(),
-            fine_transpose: FineTranspose::default(),
-            retrig_phase: RetrigPhase::Off,
-            pulse_width: 25.into(),
-        });
-
-        Self {
-            osc1,
-            osc2,
-            osc2_sync: OnOff::Off,
-            noise: 0.into(),
-        }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct FmGenerator {
-    pub osc1: FmCarrier,
-    pub osc2: FmCarrier,
-    pub modulator1: FmModulator,
-    pub modulator2: FmModulator,
-    pub osc1_volume: HexU50,
-    pub osc2_volume: HexU50,
-    /// Parameter "Destination"
-    /// If On modulator 2 modulates the modulator 1, otherwise it modulates the carrier 2.
-    pub modulator2_to_modulator1: OnOff,
-}
-
-impl FmGenerator {
-    pub fn new(osc1: FmCarrier, osc2: FmCarrier) -> Self {
-        Self {
-            osc1,
-            osc2,
-            modulator1: FmModulator::default(),
-            modulator2: FmModulator::default(),
-            modulator2_to_modulator1: OnOff::Off,
-            osc1_volume: 50.into(),
-            osc2_volume: 39.into(),
-        }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct FmCarrier {
-    pub transpose: Transpose,
-    pub fine_transpose: FineTranspose,
-    pub retrig_phase: RetrigPhase,
-    pub feedback: HexU50,
-}
-
-impl Default for FmCarrier {
-    fn default() -> Self {
-        Self {
-            transpose: Default::default(),
-            fine_transpose: Default::default(),
-            retrig_phase: Default::default(),
-            feedback: 0.into(),
-        }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct FmModulator {
-    pub transpose: Transpose,
-    pub fine_transpose: FineTranspose,
-    pub retrig_phase: RetrigPhase,
-    pub amount: HexU50,
-    pub feedback: HexU50,
-}
-
-impl Default for FmModulator {
-    fn default() -> Self {
-        Self {
-            transpose: Default::default(),
-            fine_transpose: Default::default(),
-            retrig_phase: RetrigPhase::Off,
-            amount: 0.into(),
-            feedback: 0.into(),
-        }
-    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
