@@ -1,19 +1,19 @@
 use std::collections::HashSet;
 
 use crate::values::{
-    ArpeggiatorMode, AttackSidechain, ClippingAmount, DecU50, FineTranspose, HexU50, LfoShape, OctavesCount, OnOff,
-    OscType, Pan, PitchSpeed, Polyphony, ReleaseSidechain, RetrigPhase, SamplePath, SamplePlayMode, SamplePosition, SoundType,
-    SyncLevel, TableIndex, TimeStretchAmount, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
+    ArpeggiatorMode, AttackSidechain, ClippingAmount, DecU50, FineTranspose, HexU50, LfoShape, OctavesCount, OnOff, OscType, Pan,
+    PitchSpeed, Polyphony, ReleaseSidechain, RetrigPhase, SamplePath, SamplePlayMode, SamplePosition, SoundType, SyncLevel,
+    TableIndex, TimeStretchAmount, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
 };
 use enum_as_inner::EnumAsInner;
 
-mod subtractive;
-mod ring_mod;
 mod fm;
+mod ring_mod;
+mod subtractive;
 
-pub use subtractive::SubtractiveGenerator;
+pub use fm::{FmCarrier, FmGenerator, FmModulator};
 pub use ring_mod::RingModGenerator;
-pub use fm::{FmCarrier, FmModulator, FmGenerator};
+pub use subtractive::SubtractiveGenerator;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Sound {

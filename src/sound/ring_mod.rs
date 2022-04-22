@@ -1,4 +1,7 @@
-use crate::{values::{FineTranspose, Transpose, OscType, RetrigPhase, OnOff, HexU50}, WaveformOscillator};
+use crate::{
+    values::{FineTranspose, HexU50, OnOff, OscType, RetrigPhase, Transpose},
+    WaveformOscillator,
+};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct RingModGenerator {

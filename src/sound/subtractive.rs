@@ -1,4 +1,7 @@
-use crate::{values::{FineTranspose, Transpose, OscType, RetrigPhase, OnOff, HexU50, LpfMode}, Oscillator, WaveformOscillator};
+use crate::{
+    values::{FineTranspose, HexU50, LpfMode, OnOff, OscType, RetrigPhase, Transpose},
+    Oscillator, WaveformOscillator,
+};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct SubtractiveGenerator {

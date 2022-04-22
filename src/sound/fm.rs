@@ -1,4 +1,4 @@
-use crate::values::{HexU50, OnOff, Transpose, FineTranspose, RetrigPhase};
+use crate::values::{FineTranspose, HexU50, OnOff, RetrigPhase, Transpose};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct FmGenerator {

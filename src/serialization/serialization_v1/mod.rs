@@ -152,8 +152,16 @@ pub(crate) fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, Seri
     let osc1_type: OscType = xml::parse_children_element_content(osc1_node, keys::TYPE)?;
     let osc2_type: OscType = xml::parse_children_element_content(osc2_node, keys::TYPE)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
-    let mut osc1 = load_waveform_oscillator_imp(osc1_type, osc1_node, &DefaultParams::new(TwinSelector::A, default_params_node))?;
-    let mut osc2 = load_waveform_oscillator_imp(osc2_type, osc2_node, &DefaultParams::new(TwinSelector::B, default_params_node))?;
+    let mut osc1 = load_waveform_oscillator_imp(
+        osc1_type,
+        osc1_node,
+        &DefaultParams::new(TwinSelector::A, default_params_node),
+    )?;
+    let mut osc2 = load_waveform_oscillator_imp(
+        osc2_type,
+        osc2_node,
+        &DefaultParams::new(TwinSelector::B, default_params_node),
+    )?;
 
     load_oscillator_reset_waveform_osc(root, &mut osc1, &mut osc2)?;
 
@@ -176,7 +184,11 @@ fn load_oscillator_reset_osc(root: &Element, osc1: &mut Oscillator, osc2: &mut O
     Ok(())
 }
 
-fn load_oscillator_reset_waveform_osc(root: &Element, osc1: &mut WaveformOscillator, osc2: &mut WaveformOscillator) -> Result<(), SerializationError> {
+fn load_oscillator_reset_waveform_osc(
+    root: &Element,
+    osc1: &mut WaveformOscillator,
+    osc2: &mut WaveformOscillator,
+) -> Result<(), SerializationError> {
     if let Some(oscillator_reset_node) = xml::parse_opt_children_element_content::<OnOff>(root, keys::OSCILLATOR_RESET)? {
         let retrig_phase = retrig_phase_from_oscillator_reset(oscillator_reset_node);
 
@@ -352,7 +364,11 @@ fn load_waveform_oscillator(osc_type: OscType, root: &Element, params: &DefaultP
     Ok(Oscillator::Waveform(load_waveform_oscillator_imp(osc_type, root, params)?))
 }
 
-fn load_waveform_oscillator_imp(osc_type: OscType, root: &Element, params: &DefaultParams) -> Result<WaveformOscillator, SerializationError> {
+fn load_waveform_oscillator_imp(
+    osc_type: OscType,
+    root: &Element,
+    params: &DefaultParams,
+) -> Result<WaveformOscillator, SerializationError> {
     Ok(WaveformOscillator {
         osc_type,
         transpose: xml::parse_children_element_content(root, keys::TRANSPOSE)?,
