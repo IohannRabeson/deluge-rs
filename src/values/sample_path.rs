@@ -5,7 +5,7 @@ use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
 use crate::CardError;
 
 /// Path relative to a card.
-#[derive(Clone, PartialEq, Eq, Debug, Default, Hash)]
+#[derive(Clone, PartialEq, Eq, Debug, Default, PartialOrd, Ord)]
 pub struct SamplePath(PathBuf);
 
 impl SamplePath {

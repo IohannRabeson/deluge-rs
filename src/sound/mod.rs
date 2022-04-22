@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 use crate::values::{
     ArpeggiatorMode, DecU50, FineTranspose, HexU50, OctavesCount, OscType, Pan, Polyphony, RetrigPhase, SamplePath, SoundType,
@@ -70,16 +70,16 @@ impl Sound {
     }
 
     /// Gets all the sample paths in this sound.
-    pub fn get_sample_paths(&self) -> HashSet<SamplePath> {
-        let mut paths = HashSet::new();
+    pub fn get_sample_paths(&self) -> BTreeSet<SamplePath> {
+        let mut paths = BTreeSet::new();
 
         if let SoundGenerator::Subtractive(generator) = &self.generator {
             if let SubtractiveOscillator::Sample(generator) = &generator.osc1 {
-                paths.extend(Self::get_sample_paths_impl(&generator.sample));
+                paths.extend(Self::get_sample_paths_impl(&generator.sample).into_iter());
             }
 
             if let SubtractiveOscillator::Sample(generator) = &generator.osc2 {
-                paths.extend(Self::get_sample_paths_impl(&generator.sample));
+                paths.extend(Self::get_sample_paths_impl(&generator.sample).into_iter());
             }
         }
 
