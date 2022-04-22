@@ -1,4 +1,4 @@
-use std::ops::Deref;
+use std::{collections::HashSet, ops::Deref};
 
 use crate::values::{
     ArpeggiatorMode, AttackSidechain, ClippingAmount, DecU50, FineTranspose, HexU50, LfoShape, LpfMode, OctavesCount, OnOff,
@@ -44,20 +44,6 @@ impl Sound {
         }
     }
 
-    pub fn new_sample(sample: Sample) -> Self {
-        let mut osc2 = Oscillator::new_sample(Sample::OneZone(SampleOneZone {
-            file_path: SamplePath::default(),
-            zone: None,
-        }));
-
-        osc2.set_volume(0.into());
-
-        Self {
-            generator: SoundGenerator::Subtractive(SubtractiveGenerator::new(Oscillator::new_sample(sample), osc2)),
-            ..Default::default()
-        }
-    }
-
     pub fn new_ringmod(osc1: Oscillator, osc2: Oscillator) -> Self {
         Self {
             generator: SoundGenerator::RingMod(RingModGenerator::new(osc1, osc2)),
@@ -69,6 +55,30 @@ impl Sound {
         Self {
             generator: SoundGenerator::Fm(FmGenerator::new(carrier1, carrier2)),
             ..Default::default()
+        }
+    }
+
+    /// Gets all the sample paths in this sound.
+    pub fn get_sample_paths(&self) -> HashSet<SamplePath> {
+        let mut paths = HashSet::new();
+
+        if let SoundGenerator::Subtractive(generator) = &self.generator {
+            if let Oscillator::Sample(generator) = &generator.osc1 {
+                paths.extend(Self::get_sample_paths_impl(&generator.sample));
+            }
+
+            if let Oscillator::Sample(generator) = &generator.osc2 {
+                paths.extend(Self::get_sample_paths_impl(&generator.sample));
+            }
+        }
+
+        paths
+    }
+
+    fn get_sample_paths_impl(sample: &Sample) -> Vec<SamplePath> {
+        match sample {
+            Sample::OneZone(zone) => Vec::from([zone.file_path.clone()]),
+            Sample::SampleRanges(ranges) => Vec::from_iter(ranges.iter().map(|range| range.file_path.clone())),
         }
     }
 }
