@@ -1,12 +1,15 @@
-use crate::{Sound, values::{MidiChannel, CvGateChannel}};
+use crate::{
+    values::{CvGateChannel, MidiChannel},
+    Sound,
+};
 
-/// An output
+/// A row in a kit
 ///
-/// There are 3 different types of physical outputs for the Deluge:
-///  - audio
+/// There are 3 different types of row for the Deluge:
+///  - Deluge engine
 ///  - MIDI
 ///  - CV gate
-/// Each row in a Kit is an output and can be any of the 3.
+/// Each row in a Kit is an output and can be any of the 3 types.
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(test, derive(enum_as_inner::EnumAsInner))]
 pub enum RowKit {

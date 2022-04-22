@@ -1,12 +1,11 @@
 use crate::{
-    Sound,
     values::{CvGateChannel, FilterType, HexU50, LpfMode, MidiChannel, Pan, Polyphony, SamplePath},
-    Delay, Equalizer, Flanger, ModulationFx, Sample, SampleOneZone, SampleZone, Sidechain, SubtractiveOscillator,
+    Delay, Equalizer, Flanger, ModulationFx, Sample, SampleOneZone, SampleZone, Sidechain, Sound, SubtractiveOscillator,
 };
 
 mod row;
 
-pub use row::{RowKit, AudioOutput, CvGateOutput, MidiOutput};
+pub use row::{AudioOutput, CvGateOutput, MidiOutput, RowKit};
 
 /// Store a kit patch
 ///
@@ -170,8 +169,6 @@ impl Default for Hpf {
         }
     }
 }
-
-
 
 #[cfg(test)]
 mod tests {
