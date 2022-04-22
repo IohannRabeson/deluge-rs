@@ -8,6 +8,22 @@ use crate::{
     WaveformOscillator,
 };
 
+#[derive(Clone, Debug, PartialEq, EnumAsInner)]
+pub enum SubtractiveOscillator {
+    Waveform(WaveformOscillator),
+    Sample(SampleOscillator),
+}
+
+impl SubtractiveOscillator {
+    pub fn new_waveform(waveform: WaveformOscillator) -> Self {
+        SubtractiveOscillator::Waveform(waveform)
+    }
+
+    pub fn new_sample(sample: Sample) -> Self {
+        SubtractiveOscillator::Sample(SampleOscillator::new(sample))
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct SubtractiveGenerator {
     pub osc1: SubtractiveOscillator,
@@ -64,22 +80,6 @@ impl Default for SubtractiveGenerator {
             hpf_frequency: 0.into(),
             hpf_resonance: 0.into(),
         }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, EnumAsInner)]
-pub enum SubtractiveOscillator {
-    Waveform(WaveformOscillator),
-    Sample(SampleOscillator),
-}
-
-impl SubtractiveOscillator {
-    pub fn new_waveform(waveform: WaveformOscillator) -> Self {
-        SubtractiveOscillator::Waveform(waveform)
-    }
-
-    pub fn new_sample(sample: Sample) -> Self {
-        SubtractiveOscillator::Sample(SampleOscillator::new(sample))
     }
 }
 
