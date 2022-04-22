@@ -1,12 +1,11 @@
-use std::{collections::HashSet, ops::Deref};
+use std::collections::HashSet;
 
 use crate::values::{
     ArpeggiatorMode, AttackSidechain, ClippingAmount, DecU50, FineTranspose, HexU50, LfoShape, LpfMode, OctavesCount, OnOff,
-    OscType, Pan, PitchSpeed, Polyphony, ReleaseSidechain, RetrigPhase, SamplePath, SamplePlayMode, SoundType, SyncLevel,
-    TableIndex, TimeStretchAmount, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
+    OscType, Pan, PitchSpeed, Polyphony, ReleaseSidechain, RetrigPhase, SamplePath, SamplePlayMode, SamplePosition, SoundType,
+    SyncLevel, TableIndex, TimeStretchAmount, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
 };
 use enum_as_inner::EnumAsInner;
-use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Sound {
@@ -298,7 +297,7 @@ impl Sample {
 
 impl Default for Sample {
     fn default() -> Self {
-        Sample::new(SamplePath::default(), SamplePosition::new(0), SamplePosition::new(9999999))
+        Sample::new(SamplePath::default(), 0.into(), 9999999.into())
     }
 }
 
@@ -315,23 +314,6 @@ pub struct SampleRange {
     pub fine_transpose: FineTranspose,
     pub file_path: SamplePath,
     pub zone: SampleZone,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
-pub struct SamplePosition(u64);
-
-impl SamplePosition {
-    pub fn new(value: u64) -> Self {
-        Self(value)
-    }
-}
-
-impl Deref for SamplePosition {
-    type Target = u64;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
 }
 
 #[derive(Clone, Debug, PartialEq)]

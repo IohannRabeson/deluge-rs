@@ -6,11 +6,11 @@ use crate::{
         serialization_common::convert_milliseconds_to_samples,
         xml,
     },
-    values::*,
+    values::{HexU50, MidiChannel, ModulationFxType, OnOff, OscType, Pan, SamplePosition, SoundType},
     Arpeggiator, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Hpf,
     Kit, Lfo1, Lfo2, Lpf, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit, Sample,
-    SampleOneZone, SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain, Sound,
-    SoundGenerator, SubtractiveGenerator, Synth, Unison, WaveformOscillator,
+    SampleOneZone, SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator,
+    SubtractiveGenerator, Synth, Unison, WaveformOscillator,
 };
 
 use xmltree::Element;
@@ -160,7 +160,7 @@ fn load_oscillator(root: &Element, params: &DefaultParams) -> Result<Oscillator,
     let osc_type = xml::parse_attribute(root, keys::TYPE)?;
 
     match osc_type {
-        OscType::Sample => load_sample_oscillator(root, params),
+        OscType::Sample => load_sample_oscillator(root),
         OscType::AnalogSaw => load_waveform_oscillator(osc_type, root, params),
         OscType::AnalogSquare => load_waveform_oscillator(osc_type, root, params),
         OscType::Saw => load_waveform_oscillator(osc_type, root, params),
@@ -189,7 +189,7 @@ fn load_fm_modulation(root: &Element, params: &DefaultParams) -> Result<FmModula
     })
 }
 
-fn load_sample_oscillator(root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
+fn load_sample_oscillator(root: &Element) -> Result<Oscillator, SerializationError> {
     Ok(Oscillator::Sample(SampleOscillator {
         transpose: xml::parse_opt_attribute(root, keys::TRANSPOSE)?.unwrap_or_default(),
         fine_transpose: xml::parse_opt_attribute(root, keys::CENTS)?.unwrap_or_default(),
@@ -930,7 +930,7 @@ mod tests {
             sample_range.file_path.to_string_lossy(),
             "SAMPLES/Artists/Leonard Ludvigsen/Hangdrum/1.wav"
         );
-        assert_eq!(sample_range.zone.start, SamplePosition::new(0));
+        assert_eq!(sample_range.zone.start, 0.into());
         assert_eq!(sample_range.zone.end, SamplePosition::new(146506));
         assert_eq!(sample_range.zone.start_loop.unwrap(), SamplePosition::new(19101));
         assert_eq!(sample_range.zone.end_loop.unwrap(), SamplePosition::new(19603));
@@ -944,7 +944,7 @@ mod tests {
         );
         assert_eq!(sample_range.transpose, Transpose::new(-12));
         assert_eq!(sample_range.fine_transpose, FineTranspose::default());
-        assert_eq!(sample_range.zone.start, SamplePosition::new(0));
+        assert_eq!(sample_range.zone.start, 0.into());
         assert_eq!(sample_range.zone.end, SamplePosition::new(137227));
         assert_eq!(sample_range.zone.start_loop.unwrap(), SamplePosition::new(8089));
         assert_eq!(sample_range.zone.end_loop.unwrap(), SamplePosition::new(8256));

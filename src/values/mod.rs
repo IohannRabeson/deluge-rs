@@ -12,6 +12,7 @@ mod on_off;
 mod pan;
 mod retrig_phase;
 mod sample_path;
+mod sample_position;
 mod sidechain_values;
 mod simple_enums;
 mod uint8;
@@ -23,6 +24,7 @@ pub use on_off::OnOff;
 pub use pan::Pan;
 pub use retrig_phase::RetrigPhase;
 pub use sample_path::SamplePath;
+pub use sample_position::SamplePosition;
 pub use sidechain_values::{AttackSidechain, ReleaseSidechain, TableIndex};
 pub use simple_enums::{
     ArpeggiatorMode, FilterType, LfoShape, LpfMode, ModulationFxType, OscType, PitchSpeed, Polyphony, SamplePlayMode, SoundType,

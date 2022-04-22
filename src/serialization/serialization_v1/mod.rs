@@ -1,12 +1,12 @@
 use crate::{
     values::{
         ArpeggiatorMode, AttackSidechain, HexU50, MidiChannel, ModulationFxType, OnOff, OscType, Pan, ReleaseSidechain,
-        RetrigPhase, SoundType, SyncLevel,
+        RetrigPhase, SamplePosition, SoundType, SyncLevel,
     },
     Arpeggiator, AudioOutput, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator,
     FmModulator, Hpf, Kit, Lfo1, Lfo2, Lpf, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator,
-    RowKit, Sample, SampleOneZone, SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain,
-    Sound, SoundGenerator, SubtractiveGenerator, Synth, Unison, WaveformOscillator,
+    RowKit, Sample, SampleOneZone, SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound,
+    SoundGenerator, SubtractiveGenerator, Synth, Unison, WaveformOscillator,
 };
 use xmltree::Element;
 
@@ -224,7 +224,7 @@ pub(crate) fn load_oscillator(root: &Element, params: &DefaultParams) -> Result<
     let osc_type: OscType = xml::parse_children_element_content(root, keys::TYPE)?;
 
     match osc_type {
-        OscType::Sample => load_sample_oscillator(root, params),
+        OscType::Sample => load_sample_oscillator(root),
         OscType::AnalogSaw => load_waveform_oscillator(osc_type, root, params),
         OscType::AnalogSquare => load_waveform_oscillator(osc_type, root, params),
         OscType::Saw => load_waveform_oscillator(osc_type, root, params),
@@ -253,7 +253,7 @@ fn load_fm_modulation(root: &Element, params: &DefaultParams) -> Result<FmModula
     })
 }
 
-fn load_sample_oscillator(root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
+fn load_sample_oscillator(root: &Element) -> Result<Oscillator, SerializationError> {
     Ok(Oscillator::Sample(SampleOscillator {
         transpose: xml::parse_opt_children_element_content(root, keys::TRANSPOSE)?.unwrap_or_default(),
         fine_transpose: xml::parse_opt_children_element_content(root, keys::CENTS)?.unwrap_or_default(),

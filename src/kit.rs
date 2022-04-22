@@ -1,6 +1,6 @@
 use crate::{
     values::{CvGateChannel, FilterType, HexU50, LpfMode, MidiChannel, Pan, Polyphony, SamplePath},
-    Delay, Equalizer, Flanger, ModulationFx, Oscillator, Sample, SampleOneZone, SamplePosition, SampleZone, Sidechain,
+    Delay, Equalizer, Flanger, ModulationFx, Oscillator, Sample, SampleOneZone, SampleZone, Sidechain,
 };
 
 use super::Sound;
@@ -75,7 +75,7 @@ impl Kit {
         }
     }
 
-    fn add_row<'l>(&'l mut self, row: RowKit) -> &mut RowKit {
+    fn add_row(&mut self, row: RowKit) -> &mut RowKit {
         self.rows.push(row);
 
         self.rows.last_mut().unwrap()
@@ -118,8 +118,8 @@ impl Default for Kit {
         let osc1 = Oscillator::new_sample(Sample::OneZone(SampleOneZone {
             file_path: SamplePath::default(),
             zone: Some(SampleZone {
-                start: SamplePosition::new(0),
-                end: SamplePosition::new(9999999),
+                start: 0.into(),
+                end: 9999999.into(),
                 start_loop: None,
                 end_loop: None,
             }),
