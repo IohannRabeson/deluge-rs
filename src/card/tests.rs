@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use test_case::test_case;
 
-use crate::{PatchType, values::SamplePath, FileSystem};
+use crate::{PatchType, values::SamplePath};
 
 use super::{filesystem::MockFileSystem, Card, CardError};
 
@@ -118,7 +118,6 @@ fn create_valid_card(mut fs: MockFileSystem, root_directory: &'static Path) -> M
 #[test_case("KIT000Z", Ok("KIT001") ; "KIT000Z")]
 #[test_case("KIT999", Err(CardError::NoMoreStandardName) ; "KIT999")]
 fn test_get_next_patch_name(existing_patch_name: &str, expected_result: Result<&str, CardError>) {
-    // let fs = &mut MockFileSystem::default();
     let root_directory = Path::new("I_exist");
     let mut fs = create_valid_card(MockFileSystem::default(), root_directory);
     let existing_patch_name_for_closure = existing_patch_name.to_string();

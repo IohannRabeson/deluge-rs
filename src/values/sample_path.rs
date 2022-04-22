@@ -5,12 +5,12 @@ use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
 use crate::CardError;
 
 /// Path relative to a card.
-#[derive(Clone, PartialEq, Eq, Debug, Default)]
+#[derive(Clone, PartialEq, Eq, Debug, Default, Hash)]
 pub struct SamplePath(PathBuf);
 
 impl SamplePath {
     /// Create a new sample path.
-    /// 
+    ///
     /// This function returns an error if the path is not a relative one.
     pub fn new(path: &str) -> Result<Self, CardError> {
         let path = Path::new(path);

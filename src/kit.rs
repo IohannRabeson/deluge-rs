@@ -75,27 +75,42 @@ impl Kit {
         }
     }
 
-    pub fn add_row(&mut self, row: RowKit) -> usize {
-        let index = self.rows.len();
+    fn add_row<'l>(&'l mut self, row: RowKit) -> &mut RowKit {
         self.rows.push(row);
 
-        index
+        self.rows.last_mut().unwrap()
     }
 
-    pub fn add_sound_row(&mut self, sound: Sound) -> usize {
-        self.add_row(RowKit::new_audio(sound, &format!("U{}", self.rows.len() + 1)))
+
+    pub fn add_sound_row(&mut self, sound: Sound) -> &mut Sound {
+        match self.add_row(RowKit::new_audio(sound, &format!("U{}", self.rows.len() + 1))) {
+            RowKit::AudioOutput(audio) => &mut audio.sound,
+            RowKit::MidiOutput(_) => panic!(),
+            RowKit::CvGateOutput(_) => panic!(),
+        }
     }
 
-    pub fn add_sound_row_with_name(&mut self, sound: Sound, name: &str) -> usize {
-        self.add_row(RowKit::new_audio(sound, name))
+
+    pub fn add_sound_row_with_name(&mut self, sound: Sound, name: &str) -> &mut Sound {
+        self.add_row(RowKit::new_audio(sound, name));
+        
+        let row = self.rows
+            .last_mut()
+            .unwrap();
+
+        match row {
+            RowKit::AudioOutput(audio) => &mut audio.sound,
+            RowKit::MidiOutput(_) => panic!(),
+            RowKit::CvGateOutput(_) => panic!(),
+        }
     }
 
-    pub fn add_midi_row(&mut self, channel: MidiChannel, note: u8) -> usize {
-        self.add_row(RowKit::new_midi(channel, note))
+    pub fn add_midi_row(&mut self, channel: MidiChannel, note: u8) {
+        self.add_row(RowKit::new_midi(channel, note));
     }
 
-    pub fn add_gate_row(&mut self, channel: CvGateChannel) -> usize {
-        self.add_row(RowKit::new_cv_gate(channel))
+    pub fn add_gate_row(&mut self, channel: CvGateChannel) {
+        self.add_row(RowKit::new_cv_gate(channel));
     }
 }
 
@@ -243,7 +258,6 @@ mod tests {
     fn test_load_write_load_kit_community_patches_synth_hats() {
         let kit = load_kit(include_str!("data_tests/KITS/Synth Hats.XML")).unwrap();
         let xml = save_kit(&kit).unwrap();
-        println!("{}", xml);
         let reloaded_kit = load_kit(&xml).unwrap();
 
         assert_eq!(reloaded_kit, kit);

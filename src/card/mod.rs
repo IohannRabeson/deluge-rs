@@ -36,7 +36,7 @@ pub enum CardError {
 
     #[error("Missing root directory '{0}'")]
     MissingRootDirectory(String),
-    
+
     // Store a String instead of std::io::Error to be able to derive PartialEq.
     #[error("I/O error: {0}")]
     IoError(String),
@@ -150,7 +150,7 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
             true => Ok(SamplePath::new(
                 &path
                     .strip_prefix(self.root_directory())
-                    .unwrap_or_else(|e|panic!("strip prefix of '{:?}': {:?}", self.root_directory(), e))
+                    .unwrap_or_else(|e| panic!("strip prefix of '{:?}': {:?}", self.root_directory(), e))
                     .to_string_lossy()
                     .to_string(),
             )?),
@@ -209,7 +209,7 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
 
         if let Some(max_number) = max_number {
             if max_number >= MAX_STANDARD_PATCH_NUMBER {
-                return Err(CardError::NoMoreStandardName)
+                return Err(CardError::NoMoreStandardName);
             }
         }
 
