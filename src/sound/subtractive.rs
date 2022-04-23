@@ -25,6 +25,7 @@ impl SubtractiveOscillator {
 }
 
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[builder(default)]
 pub struct SubtractiveSynth {
     pub osc1: SubtractiveOscillator,
     pub osc2: SubtractiveOscillator,
@@ -84,6 +85,7 @@ impl Default for SubtractiveSynth {
 }
 
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[builder(default)]
 pub struct SampleOscillator {
     pub transpose: Transpose,
     pub fine_transpose: FineTranspose,

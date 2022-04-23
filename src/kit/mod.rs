@@ -14,6 +14,7 @@ pub use row::{CvGateRow, MidiRow, RowKit, SoundRow};
 /// The rows order are visually reversed by the deluge. In the XML file, the rows
 /// are logically ordered as we expect meaning the index increase as we add new row.
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[builder(default)]
 pub struct Kit {
     #[builder(setter(each(name = "add_row")))]
     pub rows: Vec<RowKit>,
@@ -153,6 +154,7 @@ impl KitBuilder {
 }
 
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[builder(default)]
 pub struct Lpf {
     pub frequency: HexU50,
     pub resonance: HexU50,
@@ -168,6 +170,7 @@ impl Default for Lpf {
 }
 
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[builder(default)]
 pub struct Hpf {
     pub frequency: HexU50,
     pub resonance: HexU50,

@@ -28,6 +28,7 @@ impl FmSynth {
 }
 
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[builder(default)]
 pub struct FmCarrier {
     pub transpose: Transpose,
     pub fine_transpose: FineTranspose,
@@ -47,6 +48,7 @@ impl Default for FmCarrier {
 }
 
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[builder(default)]
 pub struct FmModulator {
     pub transpose: Transpose,
     pub fine_transpose: FineTranspose,

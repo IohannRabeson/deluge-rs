@@ -38,19 +38,21 @@ pub use subtractive::{
 ///
 /// This crate provides [SoundBuilder] for creating [Sound] instances:
 /// ```
-/// # use deluge::{SoundBuilder, Sound};
-/// #
+/// # use deluge::{SoundBuilder, Sound, SubtractiveOscillator, SubtractiveSynthBuilder, Sample, SynthMode, SamplePath};
+/// # let path = SamplePath::new("path/to file.wav").unwrap();
 /// # let generator = SubtractiveSynthBuilder::default()
-/// #    .osc1(SubtractiveOscillator::new_sample(Sample::new(path, start, end)))
+/// #    .osc1(SubtractiveOscillator::new_sample(Sample::new(path, 0.into(), 1000.into())))
 /// #    .osc2(SubtractiveOscillator::new_sample(Sample::default()))
 /// #    .osc2_volume(0.into())
 /// #    .build()
 /// #    .unwrap();
 /// let sound = SoundBuilder::default()
-///     .add_sound_row(generator)
-///     .build().unwrap();
+///     .generator(SynthMode::Subtractive(generator))
+///     .build()
+///     .unwrap();
 /// ```
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[builder(default)]
 pub struct Sound {
     pub generator: SynthMode,
     pub polyphonic: Polyphony,
@@ -236,6 +238,7 @@ pub struct WaveformOscillator {
 }
 
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[builder(default)]
 pub struct Unison {
     pub voice_count: UnisonVoiceCount,
     pub detune: UnisonDetune,
@@ -251,6 +254,7 @@ impl Default for Unison {
 }
 
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[builder(default)]
 pub struct Arpeggiator {
     pub mode: ArpeggiatorMode,
     pub gate: HexU50,

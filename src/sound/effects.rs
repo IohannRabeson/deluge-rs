@@ -3,6 +3,7 @@ use enum_as_inner::EnumAsInner;
 use crate::values::{AttackSidechain, ClippingAmount, HexU50, OnOff, ReleaseSidechain, SyncLevel, TableIndex};
 
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[builder(default)]
 pub struct Delay {
     pub ping_pong: OnOff,
     pub analog: OnOff,
@@ -24,6 +25,7 @@ impl Default for Delay {
 }
 
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[builder(default)]
 pub struct Distorsion {
     pub bit_crush: HexU50,
     pub saturation: ClippingAmount,
@@ -41,6 +43,7 @@ impl Default for Distorsion {
 }
 
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[builder(default)]
 pub struct Equalizer {
     /// The default must be HexU50(25)!
     /// About 25 the basses are increased, below they are decreased
@@ -74,6 +77,7 @@ pub enum ModulationFx {
 }
 
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[builder(default)]
 pub struct Flanger {
     pub rate: HexU50,
     pub feedback: HexU50,

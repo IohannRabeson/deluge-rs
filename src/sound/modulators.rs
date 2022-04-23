@@ -9,6 +9,7 @@ pub struct Envelope {
 }
 
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[builder(default)]
 pub struct Lfo1 {
     pub shape: LfoShape,
     pub sync_level: SyncLevel,
@@ -26,6 +27,7 @@ impl Default for Lfo1 {
 }
 
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[builder(default)]
 pub struct Lfo2 {
     pub shape: LfoShape,
     pub rate: HexU50,
