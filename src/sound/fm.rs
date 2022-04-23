@@ -27,6 +27,20 @@ impl FmSynth {
     }
 }
 
+impl Default for FmSynth {
+    fn default() -> Self {
+        Self { 
+            osc1: FmCarrier::default(), 
+            osc2: FmCarrier::default(), 
+            modulator1: FmModulator::default(),
+            modulator2: FmModulator::default(), 
+            osc1_volume: 50.into(), 
+            osc2_volume: 0.into(), 
+            modulator2_to_modulator1: Default::default()
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 #[builder(default)]
 pub struct FmCarrier {

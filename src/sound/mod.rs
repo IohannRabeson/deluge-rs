@@ -31,10 +31,10 @@ pub use subtractive::{
     SampleZone, SampleZoneBuilder, SubtractiveOscillator, SubtractiveSynth, SubtractiveSynthBuilder,
 };
 
-/// Composes [Synth] and [Kit] patches
+/// Composes Synth and Kit patches
 ///
-/// [Sound] is the main component of a Synth patch. It's also the main component of a SoundRow
-/// in a Kit.
+/// [Sound] is the main component of [Synth] patches. It's also the main component of [Kit], in this case
+/// a [Sound] is boxed in a SoundSou
 ///
 /// This crate provides [SoundBuilder] for creating [Sound] instances:
 /// ```
@@ -47,7 +47,7 @@ pub use subtractive::{
 /// #    .build()
 /// #    .unwrap();
 /// let sound = SoundBuilder::default()
-///     .generator(SynthMode::Subtractive(generator))
+///     .generator(SynthMode::from(generator))
 ///     .build()
 ///     .unwrap();
 /// ```
@@ -93,28 +93,28 @@ impl Sound {
             .unwrap();
 
         Self {
-            generator: SynthMode::Subtractive(generator),
+            generator: SynthMode::from(generator),
             ..Default::default()
         }
     }
 
     pub fn new_substractive(osc1: SubtractiveOscillator, osc2: SubtractiveOscillator) -> Self {
         Self {
-            generator: SynthMode::Subtractive(SubtractiveSynth::new(osc1, osc2)),
+            generator: SynthMode::from(SubtractiveSynth::new(osc1, osc2)),
             ..Default::default()
         }
     }
 
     pub fn new_ringmod(osc1: WaveformOscillator, osc2: WaveformOscillator) -> Self {
         Self {
-            generator: SynthMode::RingMod(RingModSynth::new(osc1, osc2)),
+            generator: SynthMode::from(RingModSynth::new(osc1, osc2)),
             ..Default::default()
         }
     }
 
     pub fn new_fm(carrier1: FmCarrier, carrier2: FmCarrier) -> Self {
         Self {
-            generator: SynthMode::Fm(FmSynth::new(carrier1, carrier2)),
+            generator: SynthMode::from(FmSynth::new(carrier1, carrier2)),
             ..Default::default()
         }
     }
@@ -205,11 +205,40 @@ impl Default for Sound {
     }
 }
 
+/// The synth mode
+/// 
+/// Each value contains a struct specific to each mode.
+/// 
+/// Using [From] is the easiest way to instanciate a [SynthMode]
+/// ```
+/// use deluge::{SynthMode, SubtractiveSynth, RingModSynth, FmSynth};
+/// let subtractive_synth_mode = SynthMode::from(SubtractiveSynth::default());
+/// let ring_mod_synth_mode = SynthMode::from(RingModSynth::default());
+/// let fm_synth_mode = SynthMode::from(FmSynth::default());
+/// ```
 #[derive(Clone, Debug, PartialEq, EnumAsInner)]
 pub enum SynthMode {
     Subtractive(SubtractiveSynth),
     RingMod(RingModSynth),
     Fm(FmSynth),
+}
+
+impl From<SubtractiveSynth> for SynthMode {
+    fn from(synth: SubtractiveSynth) -> Self {
+        SynthMode::Subtractive(synth)
+    }
+}
+
+impl From<RingModSynth> for SynthMode {
+    fn from(synth: RingModSynth) -> Self {
+        SynthMode::RingMod(synth)
+    }
+}
+
+impl From<FmSynth> for SynthMode {
+    fn from(synth: FmSynth) -> Self {
+        SynthMode::Fm(synth)
+    }
 }
 
 impl SynthMode {
@@ -222,6 +251,7 @@ impl SynthMode {
     }
 }
 
+/// Implementation by default is the default [SubtractiveSynth]
 impl Default for SynthMode {
     fn default() -> Self {
         SynthMode::Subtractive(SubtractiveSynth::default())

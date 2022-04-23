@@ -1,3 +1,7 @@
+/// The serialization module
+///
+/// This module defines all the types used by [Kit] and [Synth].  
+/// Each type specifies how the serialization works.
 use crate::{Kit, Synth};
 
 use version_info::VersionInfo;

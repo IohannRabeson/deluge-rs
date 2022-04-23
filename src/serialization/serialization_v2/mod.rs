@@ -100,7 +100,7 @@ fn load_subtractive_sound(root: &Element) -> Result<SynthMode, SerializationErro
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
 
-    Ok(SynthMode::Subtractive(SubtractiveSynth {
+    Ok(SynthMode::from(SubtractiveSynth {
         osc1: load_oscillator(osc1_node, &DefaultParams::new(TwinSelector::A, default_params_node))?,
         osc2: load_oscillator(osc2_node, &DefaultParams::new(TwinSelector::B, default_params_node))?,
         osc2_sync: xml::parse_opt_children_element_content(osc2_node, keys::OSCILLATOR_SYNC)?.unwrap_or(OnOff::Off),

@@ -108,7 +108,7 @@ fn load_subtractive_sound(root: &Element) -> Result<SynthMode, SerializationErro
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
 
-    Ok(SynthMode::Subtractive(SubtractiveSynth {
+    Ok(SynthMode::from(SubtractiveSynth {
         osc1: load_oscillator(osc1_node, &DefaultParams::new(TwinSelector::A, default_params_node))?,
         osc2: load_oscillator(osc2_node, &DefaultParams::new(TwinSelector::B, default_params_node))?,
         osc2_sync: xml::parse_opt_attribute(osc2_node, keys::OSCILLATOR_SYNC)?.unwrap_or(OnOff::Off),
@@ -130,7 +130,7 @@ fn load_ringmode_sound(root: &Element) -> Result<SynthMode, SerializationError> 
     let osc2_type = xml::parse_attribute(osc2_node, keys::TYPE)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
 
-    Ok(SynthMode::RingMod(RingModSynth {
+    Ok(SynthMode::from(RingModSynth {
         osc1: load_waveform_oscillator_imp(
             osc1_type,
             osc1_node,
@@ -155,7 +155,7 @@ fn load_fm_sound(root: &Element) -> Result<SynthMode, SerializationError> {
     let params_a = &DefaultParams::new(TwinSelector::A, default_params_node);
     let params_b = &DefaultParams::new(TwinSelector::B, default_params_node);
 
-    Ok(SynthMode::Fm(FmSynth {
+    Ok(SynthMode::from(FmSynth {
         osc1: load_carrier(osc1_node, params_a)?,
         osc2: load_carrier(osc2_node, params_b)?,
         modulator1: load_fm_modulation(mod1_node, params_a)?,

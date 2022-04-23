@@ -126,7 +126,7 @@ fn load_subtractive_sound(root: &Element) -> Result<SynthMode, SerializationErro
 
     load_oscillator_reset_osc(root, &mut osc1, &mut osc2)?;
 
-    Ok(SynthMode::Subtractive(SubtractiveSynth {
+    Ok(SynthMode::from(SubtractiveSynth {
         osc1,
         osc2,
         osc2_sync: xml::parse_opt_children_element_content(osc2_node, keys::OSCILLATOR_SYNC)?.unwrap_or(OnOff::Off),
@@ -166,7 +166,7 @@ pub(crate) fn load_ringmode_sound(root: &Element) -> Result<SynthMode, Serializa
 
     load_oscillator_reset_waveform_osc(root, &mut osc1, &mut osc2)?;
 
-    Ok(SynthMode::RingMod(RingModSynth {
+    Ok(SynthMode::from(RingModSynth {
         osc1,
         osc2,
         osc2_sync: xml::parse_opt_children_element_content::<OnOff>(osc2_node, keys::OSCILLATOR_SYNC)?.unwrap_or(OnOff::Off),
@@ -217,7 +217,7 @@ pub(crate) fn load_fm_sound(root: &Element) -> Result<SynthMode, SerializationEr
 
     load_oscillator_reset_carrier(root, &mut osc1, &mut osc2)?;
 
-    Ok(SynthMode::Fm(FmSynth {
+    Ok(SynthMode::from(FmSynth {
         osc1: load_carrier(osc1_node, params_a)?,
         osc2: load_carrier(osc2_node, params_b)?,
         modulator1: load_fm_modulation(mod1_node, params_a)?,
