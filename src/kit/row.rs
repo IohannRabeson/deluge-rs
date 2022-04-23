@@ -10,31 +10,30 @@ use crate::{
 ///  - MIDI
 ///  - CV gate
 /// Each row in a Kit is an output and can be any of the 3 types.
-#[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(test, derive(enum_as_inner::EnumAsInner))]
+#[derive(Clone, Debug, PartialEq, enum_as_inner::EnumAsInner)]
 pub enum RowKit {
-    AudioOutput(AudioOutput),
-    MidiOutput(MidiOutput),
-    CvGateOutput(CvGateOutput),
+    Sound(SoundRow),
+    Midi(MidiRow),
+    CvGate(CvGateRow),
 }
 
 impl RowKit {
-    pub fn new_audio(sound: Sound, name: &str) -> Self {
-        RowKit::AudioOutput(AudioOutput::new(sound, name))
+    pub fn new_sound(sound: Sound, name: &str) -> Self {
+        RowKit::Sound(SoundRow::new(sound, name))
     }
 
     pub fn new_midi(channel: MidiChannel, note: u8) -> Self {
-        RowKit::MidiOutput(MidiOutput { channel, note })
+        RowKit::Midi(MidiRow { channel, note })
     }
 
     pub fn new_cv_gate(channel: CvGateChannel) -> Self {
-        RowKit::CvGateOutput(CvGateOutput { channel })
+        RowKit::CvGate(CvGateRow { channel })
     }
 }
 
 /// Audio output is a regular synth patch with a name.
 #[derive(Clone, Debug, PartialEq)]
-pub struct AudioOutput {
+pub struct SoundRow {
     /// Sound is 320 bytes so I'm boxing it to reduce the size of AudioOutput on the stack.
     /// Box allocates his memory on the heap.
     pub sound: Box<Sound>,
@@ -42,7 +41,7 @@ pub struct AudioOutput {
     pub name: String,
 }
 
-impl AudioOutput {
+impl SoundRow {
     pub fn new(sound: Sound, name: &str) -> Self {
         Self {
             sound: Box::new(sound),
@@ -53,18 +52,18 @@ impl AudioOutput {
 
 /// The MIDI output is a MIDI channel and a MIDI note.
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct MidiOutput {
+pub struct MidiRow {
     pub channel: MidiChannel,
     pub note: u8,
 }
 
 /// The CV Gate output is the CV Gate channel only
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct CvGateOutput {
+pub struct CvGateRow {
     pub channel: CvGateChannel,
 }
 
-impl CvGateOutput {
+impl CvGateRow {
     pub fn new(channel: CvGateChannel) -> Self {
         Self { channel }
     }

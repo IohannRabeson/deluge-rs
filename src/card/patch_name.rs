@@ -19,15 +19,13 @@ pub type ParseError = nom::error::Error<String>;
 /// The custom patch name is simpler, it's any chars with at the end an optional number preceded by a space.
 /// Example: "HELLO WORLD", "HELLO WORLD 12".
 /// ```
-/// use deluge::{PatchType, PatchName};
-/// use std::str::FromStr;
-/// let patch_name = PatchName::from_str("SYNT234R").unwrap();
+/// # use deluge::{PatchType, PatchName};
+/// # use std::str::FromStr;
 /// assert_eq!(
-///     patch_name,
+///     PatchName::from_str("SYNT234R").unwrap(),
 ///     PatchName::Standard{ patch_type: PatchType::Synth, number: 234, suffix: Some('R') },
 /// )
 /// ```
-/// Todo: the field number should be an integer limited to [0; 999] (like deluge::values::int8 but for u16).
 #[derive(Debug, PartialEq, Eq)]
 pub enum PatchName {
     Standard {

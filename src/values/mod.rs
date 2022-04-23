@@ -1,9 +1,9 @@
 //! Deluge values
 //!
 //! These type are non splittable data. Most of them are strong integers and the others are mostly simple enumerations.
-//! Each type allow to manipulate values as we do when using a deluge. For example, Hexu50 is an integer in the range [0; 50]
-//! formatted as an 32-bits unsigned integer for storage.
-//! As user, you manipulate a value in the range [0; 50] without having to think how it will be stored in the XML file.
+//! Each type allow to manipulate values as we do when using a Deluge. For example, Hexu50 is an integer in the range [0; 50]
+//! serialized as an 32-bits unsigned integer.
+//! As a Deluge user, you manipulate a value in the range [0; 50] without having to think how it will be stored in the XML file.
 
 mod decu50;
 mod hexu50;
@@ -27,8 +27,8 @@ pub use sample_path::SamplePath;
 pub use sample_position::SamplePosition;
 pub use sidechain_values::{AttackSidechain, ReleaseSidechain, TableIndex};
 pub use simple_enums::{
-    ArpeggiatorMode, FilterType, LfoShape, LpfMode, ModulationFxType, OscType, PitchSpeed, Polyphony, SamplePlayMode, SoundType,
-    SyncLevel, VoicePriority,
+    ArpeggiatorMode, FilterType, LfoShape, LpfMode, ModulationFxType, OscType, PitchSpeed, Polyphony, SamplePlayMode, SyncLevel,
+    SynthModeSelector, VoicePriority,
 };
 pub use uint8::Uint8;
 

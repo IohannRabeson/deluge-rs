@@ -4,7 +4,7 @@ use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
 
 use crate::CardError;
 
-/// Path relative to a card.
+/// A relative path on a card.
 #[derive(Clone, PartialEq, Eq, Debug, Default, PartialOrd, Ord)]
 pub struct SamplePath(PathBuf);
 
@@ -22,6 +22,9 @@ impl SamplePath {
         Ok(SamplePath(path.to_path_buf()))
     }
 
+    /// Print the path formatted for the Deluge.
+    ///
+    /// Deluge always uses '/' as path components separator.
     pub fn to_string_lossy(&self) -> String {
         use itertools::Itertools;
 

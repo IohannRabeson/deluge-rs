@@ -9,10 +9,10 @@ use crate::{
         xml,
     },
     values::*,
-    Arpeggiator, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Hpf,
-    Kit, Lfo1, Lfo2, Lpf, MidiOutput, ModKnob, ModulationFx, PatchCable, Phaser, RingModGenerator, RowKit, Sample, SampleOneZone,
-    SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator, SubtractiveGenerator,
-    SubtractiveOscillator, Synth, Unison, WaveformOscillator,
+    Arpeggiator, Chorus, CvGateRow, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmModulator, FmSynth, Hpf, Kit,
+    Lfo1, Lfo2, Lpf, MidiRow, ModKnob, ModulationFx, PatchCable, Phaser, RingModSynth, RowKit, Sample, SampleOneZone,
+    SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SubtractiveOscillator, SubtractiveSynth,
+    Synth, SynthMode, Unison, WaveformOscillator,
 };
 
 use xmltree::Element;
@@ -77,9 +77,9 @@ fn write_sound_sources(rows: &[RowKit]) -> Result<Element, SerializationError> {
 
     for row in rows {
         let node = match row {
-            RowKit::AudioOutput(sound) => write_sound(&sound.sound, Some(&sound.name))?,
-            RowKit::CvGateOutput(gate) => write_gate_output(gate)?,
-            RowKit::MidiOutput(midi) => write_midi_output(midi)?,
+            RowKit::Sound(sound) => write_sound(&sound.sound, Some(&sound.name))?,
+            RowKit::CvGate(gate) => write_gate_output(gate)?,
+            RowKit::Midi(midi) => write_midi_output(midi)?,
         };
 
         xml::insert_child(&mut sound_source_node, node)?;
@@ -97,7 +97,7 @@ fn write_selected_drum_index(index: u32) -> Result<Element, SerializationError> 
     Ok(selected_drum_index_node)
 }
 
-fn write_gate_output(gate: &CvGateOutput) -> Result<Element, SerializationError> {
+fn write_gate_output(gate: &CvGateRow) -> Result<Element, SerializationError> {
     let mut gate_output_node = Element::new(keys::GATE_OUTPUT);
 
     xml::insert_attribute(&mut gate_output_node, keys::CHANNEL, &gate.channel)?;
@@ -105,7 +105,7 @@ fn write_gate_output(gate: &CvGateOutput) -> Result<Element, SerializationError>
     Ok(gate_output_node)
 }
 
-fn write_midi_output(midi_output: &MidiOutput) -> Result<Element, SerializationError> {
+fn write_midi_output(midi_output: &MidiRow) -> Result<Element, SerializationError> {
     let mut midi_output_node = Element::new(keys::MIDI_OUTPUT);
 
     xml::insert_attribute(&mut midi_output_node, keys::CHANNEL, &midi_output.channel)?;
@@ -135,9 +135,9 @@ fn write_sound(sound: &Sound, name: Option<&String>) -> Result<Element, Serializ
     xml::insert_attribute_rc(&default_params_node, keys::PORTAMENTO, &sound.portamento)?;
 
     match &sound.generator {
-        SoundGenerator::Subtractive(ref generator) => write_subtractive_sound(generator, &mut sound_node, &default_params_node)?,
-        SoundGenerator::Fm(generator) => write_fm_sound(generator, &mut sound_node, &default_params_node)?,
-        SoundGenerator::RingMod(generator) => write_ringmod_sound(generator, &mut sound_node, &default_params_node)?,
+        SynthMode::Subtractive(ref generator) => write_subtractive_sound(generator, &mut sound_node, &default_params_node)?,
+        SynthMode::Fm(generator) => write_fm_sound(generator, &mut sound_node, &default_params_node)?,
+        SynthMode::RingMod(generator) => write_ringmod_sound(generator, &mut sound_node, &default_params_node)?,
     }
 
     xml::insert_child_rc(&default_params_node, write_envelope(&sound.envelope1, TwinSelector::A)?);
@@ -253,7 +253,7 @@ fn write_lfo2(lfo: &Lfo2, default_params_node: &Rc<RefCell<Element>>) -> Result<
 }
 
 fn write_subtractive_sound(
-    generator: &SubtractiveGenerator,
+    generator: &SubtractiveSynth,
     sound_node: &mut Element,
     default_params_node: &Rc<RefCell<Element>>,
 ) -> Result<(), SerializationError> {
@@ -396,7 +396,7 @@ fn write_waveform_oscillator(
 }
 
 fn write_fm_sound(
-    generator: &FmGenerator,
+    generator: &FmSynth,
     sound_node: &mut Element,
     default_params_node: &Rc<RefCell<Element>>,
 ) -> Result<(), SerializationError> {
@@ -416,7 +416,7 @@ fn write_fm_sound(
 }
 
 fn write_ringmod_sound(
-    generator: &RingModGenerator,
+    generator: &RingModSynth,
     sound_node: &mut Element,
     default_params_node: &Rc<RefCell<Element>>,
 ) -> Result<(), SerializationError> {

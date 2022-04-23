@@ -5,7 +5,7 @@ use crate::{
 
 mod row;
 
-pub use row::{AudioOutput, CvGateOutput, MidiOutput, RowKit};
+pub use row::{CvGateRow, MidiRow, RowKit, SoundRow};
 
 /// Store a kit patch
 ///
@@ -13,8 +13,9 @@ pub use row::{AudioOutput, CvGateOutput, MidiOutput, RowKit};
 ///
 /// The rows order are visually reversed by the deluge. In the XML file, the rows
 /// are logically ordered as we expect meaning the index increase as we add new row.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct Kit {
+    #[builder(setter(each(name = "add_row")))]
     pub rows: Vec<RowKit>,
 
     pub selected_drum_index: Option<u32>,
@@ -84,23 +85,11 @@ impl Kit {
     }
 
     pub fn add_sound_row(&mut self, sound: Sound) -> &mut Sound {
-        match self.add_row(RowKit::new_audio(sound, &format!("U{}", self.rows.len() + 1))) {
-            RowKit::AudioOutput(audio) => &mut audio.sound,
-            RowKit::MidiOutput(_) => panic!(),
-            RowKit::CvGateOutput(_) => panic!(),
-        }
+        self.add_named_sound(sound, &format!("U{}", self.rows.len() + 1))
     }
 
-    pub fn add_sound_row_with_name(&mut self, sound: Sound, name: &str) -> &mut Sound {
-        self.add_row(RowKit::new_audio(sound, name));
-
-        let row = self.rows.last_mut().unwrap();
-
-        match row {
-            RowKit::AudioOutput(audio) => &mut audio.sound,
-            RowKit::MidiOutput(_) => panic!(),
-            RowKit::CvGateOutput(_) => panic!(),
-        }
+    pub fn add_named_sound(&mut self, sound: Sound, name: &str) -> &mut Sound {
+        &mut self.add_row(RowKit::new_sound(sound, name)).as_sound_mut().unwrap().sound
     }
 
     pub fn add_midi_row(&mut self, channel: MidiChannel, note: u8) {
@@ -136,11 +125,34 @@ impl Default for Kit {
         default_sound.polyphonic = Polyphony::Auto;
         default_sound.mod_knobs[12].control_param = "pitch".to_string();
 
-        Self::new(vec![RowKit::AudioOutput(AudioOutput::new(default_sound, "U1"))])
+        Self::new(vec![RowKit::Sound(SoundRow::new(default_sound, "U1"))])
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+impl KitBuilder {
+    pub fn add_sound_row(&mut self, sound: Sound) -> &mut Self {
+        self.add_named_sound_row(
+            sound,
+            &format!("U{}", self.rows.as_ref().map(|rows| rows.len()).unwrap_or_default() + 1),
+        );
+
+        self
+    }
+
+    pub fn add_named_sound_row(&mut self, sound: Sound, name: &str) -> &mut Self {
+        self.add_row(RowKit::new_sound(sound, name))
+    }
+
+    pub fn add_midi_row(&mut self, channel: MidiChannel, note: u8) -> &mut Self {
+        self.add_row(RowKit::new_midi(channel, note))
+    }
+
+    pub fn add_gate_row(&mut self, channel: CvGateChannel) -> &mut Self {
+        self.add_row(RowKit::new_cv_gate(channel))
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct Lpf {
     pub frequency: HexU50,
     pub resonance: HexU50,
@@ -155,7 +167,7 @@ impl Default for Lpf {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct Hpf {
     pub frequency: HexU50,
     pub resonance: HexU50,

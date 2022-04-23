@@ -1,6 +1,6 @@
 use crate::values::{HexU50, LfoShape, SyncLevel};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct Envelope {
     pub attack: HexU50,
     pub decay: HexU50,
@@ -8,7 +8,7 @@ pub struct Envelope {
     pub release: HexU50,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct Lfo1 {
     pub shape: LfoShape,
     pub sync_level: SyncLevel,
@@ -25,7 +25,7 @@ impl Default for Lfo1 {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct Lfo2 {
     pub shape: LfoShape,
     pub rate: HexU50,
@@ -40,7 +40,7 @@ impl Default for Lfo2 {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct PatchCable {
     pub source: String,
     pub destination: String,
@@ -57,7 +57,7 @@ impl PatchCable {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct ModKnob {
     pub control_param: String,
     pub patch_amount_from_source: Option<String>,

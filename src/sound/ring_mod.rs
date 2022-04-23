@@ -3,15 +3,15 @@ use crate::{
     WaveformOscillator,
 };
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct RingModGenerator {
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+pub struct RingModSynth {
     pub osc1: WaveformOscillator,
     pub osc2: WaveformOscillator,
     pub osc2_sync: OnOff,
     pub noise: HexU50,
 }
 
-impl RingModGenerator {
+impl RingModSynth {
     pub fn new(osc1: WaveformOscillator, osc2: WaveformOscillator) -> Self {
         Self {
             osc1,
@@ -21,7 +21,7 @@ impl RingModGenerator {
     }
 }
 
-impl Default for RingModGenerator {
+impl Default for RingModSynth {
     fn default() -> Self {
         let osc1 = WaveformOscillator {
             osc_type: OscType::Square,

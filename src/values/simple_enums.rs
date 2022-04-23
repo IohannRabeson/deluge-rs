@@ -74,7 +74,7 @@ impl<'de> Deserialize<'de> for Polyphony {
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
-pub enum SoundType {
+pub enum SynthModeSelector {
     #[serde(rename = "off")]
     Off,
     #[serde(rename = "subtractive")]

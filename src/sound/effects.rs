@@ -2,7 +2,7 @@ use enum_as_inner::EnumAsInner;
 
 use crate::values::{AttackSidechain, ClippingAmount, HexU50, OnOff, ReleaseSidechain, SyncLevel, TableIndex};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct Delay {
     pub ping_pong: OnOff,
     pub analog: OnOff,
@@ -23,7 +23,7 @@ impl Default for Delay {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct Distorsion {
     pub bit_crush: HexU50,
     pub saturation: ClippingAmount,
@@ -40,7 +40,7 @@ impl Default for Distorsion {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct Equalizer {
     /// The default must be HexU50(25)!
     /// About 25 the basses are increased, below they are decreased
@@ -73,7 +73,7 @@ pub enum ModulationFx {
     Phaser(Phaser),
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct Flanger {
     pub rate: HexU50,
     pub feedback: HexU50,
@@ -88,14 +88,14 @@ impl Default for Flanger {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct Chorus {
     pub rate: HexU50,
     pub depth: HexU50,
     pub offset: HexU50,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct Phaser {
     pub rate: HexU50,
     pub depth: HexU50,
@@ -107,7 +107,7 @@ pub struct Phaser {
 /// Notice the "compressor" (the sidechain affecting the volume) is serialized
 /// as a specific patch cable. When you edit the value accessible using the shortcut Row+Volduck this
 /// is the amount of a patch cable.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct Sidechain {
     pub attack: AttackSidechain,
     pub release: ReleaseSidechain,

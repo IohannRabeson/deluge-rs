@@ -24,8 +24,8 @@ impl SubtractiveOscillator {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct SubtractiveGenerator {
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+pub struct SubtractiveSynth {
     pub osc1: SubtractiveOscillator,
     pub osc2: SubtractiveOscillator,
     pub osc2_sync: OnOff,
@@ -39,7 +39,7 @@ pub struct SubtractiveGenerator {
     pub hpf_resonance: HexU50,
 }
 
-impl SubtractiveGenerator {
+impl SubtractiveSynth {
     pub fn new(osc1: SubtractiveOscillator, osc2: SubtractiveOscillator) -> Self {
         Self {
             osc1,
@@ -49,7 +49,7 @@ impl SubtractiveGenerator {
     }
 }
 
-impl Default for SubtractiveGenerator {
+impl Default for SubtractiveSynth {
     fn default() -> Self {
         let osc1 = SubtractiveOscillator::Waveform(WaveformOscillator {
             osc_type: OscType::Square,
@@ -83,7 +83,7 @@ impl Default for SubtractiveGenerator {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct SampleOscillator {
     pub transpose: Transpose,
     pub fine_transpose: FineTranspose,
@@ -120,8 +120,7 @@ impl Default for SampleOscillator {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(test, derive(enum_as_inner::EnumAsInner))]
+#[derive(Clone, Debug, PartialEq, enum_as_inner::EnumAsInner)]
 pub enum Sample {
     OneZone(SampleOneZone),
     SampleRanges(Vec<SampleRange>),
@@ -139,6 +138,13 @@ impl Sample {
             }),
         })
     }
+
+    pub fn get_sample_paths(&self) -> Vec<SamplePath> {
+        match self {
+            Sample::OneZone(zone) => Vec::from([zone.file_path.clone()]),
+            Sample::SampleRanges(ranges) => Vec::from_iter(ranges.iter().map(|range| range.file_path.clone())),
+        }
+    }
 }
 
 impl Default for Sample {
@@ -147,13 +153,13 @@ impl Default for Sample {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Default)]
+#[derive(Clone, Debug, PartialEq, Default, derive_builder::Builder)]
 pub struct SampleOneZone {
     pub file_path: SamplePath,
     pub zone: Option<SampleZone>,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct SampleRange {
     pub range_top_note: Option<u8>,
     pub transpose: Transpose,
@@ -162,7 +168,7 @@ pub struct SampleRange {
     pub zone: SampleZone,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct SampleZone {
     pub start: SamplePosition,
     pub end: SamplePosition,

@@ -1,8 +1,11 @@
 use std::collections::BTreeSet;
 
-use crate::values::{
-    ArpeggiatorMode, DecU50, FineTranspose, HexU50, OctavesCount, OscType, Pan, Polyphony, RetrigPhase, SamplePath, SoundType,
-    SyncLevel, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
+use crate::{
+    values::{
+        ArpeggiatorMode, DecU50, FineTranspose, HexU50, OctavesCount, OscType, Pan, Polyphony, RetrigPhase, SamplePath,
+        SyncLevel, SynthModeSelector, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
+    },
+    SamplePosition,
 };
 
 use enum_as_inner::EnumAsInner;
@@ -13,17 +16,43 @@ mod modulators;
 mod ring_mod;
 mod subtractive;
 
-pub use effects::{Chorus, Delay, Distorsion, Equalizer, Flanger, ModulationFx, Phaser, Sidechain};
-pub use fm::{FmCarrier, FmGenerator, FmModulator};
-pub use modulators::{Envelope, Lfo1, Lfo2, ModKnob, PatchCable};
-pub use ring_mod::RingModGenerator;
-pub use subtractive::{
-    Sample, SampleOneZone, SampleOscillator, SampleRange, SampleZone, SubtractiveGenerator, SubtractiveOscillator,
+pub use effects::{
+    Chorus, ChorusBuilder, Delay, DelayBuilder, Distorsion, DistorsionBuilder, Equalizer, EqualizerBuilder, Flanger,
+    FlangerBuilder, ModulationFx, Phaser, PhaserBuilder, Sidechain, SidechainBuilder,
 };
 
-#[derive(Clone, Debug, PartialEq)]
+pub use fm::{FmCarrier, FmCarrierBuilder, FmModulator, FmModulatorBuilder, FmSynth, FmSynthBuilder};
+pub use modulators::{
+    Envelope, EnvelopeBuilder, Lfo1, Lfo1Builder, Lfo2, Lfo2Builder, ModKnob, ModKnobBuilder, PatchCable, PatchCableBuilder,
+};
+pub use ring_mod::{RingModSynth, RingModSynthBuilder};
+pub use subtractive::{
+    Sample, SampleOneZone, SampleOneZoneBuilder, SampleOscillator, SampleOscillatorBuilder, SampleRange, SampleRangeBuilder,
+    SampleZone, SampleZoneBuilder, SubtractiveOscillator, SubtractiveSynth, SubtractiveSynthBuilder,
+};
+
+/// Composes [Synth] and [Kit] patches
+///
+/// [Sound] is the main component of a Synth patch. It's also the main component of a SoundRow
+/// in a Kit.
+///
+/// This crate provides [SoundBuilder] for creating [Sound] instances:
+/// ```
+/// # use deluge::{SoundBuilder, Sound};
+/// #
+/// # let generator = SubtractiveSynthBuilder::default()
+/// #    .osc1(SubtractiveOscillator::new_sample(Sample::new(path, start, end)))
+/// #    .osc2(SubtractiveOscillator::new_sample(Sample::default()))
+/// #    .osc2_volume(0.into())
+/// #    .build()
+/// #    .unwrap();
+/// let sound = SoundBuilder::default()
+///     .add_sound_row(generator)
+///     .build().unwrap();
+/// ```
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct Sound {
-    pub generator: SoundGenerator,
+    pub generator: SynthMode,
     pub polyphonic: Polyphony,
     pub voice_priority: VoicePriority,
     pub volume: HexU50,
@@ -43,28 +72,47 @@ pub struct Sound {
     pub modulation_fx: ModulationFx,
     pub equalizer: Equalizer,
     pub sidechain: Sidechain,
+
+    #[builder(setter(each(name = "add_cable")))]
     pub cables: Vec<PatchCable>,
+
+    // This must be an array
     pub mod_knobs: Vec<ModKnob>,
 }
 
 impl Sound {
+    /// Factory function that creates a regular sample based sound
+    pub fn new_sample(path: SamplePath, start: SamplePosition, end: SamplePosition) -> Self {
+        let generator = SubtractiveSynthBuilder::default()
+            .osc1(SubtractiveOscillator::new_sample(Sample::new(path, start, end)))
+            .osc2(SubtractiveOscillator::new_sample(Sample::default()))
+            .osc2_volume(0.into())
+            .build()
+            .unwrap();
+
+        Self {
+            generator: SynthMode::Subtractive(generator),
+            ..Default::default()
+        }
+    }
+
     pub fn new_substractive(osc1: SubtractiveOscillator, osc2: SubtractiveOscillator) -> Self {
         Self {
-            generator: SoundGenerator::Subtractive(SubtractiveGenerator::new(osc1, osc2)),
+            generator: SynthMode::Subtractive(SubtractiveSynth::new(osc1, osc2)),
             ..Default::default()
         }
     }
 
     pub fn new_ringmod(osc1: WaveformOscillator, osc2: WaveformOscillator) -> Self {
         Self {
-            generator: SoundGenerator::RingMod(RingModGenerator::new(osc1, osc2)),
+            generator: SynthMode::RingMod(RingModSynth::new(osc1, osc2)),
             ..Default::default()
         }
     }
 
     pub fn new_fm(carrier1: FmCarrier, carrier2: FmCarrier) -> Self {
         Self {
-            generator: SoundGenerator::Fm(FmGenerator::new(carrier1, carrier2)),
+            generator: SynthMode::Fm(FmSynth::new(carrier1, carrier2)),
             ..Default::default()
         }
     }
@@ -73,30 +121,24 @@ impl Sound {
     pub fn get_sample_paths(&self) -> BTreeSet<SamplePath> {
         let mut paths = BTreeSet::new();
 
-        if let SoundGenerator::Subtractive(generator) = &self.generator {
+        if let SynthMode::Subtractive(generator) = &self.generator {
             if let SubtractiveOscillator::Sample(generator) = &generator.osc1 {
-                paths.extend(Self::get_sample_paths_impl(&generator.sample).into_iter());
+                paths.extend(generator.sample.get_sample_paths().into_iter());
             }
 
             if let SubtractiveOscillator::Sample(generator) = &generator.osc2 {
-                paths.extend(Self::get_sample_paths_impl(&generator.sample).into_iter());
+                paths.extend(generator.sample.get_sample_paths().into_iter());
             }
         }
 
         paths
     }
-
-    fn get_sample_paths_impl(sample: &Sample) -> Vec<SamplePath> {
-        match sample {
-            Sample::OneZone(zone) => Vec::from([zone.file_path.clone()]),
-            Sample::SampleRanges(ranges) => Vec::from_iter(ranges.iter().map(|range| range.file_path.clone())),
-        }
-    }
 }
 
 /// Default implementation for Sound
 ///
-/// This implementation returns a Sound exactly like the Deluge would create it for a default synth patch.
+/// This implementation returns a Sound exactly like the
+/// Deluge would create it for a default synth patch.
 impl Default for Sound {
     fn default() -> Self {
         let envelope1 = Envelope {
@@ -162,29 +204,29 @@ impl Default for Sound {
 }
 
 #[derive(Clone, Debug, PartialEq, EnumAsInner)]
-pub enum SoundGenerator {
-    Subtractive(SubtractiveGenerator),
-    RingMod(RingModGenerator),
-    Fm(FmGenerator),
+pub enum SynthMode {
+    Subtractive(SubtractiveSynth),
+    RingMod(RingModSynth),
+    Fm(FmSynth),
 }
 
-impl SoundGenerator {
-    pub fn to_sound_type(&self) -> SoundType {
+impl SynthMode {
+    pub fn to_sound_type(&self) -> SynthModeSelector {
         match self {
-            SoundGenerator::Subtractive(_) => SoundType::Subtractive,
-            SoundGenerator::Fm(_) => SoundType::Fm,
-            SoundGenerator::RingMod(_) => SoundType::RingMod,
+            SynthMode::Subtractive(_) => SynthModeSelector::Subtractive,
+            SynthMode::Fm(_) => SynthModeSelector::Fm,
+            SynthMode::RingMod(_) => SynthModeSelector::RingMod,
         }
     }
 }
 
-impl Default for SoundGenerator {
+impl Default for SynthMode {
     fn default() -> Self {
-        SoundGenerator::Subtractive(SubtractiveGenerator::default())
+        SynthMode::Subtractive(SubtractiveSynth::default())
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct WaveformOscillator {
     pub osc_type: OscType,
     pub transpose: Transpose,
@@ -193,7 +235,7 @@ pub struct WaveformOscillator {
     pub pulse_width: HexU50,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct Unison {
     pub voice_count: UnisonVoiceCount,
     pub detune: UnisonDetune,
@@ -208,7 +250,7 @@ impl Default for Unison {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 pub struct Arpeggiator {
     pub mode: ArpeggiatorMode,
     pub gate: HexU50,

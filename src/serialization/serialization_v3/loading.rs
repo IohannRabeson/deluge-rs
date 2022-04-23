@@ -1,16 +1,16 @@
 use crate::{
-    kit::AudioOutput,
+    kit::SoundRow,
     serialization::{
         default_params::{DefaultParams, TwinSelector},
         keys,
         serialization_common::convert_milliseconds_to_samples,
         xml,
     },
-    values::{HexU50, MidiChannel, ModulationFxType, OnOff, OscType, Pan, SamplePosition, SoundType},
-    Arpeggiator, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Hpf,
-    Kit, Lfo1, Lfo2, Lpf, MidiOutput, ModKnob, ModulationFx, PatchCable, Phaser, RingModGenerator, RowKit, Sample, SampleOneZone,
-    SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator, SubtractiveGenerator,
-    SubtractiveOscillator, Synth, Unison, WaveformOscillator,
+    values::{HexU50, MidiChannel, ModulationFxType, OnOff, OscType, Pan, SamplePosition, SynthModeSelector},
+    Arpeggiator, Chorus, CvGateRow, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmModulator, FmSynth, Hpf, Kit,
+    Lfo1, Lfo2, Lpf, MidiRow, ModKnob, ModulationFx, PatchCable, Phaser, RingModSynth, RowKit, Sample, SampleOneZone,
+    SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SubtractiveOscillator, SubtractiveSynth,
+    Synth, SynthMode, Unison, WaveformOscillator,
 };
 
 use xmltree::Element;
@@ -67,13 +67,13 @@ pub fn load_kit_nodes(root_nodes: &[Element]) -> Result<Kit, SerializationError>
 /// class Sound
 /// class RowKit(Sound, Name, OtherAdditionalInfosByRow)
 fn load_sound(root: &Element) -> Result<Sound, SerializationError> {
-    let sound_type = xml::parse_attribute::<SoundType>(root, keys::MODE)?;
+    let sound_type = xml::parse_attribute::<SynthModeSelector>(root, keys::MODE)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
 
     let generator = match sound_type {
-        SoundType::Subtractive => load_subtractive_sound(root)?,
-        SoundType::Fm => load_fm_sound(root)?,
-        SoundType::RingMod => load_ringmode_sound(root)?,
+        SynthModeSelector::Subtractive => load_subtractive_sound(root)?,
+        SynthModeSelector::Fm => load_fm_sound(root)?,
+        SynthModeSelector::RingMod => load_ringmode_sound(root)?,
         _ => return Err(SerializationError::UnsupportedSoundType),
     };
 
@@ -103,12 +103,12 @@ fn load_sound(root: &Element) -> Result<Sound, SerializationError> {
     })
 }
 
-fn load_subtractive_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
+fn load_subtractive_sound(root: &Element) -> Result<SynthMode, SerializationError> {
     let osc1_node = xml::get_children_element(root, keys::OSC1)?;
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
 
-    Ok(SoundGenerator::Subtractive(SubtractiveGenerator {
+    Ok(SynthMode::Subtractive(SubtractiveSynth {
         osc1: load_oscillator(osc1_node, &DefaultParams::new(TwinSelector::A, default_params_node))?,
         osc2: load_oscillator(osc2_node, &DefaultParams::new(TwinSelector::B, default_params_node))?,
         osc2_sync: xml::parse_opt_attribute(osc2_node, keys::OSCILLATOR_SYNC)?.unwrap_or(OnOff::Off),
@@ -123,14 +123,14 @@ fn load_subtractive_sound(root: &Element) -> Result<SoundGenerator, Serializatio
     }))
 }
 
-fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
+fn load_ringmode_sound(root: &Element) -> Result<SynthMode, SerializationError> {
     let osc1_node = xml::get_children_element(root, keys::OSC1)?;
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
     let osc1_type = xml::parse_attribute(osc1_node, keys::TYPE)?;
     let osc2_type = xml::parse_attribute(osc2_node, keys::TYPE)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
 
-    Ok(SoundGenerator::RingMod(RingModGenerator {
+    Ok(SynthMode::RingMod(RingModSynth {
         osc1: load_waveform_oscillator_imp(
             osc1_type,
             osc1_node,
@@ -146,7 +146,7 @@ fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, SerializationEr
     }))
 }
 
-fn load_fm_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
+fn load_fm_sound(root: &Element) -> Result<SynthMode, SerializationError> {
     let osc1_node = xml::get_children_element(root, keys::OSC1)?;
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
     let mod1_node = xml::get_children_element(root, keys::FM_MODULATOR1)?;
@@ -155,7 +155,7 @@ fn load_fm_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
     let params_a = &DefaultParams::new(TwinSelector::A, default_params_node);
     let params_b = &DefaultParams::new(TwinSelector::B, default_params_node);
 
-    Ok(SoundGenerator::Fm(FmGenerator {
+    Ok(SynthMode::Fm(FmSynth {
         osc1: load_carrier(osc1_node, params_a)?,
         osc2: load_carrier(osc2_node, params_b)?,
         modulator1: load_fm_modulation(mod1_node, params_a)?,
@@ -302,28 +302,28 @@ fn load_waveform_oscillator_imp(
     })
 }
 
-fn load_midi_output(root: &Element) -> Result<MidiOutput, SerializationError> {
+fn load_midi_output(root: &Element) -> Result<MidiRow, SerializationError> {
     let channel: MidiChannel = xml::parse_attribute(root, keys::CHANNEL)?;
     let note = xml::parse_attribute(root, keys::NOTE)?;
 
-    Ok(MidiOutput { channel, note })
+    Ok(MidiRow { channel, note })
 }
 
-fn load_gate_output(root: &Element) -> Result<CvGateOutput, SerializationError> {
-    Ok(CvGateOutput::new(xml::parse_attribute(root, keys::CHANNEL)?))
+fn load_gate_output(root: &Element) -> Result<CvGateRow, SerializationError> {
+    Ok(CvGateRow::new(xml::parse_attribute(root, keys::CHANNEL)?))
 }
 
 fn load_sound_source(root: &Element) -> Result<RowKit, SerializationError> {
     Ok(match root.name.as_str() {
-        keys::SOUND => RowKit::AudioOutput(load_sound_output(root)?),
-        keys::MIDI_OUTPUT => RowKit::MidiOutput(load_midi_output(root)?),
-        keys::GATE_OUTPUT => RowKit::CvGateOutput(load_gate_output(root)?),
+        keys::SOUND => RowKit::Sound(load_sound_output(root)?),
+        keys::MIDI_OUTPUT => RowKit::Midi(load_midi_output(root)?),
+        keys::GATE_OUTPUT => RowKit::CvGate(load_gate_output(root)?),
         _ => return Err(SerializationError::UnsupportedSoundSource(root.name.clone())),
     })
 }
 
-fn load_sound_output(root: &Element) -> Result<AudioOutput, SerializationError> {
-    Ok(AudioOutput {
+fn load_sound_output(root: &Element) -> Result<SoundRow, SerializationError> {
+    Ok(SoundRow {
         sound: Box::new(load_sound(root)?),
         name: xml::parse_attribute(root, keys::NAME)?,
     })
@@ -597,12 +597,12 @@ mod tests {
         assert_eq!(kit.rows.len(), 9);
         assert_eq!(
             kit.rows[0],
-            RowKit::MidiOutput(MidiOutput {
+            RowKit::Midi(MidiRow {
                 channel: 1.into(),
                 note: 63
             })
         );
-        assert_eq!(kit.rows[1], RowKit::CvGateOutput(CvGateOutput { channel: 3.into() }));
+        assert_eq!(kit.rows[1], RowKit::CvGate(CvGateRow { channel: 3.into() }));
     }
 
     #[test]
@@ -621,7 +621,7 @@ mod tests {
         assert_eq!(kit.rows.len(), 7);
 
         for i in 0..kit.rows.len() {
-            let sound = kit.rows[i].as_audio_output().unwrap();
+            let sound = kit.rows[i].as_sound().unwrap();
 
             assert_eq!(sound.name, expected[i]);
         }
