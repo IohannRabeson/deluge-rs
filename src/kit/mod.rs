@@ -89,14 +89,35 @@ impl Kit {
         self.add_named_sound(sound, &format!("U{}", self.rows.len() + 1))
     }
 
+    /// Add a sound row with a custom name
+    /// ```
+    /// use deluge::{Kit, Sound, SamplePath};
+    /// 
+    /// let mut kit = Kit::default();
+    /// kit.add_named_sound(Sound::new_sample(SamplePath::new("sample.WAV").unwrap(), 0.into(), 999.into()), "My sample");
+    /// ```
     pub fn add_named_sound(&mut self, sound: Sound, name: &str) -> &mut Sound {
         &mut self.add_row(RowKit::new_sound(sound, name)).as_sound_mut().unwrap().sound
     }
 
+    /// Add a MIDI row
+    /// ```
+    /// use deluge::Kit;
+    /// 
+    /// let mut kit = Kit::default();
+    /// kit.add_midi_row(1.into(), 60);
+    /// ```
     pub fn add_midi_row(&mut self, channel: MidiChannel, note: u8) {
         self.add_row(RowKit::new_midi(channel, note));
     }
 
+    /// Add a CV gate row
+    /// ```
+    /// use deluge::Kit;
+    /// 
+    /// let mut kit = Kit::default();
+    /// kit.add_gate_row(1.into());
+    /// ```
     pub fn add_gate_row(&mut self, channel: CvGateChannel) {
         self.add_row(RowKit::new_cv_gate(channel));
     }
@@ -131,6 +152,16 @@ impl Default for Kit {
 }
 
 impl KitBuilder {
+    /// Add a sound row with a custom name
+    /// ```
+    /// use deluge::{Kit, Sound, KitBuilder, SamplePath};
+    /// 
+    /// let mut kit = KitBuilder::default()
+    ///     .add_sound_row(Sound::new_sample(SamplePath::new("sample.WAV").unwrap(), 0.into(), 999.into()))
+    ///     .build()
+    ///     .unwrap()
+    ///     ;
+    /// ```
     pub fn add_sound_row(&mut self, sound: Sound) -> &mut Self {
         self.add_named_sound_row(
             sound,

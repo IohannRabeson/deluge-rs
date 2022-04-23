@@ -22,7 +22,7 @@ mod synth;
 mod values;
 
 pub use card::{Card, CardError, CardFolder, FileSystem, LocalFileSystem, PatchName};
-pub use kit::{CvGateRow, Hpf, Kit, Lpf, MidiRow, RowKit, SoundRow, HpfBuilder, LpfBuilder};
+pub use kit::{CvGateRow, Hpf, Kit, Lpf, MidiRow, RowKit, SoundRow, HpfBuilder, LpfBuilder, KitBuilder};
 pub use serialization::{load_kit, load_synth, save_kit, save_synth, PatchType, SerializationError};
 pub use sound::{
     Arpeggiator, ArpeggiatorBuilder, Chorus, ChorusBuilder, Delay, DelayBuilder, Distorsion, DistorsionBuilder, Envelope,
