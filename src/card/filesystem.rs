@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use super::CardError;
+use crate::CardError;
 
 #[cfg(test)]
 use mockall::{automock, predicate::*};

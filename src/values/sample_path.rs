@@ -4,13 +4,13 @@ use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
 
 use crate::CardError;
 
-/// Path relative to a card.
-#[derive(Clone, PartialEq, Eq, Debug, Default)]
+/// A relative path on a card.
+#[derive(Clone, PartialEq, Eq, Debug, Default, PartialOrd, Ord)]
 pub struct SamplePath(PathBuf);
 
 impl SamplePath {
     /// Create a new sample path.
-    /// 
+    ///
     /// This function returns an error if the path is not a relative one.
     pub fn new(path: &str) -> Result<Self, CardError> {
         let path = Path::new(path);
@@ -22,6 +22,9 @@ impl SamplePath {
         Ok(SamplePath(path.to_path_buf()))
     }
 
+    /// Print the path formatted for the Deluge.
+    ///
+    /// Deluge always uses '/' as path components separator.
     pub fn to_string_lossy(&self) -> String {
         use itertools::Itertools;
 

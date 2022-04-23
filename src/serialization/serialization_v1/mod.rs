@@ -1,12 +1,12 @@
 use crate::{
     values::{
         ArpeggiatorMode, AttackSidechain, HexU50, MidiChannel, ModulationFxType, OnOff, OscType, Pan, ReleaseSidechain,
-        RetrigPhase, SoundType, SyncLevel,
+        RetrigPhase, SamplePosition, SyncLevel, SynthModeSelector,
     },
-    Arpeggiator, AudioOutput, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator,
-    FmModulator, Hpf, Kit, Lfo1, Lfo2, Lpf, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator,
-    RowKit, Sample, SampleOneZone, SampleOscillator, SamplePosition, SampleRange, SampleZone, SerializationError, Sidechain,
-    Sound, SoundGenerator, SubtractiveGenerator, Synth, Unison, WaveformOscillator,
+    Arpeggiator, Chorus, CvGateRow, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmModulator, FmSynth, Hpf, Kit,
+    Lfo1, Lfo2, Lpf, MidiRow, ModKnob, ModulationFx, PatchCable, Phaser, RingModSynth, RowKit, Sample, SampleOneZone,
+    SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundRow, SubtractiveOscillator,
+    SubtractiveSynth, Synth, SynthMode, Unison, WaveformOscillator,
 };
 use xmltree::Element;
 
@@ -61,13 +61,14 @@ pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, SerializationError> {
 }
 
 fn load_sound(root: &Element) -> Result<Sound, SerializationError> {
-    let sound_type = xml::parse_opt_children_element_content::<SoundType>(root, keys::MODE)?.unwrap_or(SoundType::Subtractive);
+    let sound_type =
+        xml::parse_opt_children_element_content::<SynthModeSelector>(root, keys::MODE)?.unwrap_or(SynthModeSelector::Subtractive);
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
 
     let generator = match sound_type {
-        SoundType::Subtractive => load_subtractive_sound(root)?,
-        SoundType::Fm => load_fm_sound(root)?,
-        SoundType::RingMod => load_ringmode_sound(root)?,
+        SynthModeSelector::Subtractive => load_subtractive_sound(root)?,
+        SynthModeSelector::Fm => load_fm_sound(root)?,
+        SynthModeSelector::RingMod => load_ringmode_sound(root)?,
         _ => return Err(SerializationError::UnsupportedSoundType),
     };
 
@@ -116,7 +117,7 @@ fn create_default_sidechain() -> Sidechain {
     }
 }
 
-fn load_subtractive_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
+fn load_subtractive_sound(root: &Element) -> Result<SynthMode, SerializationError> {
     let osc1_node = xml::get_children_element(root, keys::OSC1)?;
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
@@ -125,7 +126,7 @@ fn load_subtractive_sound(root: &Element) -> Result<SoundGenerator, Serializatio
 
     load_oscillator_reset_osc(root, &mut osc1, &mut osc2)?;
 
-    Ok(SoundGenerator::Subtractive(SubtractiveGenerator {
+    Ok(SynthMode::Subtractive(SubtractiveSynth {
         osc1,
         osc2,
         osc2_sync: xml::parse_opt_children_element_content(osc2_node, keys::OSCILLATOR_SYNC)?.unwrap_or(OnOff::Off),
@@ -135,25 +136,37 @@ fn load_subtractive_sound(root: &Element) -> Result<SoundGenerator, Serializatio
         lpf_resonance: xml::parse_children_element_content(default_params_node, keys::LPF_RESONANCE)?,
         hpf_frequency: xml::parse_children_element_content(default_params_node, keys::HPF_FREQUENCY)?,
         hpf_resonance: xml::parse_children_element_content(default_params_node, keys::HPF_RESONANCE)?,
+        osc1_volume: xml::parse_children_element_content(default_params_node, keys::VOLUME_OSC_A)?,
+        osc2_volume: xml::parse_children_element_content(default_params_node, keys::VOLUME_OSC_B)?,
     }))
 }
 
-fn assign_retrig_phase(mut osc: &mut Oscillator, retrig_phase: RetrigPhase) {
-    if let Oscillator::Waveform(osc) = &mut osc {
+fn assign_retrig_phase(mut osc: &mut SubtractiveOscillator, retrig_phase: RetrigPhase) {
+    if let SubtractiveOscillator::Waveform(osc) = &mut osc {
         osc.retrig_phase = retrig_phase;
     }
 }
 
-pub(crate) fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
+pub(crate) fn load_ringmode_sound(root: &Element) -> Result<SynthMode, SerializationError> {
     let osc1_node = xml::get_children_element(root, keys::OSC1)?;
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
+    let osc1_type: OscType = xml::parse_children_element_content(osc1_node, keys::TYPE)?;
+    let osc2_type: OscType = xml::parse_children_element_content(osc2_node, keys::TYPE)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
-    let mut osc1 = load_oscillator(osc1_node, &DefaultParams::new(TwinSelector::A, default_params_node))?;
-    let mut osc2 = load_oscillator(osc2_node, &DefaultParams::new(TwinSelector::B, default_params_node))?;
+    let mut osc1 = load_waveform_oscillator_imp(
+        osc1_type,
+        osc1_node,
+        &DefaultParams::new(TwinSelector::A, default_params_node),
+    )?;
+    let mut osc2 = load_waveform_oscillator_imp(
+        osc2_type,
+        osc2_node,
+        &DefaultParams::new(TwinSelector::B, default_params_node),
+    )?;
 
-    load_oscillator_reset_osc(root, &mut osc1, &mut osc2)?;
+    load_oscillator_reset_waveform_osc(root, &mut osc1, &mut osc2)?;
 
-    Ok(SoundGenerator::RingMod(RingModGenerator {
+    Ok(SynthMode::RingMod(RingModSynth {
         osc1,
         osc2,
         osc2_sync: xml::parse_opt_children_element_content::<OnOff>(osc2_node, keys::OSCILLATOR_SYNC)?.unwrap_or(OnOff::Off),
@@ -161,7 +174,11 @@ pub(crate) fn load_ringmode_sound(root: &Element) -> Result<SoundGenerator, Seri
     }))
 }
 
-fn load_oscillator_reset_osc(root: &Element, osc1: &mut Oscillator, osc2: &mut Oscillator) -> Result<(), SerializationError> {
+fn load_oscillator_reset_osc(
+    root: &Element,
+    osc1: &mut SubtractiveOscillator,
+    osc2: &mut SubtractiveOscillator,
+) -> Result<(), SerializationError> {
     if let Some(oscillator_reset_node) = xml::parse_opt_children_element_content::<OnOff>(root, keys::OSCILLATOR_RESET)? {
         let retrig_phase = retrig_phase_from_oscillator_reset(oscillator_reset_node);
 
@@ -172,7 +189,22 @@ fn load_oscillator_reset_osc(root: &Element, osc1: &mut Oscillator, osc2: &mut O
     Ok(())
 }
 
-pub(crate) fn load_fm_sound(root: &Element) -> Result<SoundGenerator, SerializationError> {
+fn load_oscillator_reset_waveform_osc(
+    root: &Element,
+    osc1: &mut WaveformOscillator,
+    osc2: &mut WaveformOscillator,
+) -> Result<(), SerializationError> {
+    if let Some(oscillator_reset_node) = xml::parse_opt_children_element_content::<OnOff>(root, keys::OSCILLATOR_RESET)? {
+        let retrig_phase = retrig_phase_from_oscillator_reset(oscillator_reset_node);
+
+        osc1.retrig_phase = retrig_phase;
+        osc2.retrig_phase = retrig_phase;
+    }
+
+    Ok(())
+}
+
+pub(crate) fn load_fm_sound(root: &Element) -> Result<SynthMode, SerializationError> {
     let osc1_node = xml::get_children_element(root, keys::OSC1)?;
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
     let mod1_node = xml::get_children_element(root, keys::FM_MODULATOR1)?;
@@ -185,12 +217,14 @@ pub(crate) fn load_fm_sound(root: &Element) -> Result<SoundGenerator, Serializat
 
     load_oscillator_reset_carrier(root, &mut osc1, &mut osc2)?;
 
-    Ok(SoundGenerator::Fm(FmGenerator {
+    Ok(SynthMode::Fm(FmSynth {
         osc1: load_carrier(osc1_node, params_a)?,
         osc2: load_carrier(osc2_node, params_b)?,
         modulator1: load_fm_modulation(mod1_node, params_a)?,
         modulator2: load_fm_modulation(mod2_node, params_b)?,
         modulator2_to_modulator1: xml::parse_children_element_content(mod2_node, keys::FM_MOD1_TO_MOD2)?,
+        osc1_volume: xml::parse_children_element_content(default_params_node, keys::VOLUME_OSC_A)?,
+        osc2_volume: xml::parse_children_element_content(default_params_node, keys::VOLUME_OSC_B)?,
     }))
 }
 
@@ -216,11 +250,11 @@ fn retrig_phase_from_oscillator_reset(oscillator_reset_node: OnOff) -> RetrigPha
     }
 }
 
-pub(crate) fn load_oscillator(root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
+pub(crate) fn load_oscillator(root: &Element, params: &DefaultParams) -> Result<SubtractiveOscillator, SerializationError> {
     let osc_type: OscType = xml::parse_children_element_content(root, keys::TYPE)?;
 
     match osc_type {
-        OscType::Sample => load_sample_oscillator(root, params),
+        OscType::Sample => load_sample_oscillator(root),
         OscType::AnalogSaw => load_waveform_oscillator(osc_type, root, params),
         OscType::AnalogSquare => load_waveform_oscillator(osc_type, root, params),
         OscType::Saw => load_waveform_oscillator(osc_type, root, params),
@@ -235,7 +269,6 @@ fn load_carrier(root: &Element, params: &DefaultParams) -> Result<FmCarrier, Ser
         transpose: xml::parse_children_element_content(root, keys::TRANSPOSE)?,
         fine_transpose: xml::parse_children_element_content(root, keys::CENTS)?,
         retrig_phase: xml::parse_opt_children_element_content(root, keys::RETRIG_PHASE)?.unwrap_or(RetrigPhase::Off),
-        volume: params.parse_twin_children_content(keys::VOLUME_OSC_A, keys::VOLUME_OSC_B)?,
         feedback: params.parse_twin_children_content(keys::FEEDBACK_CARRIER1, keys::FEEDBACK_CARRIER2)?,
     })
 }
@@ -250,8 +283,8 @@ fn load_fm_modulation(root: &Element, params: &DefaultParams) -> Result<FmModula
     })
 }
 
-fn load_sample_oscillator(root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
-    Ok(Oscillator::Sample(SampleOscillator {
+fn load_sample_oscillator(root: &Element) -> Result<SubtractiveOscillator, SerializationError> {
+    Ok(SubtractiveOscillator::Sample(SampleOscillator {
         transpose: xml::parse_opt_children_element_content(root, keys::TRANSPOSE)?.unwrap_or_default(),
         fine_transpose: xml::parse_opt_children_element_content(root, keys::CENTS)?.unwrap_or_default(),
         reversed: xml::parse_children_element_content(root, keys::REVERSED)?,
@@ -260,7 +293,6 @@ fn load_sample_oscillator(root: &Element, params: &DefaultParams) -> Result<Osci
         time_stretch_amount: xml::parse_children_element_content(root, keys::TIME_STRETCH_AMOUNT)?,
         sample: load_sample(root)?,
         linear_interpolation: xml::parse_opt_children_element_content(root, keys::LINEAR_INTERPOLATION)?.unwrap_or_default(),
-        volume: params.parse_twin_children_content(keys::VOLUME_OSC_A, keys::VOLUME_OSC_B)?,
     }))
 }
 
@@ -333,30 +365,43 @@ fn parse_sample_zone(root: &Element) -> Result<SampleZone, SerializationError> {
     })
 }
 
-fn load_waveform_oscillator(osc_type: OscType, root: &Element, params: &DefaultParams) -> Result<Oscillator, SerializationError> {
-    Ok(Oscillator::Waveform(WaveformOscillator {
+fn load_waveform_oscillator(
+    osc_type: OscType,
+    root: &Element,
+    params: &DefaultParams,
+) -> Result<SubtractiveOscillator, SerializationError> {
+    Ok(SubtractiveOscillator::Waveform(load_waveform_oscillator_imp(
+        osc_type, root, params,
+    )?))
+}
+
+fn load_waveform_oscillator_imp(
+    osc_type: OscType,
+    root: &Element,
+    params: &DefaultParams,
+) -> Result<WaveformOscillator, SerializationError> {
+    Ok(WaveformOscillator {
         osc_type,
         transpose: xml::parse_children_element_content(root, keys::TRANSPOSE)?,
         fine_transpose: xml::parse_children_element_content(root, keys::CENTS)?,
         retrig_phase: xml::parse_opt_children_element_content(root, keys::RETRIG_PHASE)?.unwrap_or(RetrigPhase::Off),
-        volume: params.parse_twin_children_content(keys::VOLUME_OSC_A, keys::VOLUME_OSC_B)?,
         pulse_width: params.parse_twin_children_content(keys::PULSE_WIDTH_OSC_A, keys::PULSE_WIDTH_OSC_B)?,
-    }))
+    })
 }
 
-fn load_midi_output(root: &Element) -> Result<MidiOutput, SerializationError> {
+fn load_midi_output(root: &Element) -> Result<MidiRow, SerializationError> {
     let channel: MidiChannel = xml::parse_children_element_content(root, keys::CHANNEL)?;
     let note = xml::parse_children_element_content(root, keys::NOTE)?;
 
-    Ok(MidiOutput { channel, note })
+    Ok(MidiRow { channel, note })
 }
 
-fn load_gate_output(root: &Element) -> Result<CvGateOutput, SerializationError> {
-    Ok(CvGateOutput::new(xml::parse_children_element_content(root, keys::CHANNEL)?))
+fn load_gate_output(root: &Element) -> Result<CvGateRow, SerializationError> {
+    Ok(CvGateRow::new(xml::parse_children_element_content(root, keys::CHANNEL)?))
 }
 
-fn load_sound_output(root: &Element) -> Result<AudioOutput, SerializationError> {
-    Ok(AudioOutput {
+fn load_sound_output(root: &Element) -> Result<SoundRow, SerializationError> {
+    Ok(SoundRow {
         sound: Box::new(load_sound(root)?),
         name: xml::parse_children_element_content(root, keys::NAME)?,
     })
@@ -364,9 +409,9 @@ fn load_sound_output(root: &Element) -> Result<AudioOutput, SerializationError> 
 
 pub(crate) fn load_sound_source(root: &Element) -> Result<RowKit, SerializationError> {
     Ok(match root.name.as_str() {
-        keys::SOUND => RowKit::AudioOutput(load_sound_output(root)?),
-        keys::MIDI_OUTPUT => RowKit::MidiOutput(load_midi_output(root)?),
-        keys::GATE_OUTPUT => RowKit::CvGateOutput(load_gate_output(root)?),
+        keys::SOUND => RowKit::Sound(load_sound_output(root)?),
+        keys::MIDI_OUTPUT => RowKit::Midi(load_midi_output(root)?),
+        keys::GATE_OUTPUT => RowKit::CvGate(load_gate_output(root)?),
         _ => return Err(SerializationError::UnsupportedSoundSource(root.name.clone())),
     })
 }
@@ -654,7 +699,8 @@ mod tests {
         assert_eq!(generator.lpf_resonance, HexU50::parse("0x82000000").unwrap());
         assert_eq!(generator.hpf_frequency, HexU50::parse("0x1C000000").unwrap());
         assert_eq!(generator.hpf_resonance, HexU50::parse("0x80000000").unwrap());
-
+        assert_eq!(generator.osc1_volume, HexU50::parse("0x70A3D6DF").unwrap());
+        assert_eq!(generator.osc2_volume, HexU50::parse("0x7FFFFFD2").unwrap());
         assert_eq!(generator.osc2_sync, OnOff::Off);
 
         let waveform = generator.osc1.as_waveform().unwrap();
@@ -663,7 +709,6 @@ mod tests {
         assert_eq!(waveform.transpose, Transpose::new(0));
         assert_eq!(waveform.fine_transpose, FineTranspose::new(0));
         assert_eq!(waveform.retrig_phase, RetrigPhase::new(0));
-        assert_eq!(waveform.volume, HexU50::parse("0x70A3D6DF").unwrap());
         assert_eq!(waveform.pulse_width, HexU50::parse("0x00000000").unwrap());
 
         let waveform = generator.osc2.as_waveform().unwrap();
@@ -672,7 +717,6 @@ mod tests {
         assert_eq!(waveform.transpose, Transpose::new(0));
         assert_eq!(waveform.fine_transpose, FineTranspose::new(8));
         assert_eq!(waveform.retrig_phase, RetrigPhase::new(0));
-        assert_eq!(waveform.volume, HexU50::parse("0x7FFFFFD2").unwrap());
         assert_eq!(waveform.pulse_width, HexU50::parse("0x00000000").unwrap());
 
         assert_eq!(3, sound.cables.len());
@@ -697,17 +741,18 @@ mod tests {
         let sound = &synth.sound;
         let generator = sound.generator.as_fm().unwrap();
 
+        assert_eq!(generator.osc1_volume, HexU50::parse("0x7FFFFFFF").unwrap());
+        assert_eq!(generator.osc2_volume, HexU50::parse("0x80000000").unwrap());
+
         assert_eq!(generator.osc1.transpose, Transpose::new(0));
         assert_eq!(generator.osc1.fine_transpose, FineTranspose::new(0));
         assert_eq!(generator.osc1.retrig_phase, RetrigPhase::new(0));
         assert_eq!(generator.osc1.feedback, HexU50::parse("0x80000000").unwrap());
-        assert_eq!(generator.osc1.volume, HexU50::parse("0x7FFFFFFF").unwrap());
 
         assert_eq!(generator.osc2.transpose, Transpose::new(0));
         assert_eq!(generator.osc2.fine_transpose, FineTranspose::new(0));
         assert_eq!(generator.osc2.retrig_phase, RetrigPhase::new(0));
         assert_eq!(generator.osc2.feedback, HexU50::parse("0x80000000").unwrap());
-        assert_eq!(generator.osc2.volume, HexU50::parse("0x80000000").unwrap());
 
         assert_eq!(generator.modulator1.transpose, Transpose::new(-15));
         assert_eq!(generator.modulator1.fine_transpose, FineTranspose::new(0));

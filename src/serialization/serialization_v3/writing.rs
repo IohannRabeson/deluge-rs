@@ -9,10 +9,10 @@ use crate::{
         xml,
     },
     values::*,
-    Arpeggiator, Chorus, CvGateOutput, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Hpf,
-    Kit, Lfo1, Lfo2, Lpf, MidiOutput, ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, RowKit, Sample,
-    SampleOneZone, SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SoundGenerator,
-    SubtractiveGenerator, Synth, Unison, WaveformOscillator,
+    Arpeggiator, Chorus, CvGateRow, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmModulator, FmSynth, Hpf, Kit,
+    Lfo1, Lfo2, Lpf, MidiRow, ModKnob, ModulationFx, PatchCable, Phaser, RingModSynth, RowKit, Sample, SampleOneZone,
+    SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SubtractiveOscillator, SubtractiveSynth,
+    Synth, SynthMode, Unison, WaveformOscillator,
 };
 
 use xmltree::Element;
@@ -77,9 +77,9 @@ fn write_sound_sources(rows: &[RowKit]) -> Result<Element, SerializationError> {
 
     for row in rows {
         let node = match row {
-            RowKit::AudioOutput(sound) => write_sound(&sound.sound, Some(&sound.name))?,
-            RowKit::CvGateOutput(gate) => write_gate_output(gate)?,
-            RowKit::MidiOutput(midi) => write_midi_output(midi)?,
+            RowKit::Sound(sound) => write_sound(&sound.sound, Some(&sound.name))?,
+            RowKit::CvGate(gate) => write_gate_output(gate)?,
+            RowKit::Midi(midi) => write_midi_output(midi)?,
         };
 
         xml::insert_child(&mut sound_source_node, node)?;
@@ -97,7 +97,7 @@ fn write_selected_drum_index(index: u32) -> Result<Element, SerializationError> 
     Ok(selected_drum_index_node)
 }
 
-fn write_gate_output(gate: &CvGateOutput) -> Result<Element, SerializationError> {
+fn write_gate_output(gate: &CvGateRow) -> Result<Element, SerializationError> {
     let mut gate_output_node = Element::new(keys::GATE_OUTPUT);
 
     xml::insert_attribute(&mut gate_output_node, keys::CHANNEL, &gate.channel)?;
@@ -105,7 +105,7 @@ fn write_gate_output(gate: &CvGateOutput) -> Result<Element, SerializationError>
     Ok(gate_output_node)
 }
 
-fn write_midi_output(midi_output: &MidiOutput) -> Result<Element, SerializationError> {
+fn write_midi_output(midi_output: &MidiRow) -> Result<Element, SerializationError> {
     let mut midi_output_node = Element::new(keys::MIDI_OUTPUT);
 
     xml::insert_attribute(&mut midi_output_node, keys::CHANNEL, &midi_output.channel)?;
@@ -135,9 +135,9 @@ fn write_sound(sound: &Sound, name: Option<&String>) -> Result<Element, Serializ
     xml::insert_attribute_rc(&default_params_node, keys::PORTAMENTO, &sound.portamento)?;
 
     match &sound.generator {
-        SoundGenerator::Subtractive(ref generator) => write_subtractive_sound(generator, &mut sound_node, &default_params_node)?,
-        SoundGenerator::Fm(generator) => write_fm_sound(generator, &mut sound_node, &default_params_node)?,
-        SoundGenerator::RingMod(generator) => write_ringmod_sound(generator, &mut sound_node, &default_params_node)?,
+        SynthMode::Subtractive(ref generator) => write_subtractive_sound(generator, &mut sound_node, &default_params_node)?,
+        SynthMode::Fm(generator) => write_fm_sound(generator, &mut sound_node, &default_params_node)?,
+        SynthMode::RingMod(generator) => write_ringmod_sound(generator, &mut sound_node, &default_params_node)?,
     }
 
     xml::insert_child_rc(&default_params_node, write_envelope(&sound.envelope1, TwinSelector::A)?);
@@ -253,7 +253,7 @@ fn write_lfo2(lfo: &Lfo2, default_params_node: &Rc<RefCell<Element>>) -> Result<
 }
 
 fn write_subtractive_sound(
-    generator: &SubtractiveGenerator,
+    generator: &SubtractiveSynth,
     sound_node: &mut Element,
     default_params_node: &Rc<RefCell<Element>>,
 ) -> Result<(), SerializationError> {
@@ -272,15 +272,18 @@ fn write_subtractive_sound(
     xml::insert_attribute_rc(default_params_node, keys::LPF_RESONANCE, &generator.lpf_resonance)?;
     xml::insert_attribute_rc(default_params_node, keys::HPF_FREQUENCY, &generator.hpf_frequency)?;
     xml::insert_attribute_rc(default_params_node, keys::HPF_RESONANCE, &generator.hpf_resonance)?;
+    xml::insert_attribute_rc(default_params_node, keys::VOLUME_OSC_A, &generator.osc1_volume)?;
+    xml::insert_attribute_rc(default_params_node, keys::VOLUME_OSC_B, &generator.osc2_volume)?;
+
     xml::insert_attribute(sound_node, keys::LPF_MODE, &generator.lpf_mode)?;
 
     Ok(())
 }
 
-fn write_oscillator(osc: &Oscillator, default_params: &DefaultParamsMut) -> Result<Element, SerializationError> {
+fn write_oscillator(osc: &SubtractiveOscillator, default_params: &DefaultParamsMut) -> Result<Element, SerializationError> {
     Ok(match &osc {
-        Oscillator::Waveform(oscillator) => write_waveform_oscillator(oscillator, default_params)?,
-        Oscillator::Sample(oscillator) => write_sample_oscillator(oscillator, default_params)?,
+        SubtractiveOscillator::Waveform(oscillator) => write_waveform_oscillator(oscillator, default_params)?,
+        SubtractiveOscillator::Sample(oscillator) => write_sample_oscillator(oscillator, default_params)?,
     })
 }
 
@@ -290,7 +293,6 @@ fn write_carrier(osc: &FmCarrier, default_params: &DefaultParamsMut) -> Result<E
     xml::insert_attribute(&mut node, keys::TRANSPOSE, &osc.transpose)?;
     xml::insert_attribute(&mut node, keys::CENTS, &osc.fine_transpose)?;
     xml::insert_attribute(&mut node, keys::RETRIG_PHASE, &osc.retrig_phase)?;
-    default_params.insert_attribute(keys::VOLUME_OSC_A, keys::VOLUME_OSC_B, &osc.volume)?;
     default_params.insert_attribute(keys::FEEDBACK_CARRIER1, keys::FEEDBACK_CARRIER2, &osc.feedback)?;
 
     Ok(node)
@@ -321,8 +323,6 @@ fn write_sample_oscillator(sample: &SampleOscillator, default_params: &DefaultPa
     xml::insert_attribute(&mut node, keys::LINEAR_INTERPOLATION, &sample.linear_interpolation)?;
 
     write_sample(&mut node, &sample.sample)?;
-
-    default_params.insert_attribute(keys::VOLUME_OSC_A, keys::VOLUME_OSC_B, &sample.volume)?;
 
     Ok(node)
 }
@@ -390,14 +390,13 @@ fn write_waveform_oscillator(
     xml::insert_attribute(&mut node, keys::TRANSPOSE, &oscillator.transpose)?;
     xml::insert_attribute(&mut node, keys::CENTS, &oscillator.fine_transpose)?;
     xml::insert_attribute(&mut node, keys::RETRIG_PHASE, &oscillator.retrig_phase)?;
-    default_params.insert_attribute(keys::VOLUME_OSC_A, keys::VOLUME_OSC_B, &oscillator.volume)?;
     default_params.insert_attribute(keys::PULSE_WIDTH_OSC_A, keys::PULSE_WIDTH_OSC_B, &oscillator.pulse_width)?;
 
     Ok(node)
 }
 
 fn write_fm_sound(
-    generator: &FmGenerator,
+    generator: &FmSynth,
     sound_node: &mut Element,
     default_params_node: &Rc<RefCell<Element>>,
 ) -> Result<(), SerializationError> {
@@ -410,21 +409,23 @@ fn write_fm_sound(
     xml::insert_child(sound_node, write_modulator(&generator.modulator1, &default_params_a)?)?;
     xml::insert_attribute(&mut mod2_node, keys::FM_MOD1_TO_MOD2, &generator.modulator2_to_modulator1)?;
     xml::insert_child(sound_node, mod2_node)?;
+    xml::insert_attribute_rc(default_params_node, keys::VOLUME_OSC_A, &generator.osc1_volume)?;
+    xml::insert_attribute_rc(default_params_node, keys::VOLUME_OSC_B, &generator.osc2_volume)?;
 
     Ok(())
 }
 
 fn write_ringmod_sound(
-    generator: &RingModGenerator,
+    generator: &RingModSynth,
     sound_node: &mut Element,
     default_params_node: &Rc<RefCell<Element>>,
 ) -> Result<(), SerializationError> {
     let default_params_a = DefaultParamsMut::new(TwinSelector::A, default_params_node.clone());
     let default_params_b = DefaultParamsMut::new(TwinSelector::B, default_params_node.clone());
-    let mut osc2_node = write_oscillator(&generator.osc2, &default_params_b)?;
+    let mut osc2_node = write_waveform_oscillator(&generator.osc2, &default_params_b)?;
 
     xml::insert_attribute(&mut osc2_node, keys::OSCILLATOR_SYNC, &generator.osc2_sync)?;
-    xml::insert_child(sound_node, write_oscillator(&generator.osc1, &default_params_a)?)?;
+    xml::insert_child(sound_node, write_waveform_oscillator(&generator.osc1, &default_params_a)?)?;
     xml::insert_child(sound_node, osc2_node)?;
     xml::insert_attribute_rc(default_params_node, keys::NOISE_VOLUME, &generator.noise)?;
 

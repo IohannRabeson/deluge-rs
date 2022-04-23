@@ -1,13 +1,16 @@
 //! A crate to read and write Synthstrom Deluge's patches
 //!
-//! This crate provides the data structures Sound and Kit. You can read and write them using the XML deluge schema.
-//! It hides the crap from the user, like the fact there are at least differents version of the XML schema.
+//! This crate provides the data structures [Synth] and [Kit] that represent a Deluge synth patch and a kit patch.
+//! It hides the details from the user, like the fact there are at least differents version of the XML schema
+//! for each patch types.
 //!
-//! # Data structures
-//! There are 2 types of patches: synth and kit.  
-//! A synth contains one sound, a kit contains [1-n] sounds.  
-//! More precisely, a kit contains named sounds. Other type of row
-//! are not named.
+//! This crate makes heavy use of the Rust type system to reduce the possibilities of error. There is almost
+//! one type for each different fields. Each value type specifies how to serialize/deserialize and what is the default
+//! value. Some types such as [Transpose] or [ClippingAmount] for example are strong integer with constrained range
+//! to avoid overflows.
+//!
+//! Each structures of this crate can be created using the builder pattern.
+//!
 //!
 //! https://docs.google.com/document/d/11DUuuE1LBYOVlluPA9McT1_dT4AofZ5jnUD5eHvj7Vs/edit
 
@@ -19,11 +22,19 @@ mod synth;
 mod values;
 
 pub use card::{Card, CardError, CardFolder, FileSystem, LocalFileSystem, PatchName};
-pub use kit::{AudioOutput, CvGateOutput, Hpf, Kit, Lpf, MidiOutput, RowKit};
+pub use kit::{CvGateRow, Hpf, Kit, Lpf, MidiRow, RowKit, SoundRow, HpfBuilder, LpfBuilder, KitBuilder};
 pub use serialization::{load_kit, load_synth, save_kit, save_synth, PatchType, SerializationError};
 pub use sound::{
-    Arpeggiator, Chorus, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmGenerator, FmModulator, Lfo1, Lfo2,
-    ModKnob, ModulationFx, Oscillator, PatchCable, Phaser, RingModGenerator, Sample, SampleOneZone, SampleOscillator,
-    SamplePosition, SampleRange, SampleZone, Sidechain, Sound, SoundGenerator, SubtractiveGenerator, Unison, WaveformOscillator,
+    Arpeggiator, ArpeggiatorBuilder, Chorus, ChorusBuilder, Delay, DelayBuilder, Distorsion, DistorsionBuilder, Envelope,
+    EnvelopeBuilder, Equalizer, EqualizerBuilder, Flanger, FlangerBuilder, FmCarrier, FmCarrierBuilder, FmModulator,
+    FmModulatorBuilder, FmSynth, FmSynthBuilder, Lfo1, Lfo1Builder, Lfo2, Lfo2Builder, ModKnob, ModKnobBuilder, ModulationFx,
+    PatchCable, PatchCableBuilder, Phaser, PhaserBuilder, RingModSynth, Sample, SampleOneZone, SampleOscillator, SampleRange, SampleZone, Sidechain,
+    Sound, SoundBuilder, SubtractiveOscillator, SubtractiveSynth, SubtractiveSynthBuilder, SynthMode, Unison, UnisonBuilder, WaveformOscillator, WaveformOscillatorBuilder
 };
 pub use synth::Synth;
+pub use values::{
+    ArpeggiatorMode, AttackSidechain, ClippingAmount, CvGateChannel, DecU50, FilterType, FineTranspose, HexU50, LfoShape,
+    LpfMode, MidiChannel, ModulationFxType, OctavesCount, OnOff, OscType, Pan, PitchSpeed, Polyphony, ReleaseSidechain,
+    RetrigPhase, SamplePath, SamplePlayMode, SamplePosition, SyncLevel, SynthModeSelector, TableIndex, TimeStretchAmount,
+    Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
+};
