@@ -92,7 +92,7 @@ impl Kit {
     /// Add a sound row with a custom name
     /// ```
     /// use deluge::{Kit, Sound, SamplePath};
-    /// 
+    ///
     /// let mut kit = Kit::default();
     /// kit.add_named_sound(Sound::new_sample(SamplePath::new("sample.WAV").unwrap(), 0.into(), 999.into()), "My sample");
     /// ```
@@ -103,7 +103,7 @@ impl Kit {
     /// Add a MIDI row
     /// ```
     /// use deluge::Kit;
-    /// 
+    ///
     /// let mut kit = Kit::default();
     /// kit.add_midi_row(1.into(), 60);
     /// ```
@@ -114,7 +114,7 @@ impl Kit {
     /// Add a CV gate row
     /// ```
     /// use deluge::Kit;
-    /// 
+    ///
     /// let mut kit = Kit::default();
     /// kit.add_gate_row(1.into());
     /// ```
@@ -155,7 +155,7 @@ impl KitBuilder {
     /// Add a sound row with a custom name
     /// ```
     /// use deluge::{Kit, Sound, KitBuilder, SamplePath};
-    /// 
+    ///
     /// let mut kit = KitBuilder::default()
     ///     .add_sound_row(Sound::new_sample(SamplePath::new("sample.WAV").unwrap(), 0.into(), 999.into()))
     ///     .build()

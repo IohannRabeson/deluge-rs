@@ -1,6 +1,6 @@
 use crate::{
-    values::{AttackSidechain, OnOff, ReleaseSidechain, SynthModeSelector, TableIndex},
-    Arpeggiator, Delay, Kit, RowKit, SerializationError, Sidechain, Sound, SubtractiveSynth, Synth, SynthMode,
+    values::{AttackSidechain, OnOff, ReleaseSidechain, SynthMode, TableIndex},
+    Arpeggiator, Delay, Kit, RowKit, SerializationError, Sidechain, Sound, SubtractiveSynth, Synth, SynthEngine,
 };
 use xmltree::Element;
 
@@ -59,13 +59,13 @@ pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, SerializationError> {
 }
 
 fn load_sound(root: &Element) -> Result<Sound, SerializationError> {
-    let sound_type = xml::parse_children_element_content::<SynthModeSelector>(root, keys::MODE)?;
+    let sound_type = xml::parse_children_element_content::<SynthMode>(root, keys::MODE)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
 
     let generator = match sound_type {
-        SynthModeSelector::Subtractive => load_subtractive_sound(root)?,
-        SynthModeSelector::Fm => load_fm_sound(root)?,
-        SynthModeSelector::RingMod => load_ringmode_sound(root)?,
+        SynthMode::Subtractive => load_subtractive_sound(root)?,
+        SynthMode::Fm => load_fm_sound(root)?,
+        SynthMode::RingMod => load_ringmode_sound(root)?,
         _ => return Err(SerializationError::UnsupportedSoundType),
     };
 
@@ -95,12 +95,12 @@ fn load_sound(root: &Element) -> Result<Sound, SerializationError> {
     })
 }
 
-fn load_subtractive_sound(root: &Element) -> Result<SynthMode, SerializationError> {
+fn load_subtractive_sound(root: &Element) -> Result<SynthEngine, SerializationError> {
     let osc1_node = xml::get_children_element(root, keys::OSC1)?;
     let osc2_node = xml::get_children_element(root, keys::OSC2)?;
     let default_params_node = xml::get_children_element(root, keys::DEFAULT_PARAMS)?;
 
-    Ok(SynthMode::from(SubtractiveSynth {
+    Ok(SynthEngine::from(SubtractiveSynth {
         osc1: load_oscillator(osc1_node, &DefaultParams::new(TwinSelector::A, default_params_node))?,
         osc2: load_oscillator(osc2_node, &DefaultParams::new(TwinSelector::B, default_params_node))?,
         osc2_sync: xml::parse_opt_children_element_content(osc2_node, keys::OSCILLATOR_SYNC)?.unwrap_or(OnOff::Off),

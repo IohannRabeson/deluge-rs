@@ -28,7 +28,7 @@ pub use sample_position::SamplePosition;
 pub use sidechain_values::{AttackSidechain, ReleaseSidechain, TableIndex};
 pub use simple_enums::{
     ArpeggiatorMode, FilterType, LfoShape, LpfMode, ModulationFxType, OscType, PitchSpeed, Polyphony, SamplePlayMode, SyncLevel,
-    SynthModeSelector, VoicePriority,
+    SynthMode, VoicePriority,
 };
 pub use uint8::Uint8;
 

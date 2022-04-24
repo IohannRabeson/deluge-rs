@@ -12,7 +12,7 @@ use crate::{
     Arpeggiator, Chorus, CvGateRow, Delay, Distorsion, Envelope, Equalizer, Flanger, FmCarrier, FmModulator, FmSynth, Hpf, Kit,
     Lfo1, Lfo2, Lpf, MidiRow, ModKnob, ModulationFx, PatchCable, Phaser, RingModSynth, RowKit, Sample, SampleOneZone,
     SampleOscillator, SampleRange, SampleZone, SerializationError, Sidechain, Sound, SubtractiveOscillator, SubtractiveSynth,
-    Synth, SynthMode, Unison, WaveformOscillator,
+    Synth, SynthEngine, Unison, WaveformOscillator,
 };
 
 use xmltree::Element;
@@ -135,9 +135,9 @@ fn write_sound(sound: &Sound, name: Option<&String>) -> Result<Element, Serializ
     xml::insert_attribute_rc(&default_params_node, keys::PORTAMENTO, &sound.portamento)?;
 
     match &sound.generator {
-        SynthMode::Subtractive(ref generator) => write_subtractive_sound(generator, &mut sound_node, &default_params_node)?,
-        SynthMode::Fm(generator) => write_fm_sound(generator, &mut sound_node, &default_params_node)?,
-        SynthMode::RingMod(generator) => write_ringmod_sound(generator, &mut sound_node, &default_params_node)?,
+        SynthEngine::Subtractive(ref generator) => write_subtractive_sound(generator, &mut sound_node, &default_params_node)?,
+        SynthEngine::Fm(generator) => write_fm_sound(generator, &mut sound_node, &default_params_node)?,
+        SynthEngine::RingMod(generator) => write_ringmod_sound(generator, &mut sound_node, &default_params_node)?,
     }
 
     xml::insert_child_rc(&default_params_node, write_envelope(&sound.envelope1, TwinSelector::A)?);
