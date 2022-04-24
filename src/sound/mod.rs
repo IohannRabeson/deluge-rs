@@ -3,7 +3,7 @@ use std::collections::BTreeSet;
 use crate::{
     values::{
         ArpeggiatorMode, DecU50, FineTranspose, HexU50, OctavesCount, OscType, Pan, Polyphony, RetrigPhase, SamplePath,
-        SyncLevel, SynthModeSelector, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
+        SyncLevel, SynthMode, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
     },
     SamplePosition,
 };
@@ -31,14 +31,14 @@ pub use subtractive::{
     SampleZone, SampleZoneBuilder, SubtractiveOscillator, SubtractiveSynth, SubtractiveSynthBuilder,
 };
 
-/// Composes [Synth] and [Kit] patches
+/// Composes Synth and Kit patches
 ///
-/// [Sound] is the main component of a Synth patch. It's also the main component of a SoundRow
-/// in a Kit.
+/// [Sound] is the main component of [Synth] patches. It's also the main component of [Kit], in this case
+/// a [Sound] is wrapped in a [RowKit].
 ///
 /// This crate provides [SoundBuilder] for creating [Sound] instances:
 /// ```
-/// # use deluge::{SoundBuilder, Sound, SubtractiveOscillator, SubtractiveSynthBuilder, Sample, SynthMode, SamplePath};
+/// # use deluge::{SoundBuilder, Sound, SubtractiveOscillator, SubtractiveSynthBuilder, Sample, SynthEngine, SamplePath};
 /// # let path = SamplePath::new("path/to file.wav").unwrap();
 /// # let generator = SubtractiveSynthBuilder::default()
 /// #    .osc1(SubtractiveOscillator::new_sample(Sample::new(path, 0.into(), 1000.into())))
@@ -47,14 +47,14 @@ pub use subtractive::{
 /// #    .build()
 /// #    .unwrap();
 /// let sound = SoundBuilder::default()
-///     .generator(SynthMode::Subtractive(generator))
+///     .generator(SynthEngine::from(generator))
 ///     .build()
 ///     .unwrap();
 /// ```
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 #[builder(default)]
 pub struct Sound {
-    pub generator: SynthMode,
+    pub generator: SynthEngine,
     pub polyphonic: Polyphony,
     pub voice_priority: VoicePriority,
     pub volume: HexU50,
@@ -93,37 +93,37 @@ impl Sound {
             .unwrap();
 
         Self {
-            generator: SynthMode::Subtractive(generator),
+            generator: SynthEngine::from(generator),
             ..Default::default()
         }
     }
 
     pub fn new_substractive(osc1: SubtractiveOscillator, osc2: SubtractiveOscillator) -> Self {
         Self {
-            generator: SynthMode::Subtractive(SubtractiveSynth::new(osc1, osc2)),
+            generator: SynthEngine::from(SubtractiveSynth::new(osc1, osc2)),
             ..Default::default()
         }
     }
 
     pub fn new_ringmod(osc1: WaveformOscillator, osc2: WaveformOscillator) -> Self {
         Self {
-            generator: SynthMode::RingMod(RingModSynth::new(osc1, osc2)),
+            generator: SynthEngine::from(RingModSynth::new(osc1, osc2)),
             ..Default::default()
         }
     }
 
     pub fn new_fm(carrier1: FmCarrier, carrier2: FmCarrier) -> Self {
         Self {
-            generator: SynthMode::Fm(FmSynth::new(carrier1, carrier2)),
+            generator: SynthEngine::from(FmSynth::new(carrier1, carrier2)),
             ..Default::default()
         }
     }
 
-    /// Gets all the sample paths in this sound.
+    /// Gets all the sample paths used by this sound.
     pub fn get_sample_paths(&self) -> BTreeSet<SamplePath> {
         let mut paths = BTreeSet::new();
 
-        if let SynthMode::Subtractive(generator) = &self.generator {
+        if let SynthEngine::Subtractive(generator) = &self.generator {
             if let SubtractiveOscillator::Sample(generator) = &generator.osc1 {
                 paths.extend(generator.sample.get_sample_paths().into_iter());
             }
@@ -205,26 +205,56 @@ impl Default for Sound {
     }
 }
 
+/// The synth mode
+///
+/// Each value contains a struct specific to each mode.
+///
+/// Using [From] is the easiest way to instanciate a [SynthEngine]
+/// ```
+/// use deluge::{SynthEngine, SubtractiveSynth, RingModSynth, FmSynth};
+/// let subtractive_synth_mode = SynthEngine::from(SubtractiveSynth::default());
+/// let ring_mod_synth_mode = SynthEngine::from(RingModSynth::default());
+/// let fm_synth_mode = SynthEngine::from(FmSynth::default());
+/// ```
 #[derive(Clone, Debug, PartialEq, EnumAsInner)]
-pub enum SynthMode {
+pub enum SynthEngine {
     Subtractive(SubtractiveSynth),
     RingMod(RingModSynth),
     Fm(FmSynth),
 }
 
-impl SynthMode {
-    pub fn to_sound_type(&self) -> SynthModeSelector {
+impl From<SubtractiveSynth> for SynthEngine {
+    fn from(synth: SubtractiveSynth) -> Self {
+        SynthEngine::Subtractive(synth)
+    }
+}
+
+impl From<RingModSynth> for SynthEngine {
+    fn from(synth: RingModSynth) -> Self {
+        SynthEngine::RingMod(synth)
+    }
+}
+
+impl From<FmSynth> for SynthEngine {
+    fn from(synth: FmSynth) -> Self {
+        SynthEngine::Fm(synth)
+    }
+}
+
+impl SynthEngine {
+    pub fn to_sound_type(&self) -> SynthMode {
         match self {
-            SynthMode::Subtractive(_) => SynthModeSelector::Subtractive,
-            SynthMode::Fm(_) => SynthModeSelector::Fm,
-            SynthMode::RingMod(_) => SynthModeSelector::RingMod,
+            SynthEngine::Subtractive(_) => SynthMode::Subtractive,
+            SynthEngine::Fm(_) => SynthMode::Fm,
+            SynthEngine::RingMod(_) => SynthMode::RingMod,
         }
     }
 }
 
-impl Default for SynthMode {
+/// Implementation by default is the default [SubtractiveSynth]
+impl Default for SynthEngine {
     fn default() -> Self {
-        SynthMode::Subtractive(SubtractiveSynth::default())
+        SynthEngine::Subtractive(SubtractiveSynth::default())
     }
 }
 

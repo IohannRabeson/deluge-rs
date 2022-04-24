@@ -22,19 +22,20 @@ mod synth;
 mod values;
 
 pub use card::{Card, CardError, CardFolder, FileSystem, LocalFileSystem, PatchName};
-pub use kit::{CvGateRow, Hpf, Kit, Lpf, MidiRow, RowKit, SoundRow, HpfBuilder, LpfBuilder, KitBuilder};
+pub use kit::{CvGateRow, Hpf, HpfBuilder, Kit, KitBuilder, Lpf, LpfBuilder, MidiRow, RowKit, SoundRow};
 pub use serialization::{load_kit, load_synth, save_kit, save_synth, PatchType, SerializationError};
 pub use sound::{
     Arpeggiator, ArpeggiatorBuilder, Chorus, ChorusBuilder, Delay, DelayBuilder, Distorsion, DistorsionBuilder, Envelope,
     EnvelopeBuilder, Equalizer, EqualizerBuilder, Flanger, FlangerBuilder, FmCarrier, FmCarrierBuilder, FmModulator,
     FmModulatorBuilder, FmSynth, FmSynthBuilder, Lfo1, Lfo1Builder, Lfo2, Lfo2Builder, ModKnob, ModKnobBuilder, ModulationFx,
-    PatchCable, PatchCableBuilder, Phaser, PhaserBuilder, RingModSynth, Sample, SampleOneZone, SampleOscillator, SampleRange, SampleZone, Sidechain,
-    Sound, SoundBuilder, SubtractiveOscillator, SubtractiveSynth, SubtractiveSynthBuilder, SynthMode, Unison, UnisonBuilder, WaveformOscillator, WaveformOscillatorBuilder
+    PatchCable, PatchCableBuilder, Phaser, PhaserBuilder, RingModSynth, Sample, SampleOneZone, SampleOscillator, SampleRange,
+    SampleZone, Sidechain, Sound, SoundBuilder, SubtractiveOscillator, SubtractiveSynth, SubtractiveSynthBuilder, SynthEngine,
+    Unison, UnisonBuilder, WaveformOscillator, WaveformOscillatorBuilder,
 };
 pub use synth::Synth;
 pub use values::{
     ArpeggiatorMode, AttackSidechain, ClippingAmount, CvGateChannel, DecU50, FilterType, FineTranspose, HexU50, LfoShape,
     LpfMode, MidiChannel, ModulationFxType, OctavesCount, OnOff, OscType, Pan, PitchSpeed, Polyphony, ReleaseSidechain,
-    RetrigPhase, SamplePath, SamplePlayMode, SamplePosition, SyncLevel, SynthModeSelector, TableIndex, TimeStretchAmount,
-    Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
+    RetrigPhase, SamplePath, SamplePlayMode, SamplePosition, SyncLevel, SynthMode, TableIndex, TimeStretchAmount, Transpose,
+    UnisonDetune, UnisonVoiceCount, VoicePriority,
 };
