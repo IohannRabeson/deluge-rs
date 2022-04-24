@@ -34,7 +34,7 @@ pub use subtractive::{
 /// Composes Synth and Kit patches
 ///
 /// [Sound] is the main component of [Synth] patches. It's also the main component of [Kit], in this case
-/// a [Sound] is boxed in a SoundSou
+/// a [Sound] is wrapped in a [RowKit].
 ///
 /// This crate provides [SoundBuilder] for creating [Sound] instances:
 /// ```
