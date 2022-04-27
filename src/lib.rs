@@ -20,6 +20,7 @@ mod serialization;
 mod sound;
 mod synth;
 mod values;
+mod wav;
 
 pub use card::{Card, CardError, CardFolder, FileSystem, LocalFileSystem, PatchName};
 pub use kit::{CvGateRow, Hpf, HpfBuilder, Kit, KitBuilder, Lpf, LpfBuilder, MidiRow, RowKit, SoundRow};
@@ -32,6 +33,7 @@ pub use sound::{
     SampleZone, Sidechain, Sound, SoundBuilder, SubtractiveOscillator, SubtractiveSynth, SubtractiveSynthBuilder, SynthEngine,
     Unison, UnisonBuilder, WaveformOscillator, WaveformOscillatorBuilder,
 };
+pub use wav::{WavMetadata, WavMetadataProvider, LocalWavMetadataProvider, InMemoryWavMetadataProvider, Error};
 pub use synth::Synth;
 pub use values::{
     ArpeggiatorMode, AttackSidechain, ClippingAmount, CvGateChannel, DecU50, FilterType, FineTranspose, HexU50, LfoShape,

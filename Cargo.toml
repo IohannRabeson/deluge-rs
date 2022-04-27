@@ -1,6 +1,6 @@
 [package]
 name = "deluge"
-version = "0.3.3"
+version = "0.3.4"
 edition = "2021"
 
 [dev-dependencies]
@@ -24,3 +24,4 @@ enum-as-inner = "0.4.0"
 # For join()
 itertools = "0.10.3"
 derive_builder = "0.11.2"
+bwavfile = { git = "https://github.com/iluvcapra/bwavfile", rev = "e30d60ff0d195b13b01ed00ce34bbb46497850a3"  }
