@@ -1,6 +1,7 @@
 [package]
 name = "deluge"
 version = "0.3.3"
+description = "Load, edit and write Deluge synth and kit patches"
 edition = "2021"
 
 [dev-dependencies]
