@@ -84,3 +84,9 @@ impl<'de, const MIN: i8, const MAX: i8, const DEFAULT: i8> Deserialize<'de> for 
         deserializer.deserialize_i8(Uint8Visitor)
     }
 }
+
+impl<'de, const MIN: i8, const MAX: i8, const DEFAULT: i8> std::fmt::Display for Int8<MIN, MAX, DEFAULT> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.val)
+    }
+}

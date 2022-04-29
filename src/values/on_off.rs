@@ -68,8 +68,8 @@ impl<'de> Visitor<'de> for OnOffVisitor {
 impl std::fmt::Display for OnOff {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::result::Result<(), std::fmt::Error> {
         match self {
-            OnOff::On => write!(f, "1"),
-            OnOff::Off => write!(f, "0"),
+            OnOff::On => write!(f, "On"),
+            OnOff::Off => write!(f, "Off"),
         }
     }
 }
