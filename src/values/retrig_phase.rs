@@ -49,7 +49,7 @@ impl std::fmt::Display for RetrigPhase {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
             RetrigPhase::Off => write!(f, "Off"),
-            RetrigPhase::Degrees(degrees) => write!(f, "{}", degrees),
+            RetrigPhase::Degrees(degrees) => write!(f, "{}°", degrees),
         }
     }
 }
