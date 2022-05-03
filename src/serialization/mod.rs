@@ -227,7 +227,7 @@ mod tests {
             kit.modulation_fx.as_flanger().unwrap().feedback,
             HexU50::parse("0x80000000").unwrap()
         );
-        assert_eq!(kit.selected_drum_index, Some(4));
+        assert_eq!(kit.selected_row_index, Some(4));
     }
 
     #[test]
@@ -247,7 +247,7 @@ mod tests {
             kit.modulation_fx.as_flanger().unwrap().feedback,
             HexU50::parse("0x80000000").unwrap()
         );
-        assert_eq!(kit.selected_drum_index, Some(15));
+        assert_eq!(kit.selected_row_index, Some(15));
     }
 
     #[test]
@@ -267,7 +267,7 @@ mod tests {
             kit.modulation_fx.as_flanger().unwrap().feedback,
             HexU50::parse("0x80000000").unwrap()
         );
-        assert_eq!(kit.selected_drum_index, Some(14));
+        assert_eq!(kit.selected_row_index, Some(14));
     }
 
     #[test]

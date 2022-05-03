@@ -19,7 +19,7 @@ pub struct Kit {
     #[builder(setter(each(name = "add_row")))]
     pub rows: Vec<RowKit>,
 
-    pub selected_drum_index: Option<u32>,
+    pub selected_row_index: Option<u32>,
 
     pub volume: HexU50,
     pub pan: Pan,
@@ -70,13 +70,21 @@ impl Kit {
             bit_crush: 0.into(),
             decimation: 0.into(),
             stutter_rate: 25.into(),
-            selected_drum_index: if has_rows { None } else { Some(0) },
+            selected_row_index: if has_rows { None } else { Some(0) },
             delay: Delay::default(),
             sidechain: Sidechain::default(),
             lpf: Lpf::default(),
             hpf: Hpf::default(),
             equalizer: Equalizer::default(),
         }
+    }
+
+    pub fn current_row(&self) -> Option<&RowKit> {
+        self.selected_row_index.map(|index| &self.rows[index as usize])
+    }
+
+    pub fn current_row_mut(&mut self) -> Option<&mut RowKit> {
+        self.selected_row_index.map(|index| &mut self.rows[index as usize])
     }
 
     fn add_row(&mut self, row: RowKit) -> &mut RowKit {

@@ -52,7 +52,7 @@ pub fn write_kit(kit: &Kit) -> Result<Element, SerializationError> {
 
     xml::insert_child(&mut kit_node, write_sound_sources(&kit.rows)?)?;
 
-    if let Some(index) = kit.selected_drum_index {
+    if let Some(index) = kit.selected_row_index {
         xml::insert_child(&mut kit_node, write_selected_drum_index(index)?)?;
     }
 

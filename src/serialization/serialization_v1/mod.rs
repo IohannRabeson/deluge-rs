@@ -45,7 +45,7 @@ pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, SerializationError> {
         lpf_mode: xml::parse_children_element_content(kit_node, keys::LPF_MODE)?,
         modulation_fx: load_modulation_fx(kit_node)?,
         current_filter_type: xml::parse_children_element_content(kit_node, keys::CURRENT_FILTER_TYPE)?,
-        selected_drum_index: xml::parse_children_element_content(kit_node, keys::SELECTED_DRUM_INDEX)?,
+        selected_row_index: xml::parse_children_element_content(kit_node, keys::SELECTED_DRUM_INDEX)?,
         volume: load_global_hexu(kit_node, keys::VOLUME)?,
         reverb_amount: load_global_hexu(kit_node, keys::REVERB_AMOUNT)?,
         pan: load_global_pan(kit_node)?,
