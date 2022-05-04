@@ -8,6 +8,18 @@ use crate::{
     WaveformOscillator,
 };
 
+/// Subtractive oscillator
+///
+/// To create an instance, you can use [From]:
+/// ```
+/// # use deluge::{
+/// #    SubtractiveOscillator, WaveformOscillator, SampleOscillator,
+/// #    WaveformOscillatorBuilder, SampleOscillatorBuilder, OscType
+/// # };
+/// let oscillator_1 = SubtractiveOscillator::from(WaveformOscillatorBuilder::default()
+///     .osc_type(OscType::Sine)
+///     .build().unwrap());
+/// ```
 #[derive(Clone, Debug, PartialEq, EnumAsInner)]
 pub enum SubtractiveOscillator {
     Waveform(WaveformOscillator),
@@ -24,6 +36,28 @@ impl SubtractiveOscillator {
     }
 }
 
+impl From<WaveformOscillator> for SubtractiveOscillator {
+    fn from(oscillator: WaveformOscillator) -> Self {
+        Self::Waveform(oscillator)
+    }
+}
+
+impl From<SampleOscillator> for SubtractiveOscillator {
+    fn from(oscillator: SampleOscillator) -> Self {
+        Self::Sample(oscillator)
+    }
+}
+
+/// Can be created using [SubtractiveSynthBuilder].
+/// ```
+/// use deluge::{SubtractiveSynthBuilder, WaveformOscillator};
+///
+/// let synth = SubtractiveSynthBuilder::default()
+///     .osc1(WaveformOscillator::new_sine().into())
+///     .osc2(WaveformOscillator::new_sine().into())
+///     .build()
+///     .unwrap();
+/// ```
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 #[builder(default)]
 pub struct SubtractiveSynth {

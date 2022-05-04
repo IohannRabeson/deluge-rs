@@ -259,12 +259,52 @@ impl Default for SynthEngine {
 }
 
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[builder(default)]
 pub struct WaveformOscillator {
     pub osc_type: OscType,
     pub transpose: Transpose,
     pub fine_transpose: FineTranspose,
     pub retrig_phase: RetrigPhase,
     pub pulse_width: HexU50,
+}
+
+impl WaveformOscillator {
+    pub fn new_sine() -> Self {
+        Self {
+            osc_type: OscType::Sine,
+            ..Default::default()
+        }
+    }
+    pub fn new_triangle() -> Self {
+        Self {
+            osc_type: OscType::Triangle,
+            ..Default::default()
+        }
+    }
+    pub fn new_saw() -> Self {
+        Self {
+            osc_type: OscType::Saw,
+            ..Default::default()
+        }
+    }
+    pub fn new_square() -> Self {
+        Self {
+            osc_type: OscType::Square,
+            ..Default::default()
+        }
+    }
+}
+
+impl Default for WaveformOscillator {
+    fn default() -> Self {
+        Self {
+            osc_type: OscType::Sine,
+            transpose: Default::default(),
+            fine_transpose: Default::default(),
+            retrig_phase: Default::default(),
+            pulse_width: 0.into(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]

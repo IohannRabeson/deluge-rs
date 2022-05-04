@@ -28,9 +28,9 @@ pub use sound::{
     Arpeggiator, ArpeggiatorBuilder, Chorus, ChorusBuilder, Delay, DelayBuilder, Distorsion, DistorsionBuilder, Envelope,
     EnvelopeBuilder, Equalizer, EqualizerBuilder, Flanger, FlangerBuilder, FmCarrier, FmCarrierBuilder, FmModulator,
     FmModulatorBuilder, FmSynth, FmSynthBuilder, Lfo1, Lfo1Builder, Lfo2, Lfo2Builder, ModKnob, ModKnobBuilder, ModulationFx,
-    PatchCable, PatchCableBuilder, Phaser, PhaserBuilder, RingModSynth, Sample, SampleOneZone, SampleOscillator, SampleRange,
-    SampleZone, Sidechain, Sound, SoundBuilder, SubtractiveOscillator, SubtractiveSynth, SubtractiveSynthBuilder, SynthEngine,
-    Unison, UnisonBuilder, WaveformOscillator, WaveformOscillatorBuilder,
+    PatchCable, PatchCableBuilder, Phaser, PhaserBuilder, RingModSynth, Sample, SampleOneZone, SampleOscillator,
+    SampleOscillatorBuilder, SampleRange, SampleZone, Sidechain, Sound, SoundBuilder, SubtractiveOscillator, SubtractiveSynth,
+    SubtractiveSynthBuilder, SynthEngine, Unison, UnisonBuilder, WaveformOscillator, WaveformOscillatorBuilder,
 };
 pub use synth::Synth;
 pub use values::{
