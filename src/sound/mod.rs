@@ -35,7 +35,7 @@ pub use subtractive::{
 ///
 /// [Sound] is the main component of [Synth] patches. It's also the main component of [Kit], in this case
 /// a [Sound] is wrapped in a [RowKit].
-///
+/// 
 /// This crate provides [SoundBuilder] for creating [Sound] instances:
 /// ```
 /// # use deluge::{SoundBuilder, Sound, SubtractiveOscillator, SubtractiveSynthBuilder, Sample, SynthEngine, SamplePath};
@@ -51,6 +51,10 @@ pub use subtractive::{
 ///     .build()
 ///     .unwrap();
 /// ```
+/// [RowKit]: crate::RowKit
+/// [Synth]: crate::Synth
+/// [Kit]: crate::Kit
+/// [SoundBuilder]: crate::SoundBuilder
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
 #[builder(default)]
 pub struct Sound {

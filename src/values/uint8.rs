@@ -1,7 +1,7 @@
 //! 2022 12th march
-//! I copy pasted from https://gist.github.com/franziskuskiefer/920fa6fdcf3d47cdbbdbe325e8e87275 then started over.
+//! I copy pasted from <https://gist.github.com/franziskuskiefer/920fa6fdcf3d47cdbbdbe325e8e87275> then started over.
 //! I found it by searching information about ranged integer. I found this issue still open:
-//! https://github.com/rust-lang/rfcs/issues/671
+//! <https://github.com/rust-lang/rfcs/issues/671>
 //! Maybe one day this code will be useless!
 
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
