@@ -37,11 +37,18 @@ pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, SerializationError> {
         .collect();
 
     if let Some(result_with_error) = sources.iter().find(|s| s.is_err()) {
-        return Err(result_with_error.as_ref().unwrap_err().clone());
+        return Err(result_with_error
+            .as_ref()
+            .unwrap_err()
+            .clone());
     }
 
     return Ok(Kit {
-        rows: sources.iter().flatten().cloned().collect::<Vec<RowKit>>(),
+        rows: sources
+            .iter()
+            .flatten()
+            .cloned()
+            .collect::<Vec<RowKit>>(),
         lpf_mode: xml::parse_children_element_content(kit_node, keys::LPF_MODE)?,
         modulation_fx: load_modulation_fx(kit_node)?,
         current_filter_type: xml::parse_children_element_content(kit_node, keys::CURRENT_FILTER_TYPE)?,
@@ -691,7 +698,10 @@ mod tests {
         assert_eq!(sound.delay.analog, OnOff::Off);
         assert_eq!(sound.delay.sync_level, SyncLevel::Eighth);
 
-        let generator = sound.generator.as_subtractive().unwrap();
+        let generator = sound
+            .generator
+            .as_subtractive()
+            .unwrap();
 
         assert_eq!(generator.lpf_mode, LpfMode::Lpf24);
         assert_eq!(generator.lpf_frequency, HexU50::parse("0x24000000").unwrap());

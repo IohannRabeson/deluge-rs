@@ -96,11 +96,13 @@ impl Kit {
     }
 
     pub fn current_row(&self) -> Option<&RowKit> {
-        self.selected_row_index.map(|index| &self.rows[index as usize])
+        self.selected_row_index
+            .map(|index| &self.rows[index as usize])
     }
 
     pub fn current_row_mut(&mut self) -> Option<&mut RowKit> {
-        self.selected_row_index.map(|index| &mut self.rows[index as usize])
+        self.selected_row_index
+            .map(|index| &mut self.rows[index as usize])
     }
 
     fn add_row(&mut self, row: RowKit) -> &mut RowKit {
@@ -121,7 +123,11 @@ impl Kit {
     /// kit.add_named_sound(Sound::new_sample(SamplePath::new("sample.WAV").unwrap(), 0.into(), 999.into()), "My sample");
     /// ```
     pub fn add_named_sound(&mut self, sound: Sound, name: &str) -> &mut Sound {
-        &mut self.add_row(RowKit::new_sound(sound, name)).as_sound_mut().unwrap().sound
+        &mut self
+            .add_row(RowKit::new_sound(sound, name))
+            .as_sound_mut()
+            .unwrap()
+            .sound
     }
 
     /// Add a MIDI row
@@ -190,7 +196,14 @@ impl KitBuilder {
     pub fn add_sound_row(&mut self, sound: Sound) -> &mut Self {
         self.add_named_sound_row(
             sound,
-            &format!("U{}", self.rows.as_ref().map(|rows| rows.len()).unwrap_or_default() + 1),
+            &format!(
+                "U{}",
+                self.rows
+                    .as_ref()
+                    .map(|rows| rows.len())
+                    .unwrap_or_default()
+                    + 1
+            ),
         );
 
         self

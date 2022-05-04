@@ -35,11 +35,18 @@ pub fn load_kit_nodes(root_nodes: &[Element]) -> Result<Kit, SerializationError>
         .collect();
 
     if let Some(result_with_error) = sources.iter().find(|s| s.is_err()) {
-        return Err(result_with_error.as_ref().unwrap_err().clone());
+        return Err(result_with_error
+            .as_ref()
+            .unwrap_err()
+            .clone());
     }
 
     return Ok(Kit {
-        rows: sources.iter().flatten().cloned().collect::<Vec<RowKit>>(),
+        rows: sources
+            .iter()
+            .flatten()
+            .cloned()
+            .collect::<Vec<RowKit>>(),
         lpf_mode: xml::parse_attribute(kit_node, keys::LPF_MODE)?,
         modulation_fx: load_modulation_fx(kit_node)?,
         current_filter_type: xml::parse_attribute(kit_node, keys::CURRENT_FILTER_TYPE)?,
@@ -684,7 +691,10 @@ mod tests {
         assert_eq!(sound.arpeggiator.gate, HexU50::parse("0x00000000").unwrap());
         assert_eq!(sound.arpeggiator.rate, HexU50::parse("0x00000000").unwrap());
 
-        let generator = sound.generator.as_subtractive().unwrap();
+        let generator = sound
+            .generator
+            .as_subtractive()
+            .unwrap();
 
         assert_eq!(generator.lpf_mode, LpfMode::Lpf24);
         assert_eq!(generator.lpf_frequency, HexU50::parse("0x147AE12D").unwrap());
@@ -837,7 +847,10 @@ mod tests {
         assert_eq!(sound.arpeggiator.gate, HexU50::parse("0x00000000").unwrap());
         assert_eq!(sound.arpeggiator.rate, HexU50::parse("0x00000000").unwrap());
 
-        let generator = sound.generator.as_subtractive().unwrap();
+        let generator = sound
+            .generator
+            .as_subtractive()
+            .unwrap();
 
         assert_eq!(generator.lpf_mode, LpfMode::Lpf24);
         assert_eq!(generator.lpf_frequency, HexU50::parse("0x7FFFFFFF").unwrap());
@@ -862,8 +875,22 @@ mod tests {
             sample_one_zone.file_path,
             SamplePath::new("SAMPLES/IDEAS/indicaymolena_bass_8882.wav").unwrap()
         );
-        assert_eq!(SamplePosition::new(1449984), sample_one_zone.zone.as_ref().unwrap().start);
-        assert_eq!(SamplePosition::new(1511424), sample_one_zone.zone.as_ref().unwrap().end);
+        assert_eq!(
+            SamplePosition::new(1449984),
+            sample_one_zone
+                .zone
+                .as_ref()
+                .unwrap()
+                .start
+        );
+        assert_eq!(
+            SamplePosition::new(1511424),
+            sample_one_zone
+                .zone
+                .as_ref()
+                .unwrap()
+                .end
+        );
 
         let waveform = generator.osc2.as_waveform().unwrap();
 
@@ -931,7 +958,10 @@ mod tests {
         assert_eq!(sound.arpeggiator.gate, HexU50::parse("0x00000000").unwrap());
         assert_eq!(sound.arpeggiator.rate, HexU50::parse("0x00000000").unwrap());
 
-        let generator = sound.generator.as_subtractive().unwrap();
+        let generator = sound
+            .generator
+            .as_subtractive()
+            .unwrap();
 
         assert_eq!(generator.lpf_mode, LpfMode::Lpf24);
         assert_eq!(generator.lpf_frequency, HexU50::parse("0x50000000").unwrap());
@@ -949,7 +979,10 @@ mod tests {
         assert_eq!(sample.pitch_speed, PitchSpeed::Independent);
         assert_eq!(sample.time_stretch_amount, TimeStretchAmount::new(0));
 
-        let sample_ranges = sample.sample.as_sample_ranges().unwrap();
+        let sample_ranges = sample
+            .sample
+            .as_sample_ranges()
+            .unwrap();
 
         assert_eq!(2, sample_ranges.len());
 

@@ -35,7 +35,7 @@ pub use subtractive::{
 ///
 /// [Sound] is the main component of [Synth] patches. It's also the main component of [Kit], in this case
 /// a [Sound] is wrapped in a [RowKit].
-/// 
+///
 /// This crate provides [SoundBuilder] for creating [Sound] instances:
 /// ```
 /// # use deluge::{SoundBuilder, Sound, SubtractiveOscillator, SubtractiveSynthBuilder, Sample, SynthEngine, SamplePath};
@@ -129,11 +129,21 @@ impl Sound {
 
         if let SynthEngine::Subtractive(generator) = &self.generator {
             if let SubtractiveOscillator::Sample(generator) = &generator.osc1 {
-                paths.extend(generator.sample.get_sample_paths().into_iter());
+                paths.extend(
+                    generator
+                        .sample
+                        .get_sample_paths()
+                        .into_iter(),
+                );
             }
 
             if let SubtractiveOscillator::Sample(generator) = &generator.osc2 {
-                paths.extend(generator.sample.get_sample_paths().into_iter());
+                paths.extend(
+                    generator
+                        .sample
+                        .get_sample_paths()
+                        .into_iter(),
+                );
             }
         }
 

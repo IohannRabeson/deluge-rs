@@ -11,7 +11,9 @@ pub fn write_xml(elements: &[Element]) -> String {
 
     config.perform_indent = true;
     for element in elements {
-        element.write_with_config(&mut buffer, config.clone()).unwrap();
+        element
+            .write_with_config(&mut buffer, config.clone())
+            .unwrap();
     }
 
     String::from_utf8(buffer).unwrap()
@@ -56,7 +58,11 @@ pub fn get_children_element<'a>(element: &'a Element, name: &'a str) -> Result<&
 }
 
 pub fn get_opt_children_element<'a>(element: &'a Element, name: &'a str) -> Option<&'a Element> {
-    element.children.iter().filter_map(keep_element_only).find(|e| e.name == name)
+    element
+        .children
+        .iter()
+        .filter_map(keep_element_only)
+        .find(|e| e.name == name)
 }
 
 pub fn get_all_children_element_with_name<'a>(element: &'a Element, name: &'a str) -> Vec<&'a Element> {
@@ -111,7 +117,10 @@ fn get_text_impl<'a>(element: &'a Element) -> &'a str {
     let text_nodes: Vec<&'a str> = element
         .children
         .iter()
-        .filter_map(|node| node.as_text().or_else(|| node.as_cdata()))
+        .filter_map(|node| {
+            node.as_text()
+                .or_else(|| node.as_cdata())
+        })
         .collect();
 
     // Hack: to be able to use serde_plain, I must return a reference with the lifetime 'a.
@@ -140,7 +149,9 @@ pub fn parse_opt_attribute<'a, T: Deserialize<'a>>(element: &'a Element, name: &
 pub fn insert_attribute<T: Serialize>(element: &mut Element, attribute_name: &str, value: &T) -> Result<(), SerializationError> {
     let value_as_string = serde_plain::to_string::<T>(value).map_err(SerializationError::SerdeError)?;
 
-    element.attributes.insert(attribute_name.to_owned(), value_as_string);
+    element
+        .attributes
+        .insert(attribute_name.to_owned(), value_as_string);
 
     Ok(())
 }
@@ -170,12 +181,17 @@ pub fn insert_opt_attribute_if_not_default<T: Serialize + Default + PartialEq>(
 }
 
 pub fn insert_child(element: &mut Element, child: Element) -> Result<(), SerializationError> {
-    element.children.push(XMLNode::Element(child));
+    element
+        .children
+        .push(XMLNode::Element(child));
     Ok(())
 }
 
 pub fn insert_child_rc(element: &Rc<RefCell<Element>>, child: Element) {
-    element.borrow_mut().children.push(XMLNode::Element(child));
+    element
+        .borrow_mut()
+        .children
+        .push(XMLNode::Element(child));
 }
 
 pub fn insert_attribute_rc<T: Serialize>(

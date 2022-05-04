@@ -3,7 +3,7 @@
 //! This crate provides the data structures [Synth] and [Kit] that represent a Deluge synth patch and a kit patch.
 //! It hides the details from the user, like the fact there are at least differents version of the XML schema
 //! for each patch types.
-//! 
+//!
 //! The crate provide function to read a synth or a kit from a file:
 //! ```no_run
 //! let kit = deluge::read_kit_from_file("Your Card/KITS/YOUR_KIT.XML")?;
@@ -26,7 +26,6 @@
 //!
 //! Each structures of this crate can be created using the builder pattern.
 
-
 mod card;
 mod kit;
 mod serialization;
@@ -37,8 +36,8 @@ mod values;
 pub use card::{Card, CardError, CardFolder, FileSystem, LocalFileSystem, PatchName};
 pub use kit::{CvGateRow, Hpf, HpfBuilder, Kit, KitBuilder, Lpf, LpfBuilder, MidiRow, RowKit, SoundRow};
 pub use serialization::{
-    deserialize_kit, deserialize_kit_with_version, deserialize_synth, deserialize_synth_with_version, serialize_kit, serialize_synth, PatchType, SerializationError,
-    VersionInfo,
+    deserialize_kit, deserialize_kit_with_version, deserialize_synth, deserialize_synth_with_version, serialize_kit,
+    serialize_synth, PatchType, SerializationError, VersionInfo,
 };
 pub use sound::{
     Arpeggiator, ArpeggiatorBuilder, Chorus, ChorusBuilder, Delay, DelayBuilder, Distorsion, DistorsionBuilder, Envelope,
@@ -108,7 +107,8 @@ impl WriteError {
 pub fn read_synth<R: Read>(read: &mut R) -> Result<Synth, ReadError> {
     let mut xml_content = String::new();
 
-    read.read_to_string(&mut xml_content).map_err(ReadError::ReadError)?;
+    read.read_to_string(&mut xml_content)
+        .map_err(ReadError::ReadError)?;
 
     deserialize_synth(&xml_content).map_err(ReadError::DeserializationError)
 }
@@ -116,7 +116,8 @@ pub fn read_synth<R: Read>(read: &mut R) -> Result<Synth, ReadError> {
 pub fn read_synth_with_version<R: Read>(read: &mut R) -> Result<(Synth, VersionInfo), ReadError> {
     let mut xml_content = String::new();
 
-    read.read_to_string(&mut xml_content).map_err(ReadError::ReadError)?;
+    read.read_to_string(&mut xml_content)
+        .map_err(ReadError::ReadError)?;
 
     deserialize_synth_with_version(&xml_content).map_err(ReadError::DeserializationError)
 }
@@ -136,7 +137,8 @@ pub fn read_synth_from_file_with_version<P: AsRef<Path>>(path: P) -> Result<(Syn
 pub fn read_kit<R: Read>(read: &mut R) -> Result<Kit, ReadError> {
     let mut xml_content = String::new();
 
-    read.read_to_string(&mut xml_content).map_err(ReadError::ReadError)?;
+    read.read_to_string(&mut xml_content)
+        .map_err(ReadError::ReadError)?;
 
     deserialize_kit(&xml_content).map_err(ReadError::DeserializationError)
 }
@@ -144,7 +146,8 @@ pub fn read_kit<R: Read>(read: &mut R) -> Result<Kit, ReadError> {
 pub fn read_kit_with_version<R: Read>(read: &mut R) -> Result<(Kit, VersionInfo), ReadError> {
     let mut xml_content = String::new();
 
-    read.read_to_string(&mut xml_content).map_err(ReadError::ReadError)?;
+    read.read_to_string(&mut xml_content)
+        .map_err(ReadError::ReadError)?;
 
     deserialize_kit_with_version(&xml_content).map_err(ReadError::DeserializationError)
 }

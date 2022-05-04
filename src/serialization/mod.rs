@@ -127,7 +127,12 @@ mod tests {
         let (_, version_info) = deserialize_synth_with_version(include_str!("../data_tests/SYNTHS/SYNT184.XML")).unwrap();
 
         assert_eq!(&version_info.firmware_version.unwrap(), "3.1.5");
-        assert_eq!(&version_info.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
+        assert_eq!(
+            &version_info
+                .earliest_compatible_firmware
+                .unwrap(),
+            "3.1.0-beta"
+        );
     }
 
     /// This test require the same patch saved under different version.
@@ -205,7 +210,12 @@ mod tests {
         let (_, version_info) = deserialize_synth_with_version(include_str!("../data_tests/SYNTHS/SYNT170.XML")).unwrap();
 
         assert_eq!(&version_info.firmware_version.unwrap(), "2.1.0");
-        assert_eq!(&version_info.earliest_compatible_firmware.unwrap(), "2.1.0");
+        assert_eq!(
+            &version_info
+                .earliest_compatible_firmware
+                .unwrap(),
+            "2.1.0"
+        );
     }
 
     #[test]
@@ -213,16 +223,27 @@ mod tests {
         let (kit, version_info) = deserialize_kit_with_version(include_str!("../data_tests/KITS/KIT057.XML")).unwrap();
 
         assert_eq!(&version_info.firmware_version.unwrap(), "3.1.5");
-        assert_eq!(&version_info.earliest_compatible_firmware.unwrap(), "3.1.0-beta");
+        assert_eq!(
+            &version_info
+                .earliest_compatible_firmware
+                .unwrap(),
+            "3.1.0-beta"
+        );
 
         assert_eq!(kit.rows.len(), 7);
         assert_eq!(kit.lpf_mode, LpfMode::Lpf24);
         assert_eq!(
-            kit.modulation_fx.as_flanger().unwrap().rate,
+            kit.modulation_fx
+                .as_flanger()
+                .unwrap()
+                .rate,
             HexU50::parse("0xE0000000").unwrap()
         );
         assert_eq!(
-            kit.modulation_fx.as_flanger().unwrap().feedback,
+            kit.modulation_fx
+                .as_flanger()
+                .unwrap()
+                .feedback,
             HexU50::parse("0x80000000").unwrap()
         );
         assert_eq!(kit.selected_row_index, Some(4));
@@ -233,16 +254,27 @@ mod tests {
         let (kit, version_info) = deserialize_kit_with_version(include_str!("../data_tests/KITS/KIT026.XML")).unwrap();
 
         assert_eq!(&version_info.firmware_version.unwrap(), "2.1.0");
-        assert_eq!(&version_info.earliest_compatible_firmware.unwrap(), "2.0.0");
+        assert_eq!(
+            &version_info
+                .earliest_compatible_firmware
+                .unwrap(),
+            "2.0.0"
+        );
 
         assert_eq!(kit.rows.len(), 16);
         assert_eq!(kit.lpf_mode, LpfMode::Lpf24);
         assert_eq!(
-            kit.modulation_fx.as_flanger().unwrap().rate,
+            kit.modulation_fx
+                .as_flanger()
+                .unwrap()
+                .rate,
             HexU50::parse("0xE0000000").unwrap()
         );
         assert_eq!(
-            kit.modulation_fx.as_flanger().unwrap().feedback,
+            kit.modulation_fx
+                .as_flanger()
+                .unwrap()
+                .feedback,
             HexU50::parse("0x80000000").unwrap()
         );
         assert_eq!(kit.selected_row_index, Some(15));
@@ -258,11 +290,17 @@ mod tests {
         assert_eq!(kit.rows.len(), 16);
         assert_eq!(kit.lpf_mode, LpfMode::Lpf24);
         assert_eq!(
-            kit.modulation_fx.as_flanger().unwrap().rate,
+            kit.modulation_fx
+                .as_flanger()
+                .unwrap()
+                .rate,
             HexU50::parse("0xE0000000").unwrap()
         );
         assert_eq!(
-            kit.modulation_fx.as_flanger().unwrap().feedback,
+            kit.modulation_fx
+                .as_flanger()
+                .unwrap()
+                .feedback,
             HexU50::parse("0x80000000").unwrap()
         );
         assert_eq!(kit.selected_row_index, Some(14));
@@ -297,7 +335,9 @@ mod tests {
         assert_eq!(21, sample_ranges.len());
         assert_eq!(
             "SAMPLES/Artists/Michael Bulaw/Sitar/Freeze Sitar [2018-12-06 224345].wav",
-            sample_ranges[0].file_path.to_string_lossy()
+            sample_ranges[0]
+                .file_path
+                .to_string_lossy()
         );
         assert_eq!(Some(53), sample_ranges[0].range_top_note);
         assert_eq!(0, sample_ranges[0].zone.start.as_u64());

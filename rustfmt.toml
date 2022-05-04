@@ -1,1 +1,7 @@
 max_width = 130
+chain_width = 40
+single_line_if_else_max_width = 100
+
+# Only on nightly for now (2022-05-03)
+# comment_width = 100
+# imports_layout = "Vertical"

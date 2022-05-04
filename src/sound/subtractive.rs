@@ -178,7 +178,11 @@ impl Sample {
     pub fn get_sample_paths(&self) -> Vec<SamplePath> {
         match self {
             Sample::OneZone(zone) => Vec::from([zone.file_path.clone()]),
-            Sample::SampleRanges(ranges) => Vec::from_iter(ranges.iter().map(|range| range.file_path.clone())),
+            Sample::SampleRanges(ranges) => Vec::from_iter(
+                ranges
+                    .iter()
+                    .map(|range| range.file_path.clone()),
+            ),
         }
     }
 }

@@ -62,6 +62,9 @@ impl FileSystem for LocalFileSystem {
     }
 
     fn is_file(&self, path: &Path) -> Result<bool, CardError> {
-        Ok(path.metadata().map_err(make_io_error)?.is_file())
+        Ok(path
+            .metadata()
+            .map_err(make_io_error)?
+            .is_file())
     }
 }
