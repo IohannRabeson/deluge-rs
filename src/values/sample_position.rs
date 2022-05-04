@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -9,13 +7,9 @@ impl SamplePosition {
     pub fn new(value: u64) -> Self {
         Self(value)
     }
-}
 
-impl Deref for SamplePosition {
-    type Target = u64;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
+    pub fn as_u64(&self) -> u64 {
+        self.0
     }
 }
 

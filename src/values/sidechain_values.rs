@@ -31,8 +31,8 @@ impl AttackSidechain {
         Self { index }
     }
 
-    pub fn to_value(self) -> u32 {
-        Self::SIDECHAIN_ATTACK_VALUES[self.index.to_value() as usize]
+    pub fn to_u32(self) -> u32 {
+        Self::SIDECHAIN_ATTACK_VALUES[self.index.as_u8() as usize]
     }
 }
 
@@ -58,7 +58,7 @@ impl Serialize for AttackSidechain {
     where
         S: Serializer,
     {
-        serializer.serialize_u32(self.to_value())
+        serializer.serialize_u32(self.to_u32())
     }
 }
 
@@ -99,8 +99,8 @@ impl ReleaseSidechain {
         Self { index }
     }
 
-    pub fn to_value(self) -> u32 {
-        Self::SIDECHAIN_RELEASE_VALUES[self.index.to_value() as usize]
+    pub fn to_u32(self) -> u32 {
+        Self::SIDECHAIN_RELEASE_VALUES[self.index.as_u8() as usize]
     }
 }
 
@@ -126,7 +126,7 @@ impl Serialize for ReleaseSidechain {
     where
         S: Serializer,
     {
-        serializer.serialize_u32(self.to_value())
+        serializer.serialize_u32(self.to_u32())
     }
 }
 

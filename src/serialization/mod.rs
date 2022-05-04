@@ -302,8 +302,8 @@ mod tests {
             sample_ranges[0].file_path.to_string_lossy()
         );
         assert_eq!(Some(53), sample_ranges[0].range_top_note);
-        assert_eq!(0, *sample_ranges[0].zone.start);
-        assert_eq!(264600, *sample_ranges[0].zone.end);
+        assert_eq!(0, sample_ranges[0].zone.start.as_u64());
+        assert_eq!(264600, sample_ranges[0].zone.end.as_u64());
         assert_eq!(Transpose::new(7), sample_ranges[0].transpose);
         assert_eq!(FineTranspose::new(8), sample_ranges[0].fine_transpose);
     }

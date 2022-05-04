@@ -24,8 +24,8 @@ impl<const MIN: u8, const MAX: u8, const DEFAULT: u8> Default for Uint8<MIN, MAX
 }
 
 impl<const MIN: u8, const MAX: u8, const DEFAULT: u8> Uint8<MIN, MAX, DEFAULT> {
-    const MIN: u8 = MIN;
-    const MAX: u8 = MAX;
+    pub const MIN: u8 = MIN;
+    pub const MAX: u8 = MAX;
 
     fn check(val: u8) -> Self {
         debug_assert!(
@@ -42,7 +42,7 @@ impl<const MIN: u8, const MAX: u8, const DEFAULT: u8> Uint8<MIN, MAX, DEFAULT> {
         Self::check(val)
     }
 
-    pub fn to_value(self) -> u8 {
+    pub fn as_u8(self) -> u8 {
         self.val
     }
 }

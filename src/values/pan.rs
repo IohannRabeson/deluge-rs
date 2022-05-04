@@ -10,8 +10,8 @@ use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 pub struct Pan(i8);
 
 impl Pan {
-    const MAX_PAN: i8 = 32i8;
-    const MIN_PAN: i8 = -32i8;
+    pub const MAX_PAN: i8 = 32i8;
+    pub const MIN_PAN: i8 = -32i8;
 
     pub fn new(value: i8) -> Result<Self, SerializationError> {
         if value > Self::MAX_PAN {
@@ -27,6 +27,10 @@ impl Pan {
 
     pub fn parse(text: &str) -> Result<Self, SerializationError> {
         read_pan(text)
+    }
+
+    pub fn as_i8(&self) -> i8 {
+        self.0
     }
 }
 

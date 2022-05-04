@@ -7,6 +7,12 @@ pub struct Int8<const MIN: i8, const MAX: i8, const DEFAULT: i8> {
     val: i8,
 }
 
+impl<const MIN: i8, const MAX: i8, const DEFAULT: i8> Int8<MIN, MAX, DEFAULT> {
+    pub fn as_i8(&self) -> i8 {
+        self.val
+    }
+}
+
 impl<const MIN: i8, const MAX: i8, const DEFAULT: i8> Default for Int8<MIN, MAX, DEFAULT> {
     fn default() -> Self {
         Self::new(DEFAULT)

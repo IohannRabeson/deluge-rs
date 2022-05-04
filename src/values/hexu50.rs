@@ -16,6 +16,10 @@ impl HexU50 {
     pub fn parse(text: &str) -> Result<Self, SerializationError> {
         read_hexu50(text)
     }
+
+    pub fn as_u8(&self) -> u8 {
+        self.0
+    }
 }
 
 impl From<u8> for HexU50 {
