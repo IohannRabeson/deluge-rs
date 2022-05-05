@@ -1,11 +1,6 @@
 use xmltree::Element;
 
-use super::{
-    format_version::{detect_format_version, FormatVersion},
-    keys,
-    patch_type::PatchType,
-    xml,
-};
+use super::{format_version::FormatVersion, keys, patch_type::PatchType, xml};
 
 #[derive(PartialEq, Debug)]
 pub struct VersionInfo {
@@ -15,27 +10,45 @@ pub struct VersionInfo {
 }
 
 pub fn load_version_info(roots: &[Element], patch_type: PatchType) -> VersionInfo {
+    let earliest_compatible_version = load_version(roots, patch_type, keys::EARLIEST_COMPATIBLE_FIRMWARE);
+
     // Yeah it's not the best possible because I'm reading the same information twice.
     // Also it's easier for testing to have `detect_format_version` independent.
     VersionInfo {
-        firmware_version: load_version(roots, patch_type, keys::FIRMWARE_VERSION),
-        earliest_compatible_firmware: load_version(roots, patch_type, keys::EARLIEST_COMPATIBLE_FIRMWARE),
-        format_version: detect_format_version(roots, patch_type).unwrap_or(FormatVersion::Unknown),
+        firmware_version: load_version(roots, patch_type, keys::FIRMWARE_VERSION).as_string(),
+        earliest_compatible_firmware: earliest_compatible_version.as_string(),
+        format_version: earliest_compatible_version.into(),
     }
 }
 
-fn load_version(roots: &[Element], patch_type: PatchType, key: &str) -> Option<String> {
+pub enum VersionFound {
+    XmlChildren(String),
+    XmlAttribute(String),
+    None,
+}
+
+impl VersionFound {
+    pub fn as_string(&self) -> Option<String> {
+        match self {
+            Self::XmlChildren(version) => Some(version.clone()),
+            Self::XmlAttribute(version) => Some(version.clone()),
+            Self::None => None,
+        }
+    }
+}
+
+fn load_version(roots: &[Element], patch_type: PatchType, key: &str) -> VersionFound {
     if let Some(version) = xml::get_opt_element(roots, key).map(xml::get_text) {
-        return Some(version);
+        return VersionFound::XmlChildren(version);
     }
 
     if let Some(node) = xml::get_opt_element(roots, patch_type.get_key()) {
         if let Some(version) = xml::get_opt_attribute(node, key).cloned() {
-            return Some(version);
+            return VersionFound::XmlAttribute(version);
         }
     }
 
-    None
+    VersionFound::None
 }
 
 #[cfg(test)]
