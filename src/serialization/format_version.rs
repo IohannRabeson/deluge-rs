@@ -1,8 +1,7 @@
-use super::version_info::VersionFound;
-
 /// Deluge format version
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum FormatVersion {
+    /// No version specified
     None,
     /// A version has been parsed but it's not supported
     Unsupported,
@@ -14,12 +13,11 @@ pub enum FormatVersion {
     Version3,
 }
 
-impl From<VersionFound> for FormatVersion {
-    fn from(version: VersionFound) -> Self {
+impl From<Option<String>> for FormatVersion {
+    fn from(version: Option<String>) -> Self {
         match version {
-            VersionFound::XmlAttribute(version_string) => parse_version(version_string),
-            VersionFound::XmlChildren(version_string) => parse_version(version_string),
-            VersionFound::None => FormatVersion::Version1,
+            Some(version_string) => parse_version(version_string),
+            None => FormatVersion::Version1,
         }
     }
 }
