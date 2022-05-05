@@ -16,11 +16,13 @@ mod patch_name;
 mod tests;
 
 use std::str::FromStr;
+use std::sync::Arc;
 use std::{
     collections::BTreeSet,
     path::{Path, PathBuf},
 };
 use strum::IntoEnumIterator;
+use core::fmt::Debug;
 
 pub use card_folder::CardFolder;
 pub use filesystem::{FileSystem, LocalFileSystem};
@@ -34,6 +36,9 @@ pub enum CardError {
     #[error("Directory '{0}' does not exists")]
     DirectoryDoesNotExists(PathBuf),
 
+    #[error("Directory '{0}' already exists")]
+    DirectoryAlreadyExists(PathBuf),
+    
     #[error("Missing root directory '{0}'")]
     MissingRootDirectory(String),
 
@@ -70,15 +75,25 @@ pub enum CardError {
 /// Generic parameter FS allows to specify the filesystem to use, this is useful for unit testing where you do not want to
 /// query the real filesystem.  
 /// 
-/// Notice Card does not implement Copy or Clone on purpose as it does not make sense to have multiple instances of
-/// a the same Deluge card. I recommend to only have one Card instance pointing on a specific directory to prevent
-/// update issues (when one instance writes the other instances can't know if something changed and we can't have 
-/// atomic transactions on a file system I think).
+/// Notice Card does implement Clone but the file system is never duplicated.
 ///
-#[derive(Debug)]
 pub struct Card<FS: FileSystem> {
     root_directory: PathBuf,
-    file_system: FS,
+    file_system: Arc<FS>,
+}
+
+impl<FS: FileSystem> Clone for Card<FS> {
+    fn clone(&self) -> Self {
+        Self { root_directory: self.root_directory.clone(), file_system: self.file_system.clone() }
+    }
+}
+
+impl<FS: FileSystem> Debug for Card<FS> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Card")
+            .field("root_directory", &self.root_directory)
+            .finish()
+    }
 }
 
 impl<FS: FileSystem> PartialEq for Card<FS> {
@@ -112,15 +127,19 @@ impl<FS: FileSystem> Card<FS> {
     }
 
     /// Creates the card directory and the required folders.
+    /// 
+    /// The root directory should not exists yet.
     pub fn create(file_system: FS, root_directory: &Path) -> Result<Self, CardError> {
         let root_directory = root_directory.to_path_buf();
 
-        if !file_system.directory_exists(&root_directory) {
-            return Err(CardError::DirectoryDoesNotExists(root_directory));
+        if file_system.directory_exists(&root_directory) {
+            return Err(CardError::DirectoryAlreadyExists(root_directory))
         }
 
+        file_system.create_directory(&root_directory)?;
+
         let card = Self {
-            file_system,
+            file_system: Arc::new(file_system),
             root_directory,
         };
 
@@ -144,7 +163,7 @@ impl<FS: FileSystem> Card<FS> {
         Self::check_root_directories(&file_system, &root_directory)?;
 
         Ok(Self {
-            file_system,
+            file_system: Arc::new(file_system),
             root_directory,
         })
     }
