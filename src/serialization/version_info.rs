@@ -12,8 +12,6 @@ pub struct VersionInfo {
 pub fn load_version_info(roots: &[Element], patch_type: PatchType) -> VersionInfo {
     let earliest_compatible_firmware = load_version(roots, patch_type, keys::EARLIEST_COMPATIBLE_FIRMWARE);
 
-    // Yeah it's not the best possible because I'm reading the same information twice.
-    // Also it's easier for testing to have `detect_format_version` independent.
     VersionInfo {
         firmware_version: load_version(roots, patch_type, keys::FIRMWARE_VERSION),
         earliest_compatible_firmware: earliest_compatible_firmware.clone(),
