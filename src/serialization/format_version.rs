@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use xmltree::Element;
 
-use super::{keys, version_info::PatchType, xml};
+use super::{keys, patch_type::PatchType, xml};
 
 /// Deluge format version
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]

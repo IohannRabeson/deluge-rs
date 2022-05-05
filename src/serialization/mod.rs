@@ -4,14 +4,15 @@
 /// Each type specifies how the serialization works.
 use crate::{Kit, Synth};
 
-pub use version_info::{PatchType, VersionInfo};
-
 pub use self::error::SerializationError;
+pub use patch_type::PatchType;
+pub use version_info::VersionInfo;
 
 mod default_params;
 mod error;
 mod format_version;
 mod keys;
+mod patch_type;
 mod serialization_common;
 mod serialization_v1;
 mod serialization_v2;

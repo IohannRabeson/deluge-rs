@@ -1,12 +1,10 @@
-use std::str::FromStr;
-
 use xmltree::Element;
-
-use crate::CardFolder;
 
 use super::{
     format_version::{detect_format_version, FormatVersion},
-    keys, xml,
+    keys,
+    patch_type::PatchType,
+    xml,
 };
 
 #[derive(PartialEq, Debug)]
@@ -14,50 +12,6 @@ pub struct VersionInfo {
     pub firmware_version: Option<String>,
     pub earliest_compatible_firmware: Option<String>,
     pub format_version: FormatVersion,
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum PatchType {
-    Synth,
-    Kit,
-}
-
-impl PatchType {
-    pub fn get_key<'a>(self) -> &'a str {
-        match self {
-            PatchType::Kit => "kit",
-            PatchType::Synth => "sound",
-        }
-    }
-
-    pub fn get_standard_patch_base_name<'a>(self) -> &'a str {
-        match self {
-            PatchType::Kit => KIT_BASE_NAME,
-            PatchType::Synth => SYNTH_BASE_NAME,
-        }
-    }
-
-    pub fn get_card_folder(self) -> CardFolder {
-        match self {
-            PatchType::Kit => CardFolder::Kits,
-            PatchType::Synth => CardFolder::Synths,
-        }
-    }
-}
-
-const KIT_BASE_NAME: &str = "KIT";
-const SYNTH_BASE_NAME: &str = "SYNT";
-
-impl FromStr for PatchType {
-    type Err = ();
-
-    fn from_str(input: &str) -> Result<Self, Self::Err> {
-        match input {
-            KIT_BASE_NAME => Ok(PatchType::Kit),
-            SYNTH_BASE_NAME => Ok(PatchType::Synth),
-            _ => Err(()),
-        }
-    }
 }
 
 pub fn load_version_info(roots: &[Element], patch_type: PatchType) -> VersionInfo {
