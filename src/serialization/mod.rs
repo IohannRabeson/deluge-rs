@@ -5,12 +5,12 @@
 use crate::{Kit, Synth};
 
 pub use self::error::SerializationError;
+use self::version_info::FormatVersion;
 pub use patch_type::PatchType;
 pub use version_info::VersionInfo;
 
 mod default_params;
 mod error;
-mod format_version;
 mod keys;
 mod patch_type;
 mod serialization_common;
@@ -29,11 +29,11 @@ pub fn deserialize_kit_with_version(xml: &str) -> Result<(Kit, VersionInfo), Ser
     let roots = xml::load_xml(xml)?;
     let version_info = version_info::load_version_info(&roots, PatchType::Kit);
     let kit = match version_info.format_version {
-        format_version::FormatVersion::Version3 => serialization_v3::load_kit_nodes(&roots)?,
-        format_version::FormatVersion::Version2 => serialization_v2::load_kit_nodes(&roots)?,
-        format_version::FormatVersion::Version1 => serialization_v1::load_kit_nodes(&roots)?,
-        format_version::FormatVersion::None => return Err(SerializationError::InvalidVersionFormat),
-        format_version::FormatVersion::Unsupported => return Err(SerializationError::InvalidVersionFormat),
+        FormatVersion::Version3 => serialization_v3::load_kit_nodes(&roots)?,
+        FormatVersion::Version2 => serialization_v2::load_kit_nodes(&roots)?,
+        FormatVersion::Version1 => serialization_v1::load_kit_nodes(&roots)?,
+        FormatVersion::None => return Err(SerializationError::InvalidVersionFormat),
+        FormatVersion::Unsupported => return Err(SerializationError::InvalidVersionFormat),
     };
 
     Ok((kit, version_info))
@@ -48,11 +48,11 @@ pub fn deserialize_synth_with_version(xml: &str) -> Result<(Synth, VersionInfo),
     let roots = xml::load_xml(xml)?;
     let version_info = version_info::load_version_info(&roots, PatchType::Synth);
     let synth = match version_info.format_version {
-        format_version::FormatVersion::Version3 => serialization_v3::load_synth_nodes(&roots)?,
-        format_version::FormatVersion::Version2 => serialization_v2::load_synth_nodes(&roots)?,
-        format_version::FormatVersion::Version1 => serialization_v1::load_synth_nodes(&roots)?,
-        format_version::FormatVersion::None => return Err(SerializationError::InvalidVersionFormat),
-        format_version::FormatVersion::Unsupported => return Err(SerializationError::InvalidVersionFormat),
+        FormatVersion::Version3 => serialization_v3::load_synth_nodes(&roots)?,
+        FormatVersion::Version2 => serialization_v2::load_synth_nodes(&roots)?,
+        FormatVersion::Version1 => serialization_v1::load_synth_nodes(&roots)?,
+        FormatVersion::None => return Err(SerializationError::InvalidVersionFormat),
+        FormatVersion::Unsupported => return Err(SerializationError::InvalidVersionFormat),
     };
 
     Ok((synth, version_info))

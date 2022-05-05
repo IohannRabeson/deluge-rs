@@ -19,6 +19,9 @@
 //! # Ok::<(), deluge::WriteError>(())
 //! ```
 //!
+//! To help with the Deluge's card folders structure [Card] is provided. It allows to create a new card, check existing card structure
+//! and get the paths of the important directories such as KITS and SAMPLES.
+//! 
 //! This crate makes heavy use of the Rust type system to reduce the possibilities of error. There is almost
 //! one type for each different fields. Each value type specifies how to serialize/deserialize and what is the default
 //! value. Some types such as [Transpose] or [ClippingAmount] for example are strong integer with constrained range
