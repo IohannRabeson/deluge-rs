@@ -57,33 +57,33 @@ pub enum CardError {
 /// A deluge card
 ///
 /// Represents the card on the file system.
-/// You should normally don't have to care about the lifetime 'l, just pass your file system and the
-/// compiler should be able to deduce everything for you. More precisely, the filesystem instance must live
-/// at least while the card instance lives.
 /// ```
 /// # use std::path::Path;
 /// # use deluge::{LocalFileSystem, PatchType, CardError, CardFolder};
-/// if let Ok(card) = deluge::Card::open(&LocalFileSystem::default(), Path::new("your card directory")) {
+/// if let Ok(card) = deluge::Card::open(LocalFileSystem::default(), Path::new("your card directory")) {
 ///     println!("Kits directory: {:?}", card.get_directory_path(CardFolder::Kits));
 ///     println!("Next kit name: {}", card.get_next_standard_patch_name(PatchType::Kit)?);
 /// }
 /// # Ok::<(), CardError>(())
 /// ```
+/// 
+/// Generic parameter FS allows to specify the filesystem to use, this is useful for unit testing where you do not want to
+/// query the real filesystem.  
 ///
 #[derive(Debug)]
-pub struct Card<'l, FS: FileSystem> {
+pub struct Card<FS: FileSystem> {
     root_directory: PathBuf,
-    file_system: &'l FS,
+    file_system: FS,
 }
 
-impl<'l, FS: FileSystem> PartialEq for Card<'l, FS> {
+impl<FS: FileSystem> PartialEq for Card<FS> {
     fn eq(&self, other: &Self) -> bool {
         self.root_directory == other.root_directory
     }
 }
 
-impl<'l, FS: FileSystem> Card<'l, FS> {
-    fn check_root_directories(file_system: &'l FS, root_directory: &Path) -> Result<(), CardError> {
+impl<FS: FileSystem> Card<FS> {
+    fn check_root_directories(file_system: &FS, root_directory: &Path) -> Result<(), CardError> {
         let directory_names = file_system
             .get_directory_entries(root_directory)?
             .iter()
@@ -107,7 +107,7 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
     }
 
     /// Creates the card directory and the required folders.
-    pub fn create(file_system: &'l FS, root_directory: &Path) -> Result<Self, CardError> {
+    pub fn create(file_system: FS, root_directory: &Path) -> Result<Self, CardError> {
         let root_directory = root_directory.to_path_buf();
 
         if !file_system.directory_exists(&root_directory) {
@@ -120,7 +120,7 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
         };
 
         for required_directory in CardFolder::iter() {
-            file_system.create_directory(&card.get_directory_path(required_directory))?;
+            card.file_system.create_directory(&card.get_directory_path(required_directory))?;
         }
 
         Ok(card)
@@ -129,14 +129,14 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
     /// Open a card directory.
     ///
     /// The folder structure is checked and an error is returned if something wrong is found.
-    pub fn open(file_system: &'l FS, root_directory: &Path) -> Result<Self, CardError> {
+    pub fn open(file_system: FS, root_directory: &Path) -> Result<Self, CardError> {
         let root_directory = root_directory.to_path_buf();
 
         if !file_system.directory_exists(&root_directory) {
             return Err(CardError::DirectoryDoesNotExists(root_directory));
         }
 
-        Self::check_root_directories(file_system, &root_directory)?;
+        Self::check_root_directories(&file_system, &root_directory)?;
 
         Ok(Self {
             file_system,
