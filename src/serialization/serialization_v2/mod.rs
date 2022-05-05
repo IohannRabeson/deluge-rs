@@ -35,11 +35,18 @@ pub fn load_kit_nodes(roots: &[Element]) -> Result<Kit, SerializationError> {
         .collect();
 
     if let Some(result_with_error) = sources.iter().find(|s| s.is_err()) {
-        return Err(result_with_error.as_ref().unwrap_err().clone());
+        return Err(result_with_error
+            .as_ref()
+            .unwrap_err()
+            .clone());
     }
 
     return Ok(Kit {
-        rows: sources.iter().flatten().cloned().collect::<Vec<RowKit>>(),
+        rows: sources
+            .iter()
+            .flatten()
+            .cloned()
+            .collect::<Vec<RowKit>>(),
         lpf_mode: xml::parse_children_element_content(kit_node, keys::LPF_MODE)?,
         modulation_fx: load_modulation_fx(kit_node)?,
         current_filter_type: xml::parse_children_element_content(kit_node, keys::CURRENT_FILTER_TYPE)?,
@@ -178,7 +185,7 @@ fn load_global_sidechain(kit_node: &Element) -> Result<Sidechain, SerializationE
 #[cfg(test)]
 mod tests {
     use crate::{
-        load_synth, save_synth,
+        deserialize_synth, serialize_synth,
         values::{
             ArpeggiatorMode, AttackSidechain, ClippingAmount, FineTranspose, HexU50, LfoShape, LpfMode, OscType, Pan, Polyphony,
             ReleaseSidechain, RetrigPhase, SyncLevel, Transpose, UnisonDetune, UnisonVoiceCount, VoicePriority,
@@ -197,9 +204,9 @@ mod tests {
 
     #[test]
     fn load_save_load_sound_subtractive() {
-        let synth = load_synth(include_str!("../../data_tests/SYNTHS/SYNT061.XML")).unwrap();
-        let xml = save_synth(&synth).unwrap();
-        let reloaded_synth = load_synth(&xml).unwrap();
+        let synth = deserialize_synth(include_str!("../../data_tests/SYNTHS/SYNT061.XML")).unwrap();
+        let xml = serialize_synth(&synth).unwrap();
+        let reloaded_synth = deserialize_synth(&xml).unwrap();
 
         assert_eq!(reloaded_synth, synth);
     }
@@ -267,7 +274,10 @@ mod tests {
         assert_eq!(sound.delay.analog, OnOff::Off);
         assert_eq!(sound.delay.sync_level, SyncLevel::Eighth);
 
-        let generator = sound.generator.as_subtractive().unwrap();
+        let generator = sound
+            .generator
+            .as_subtractive()
+            .unwrap();
 
         assert_eq!(generator.lpf_mode, LpfMode::Lpf24);
         assert_eq!(generator.lpf_frequency, HexU50::parse("0x24000000").unwrap());

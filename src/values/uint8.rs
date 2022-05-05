@@ -1,7 +1,7 @@
 //! 2022 12th march
-//! I copy pasted from https://gist.github.com/franziskuskiefer/920fa6fdcf3d47cdbbdbe325e8e87275 then started over.
+//! I copy pasted from <https://gist.github.com/franziskuskiefer/920fa6fdcf3d47cdbbdbe325e8e87275> then started over.
 //! I found it by searching information about ranged integer. I found this issue still open:
-//! https://github.com/rust-lang/rfcs/issues/671
+//! <https://github.com/rust-lang/rfcs/issues/671>
 //! Maybe one day this code will be useless!
 
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
@@ -24,8 +24,8 @@ impl<const MIN: u8, const MAX: u8, const DEFAULT: u8> Default for Uint8<MIN, MAX
 }
 
 impl<const MIN: u8, const MAX: u8, const DEFAULT: u8> Uint8<MIN, MAX, DEFAULT> {
-    const MIN: u8 = MIN;
-    const MAX: u8 = MAX;
+    pub const MIN: u8 = MIN;
+    pub const MAX: u8 = MAX;
 
     fn check(val: u8) -> Self {
         debug_assert!(
@@ -42,7 +42,7 @@ impl<const MIN: u8, const MAX: u8, const DEFAULT: u8> Uint8<MIN, MAX, DEFAULT> {
         Self::check(val)
     }
 
-    pub fn to_value(self) -> u8 {
+    pub fn as_u8(self) -> u8 {
         self.val
     }
 }

@@ -12,6 +12,10 @@ impl DecU50 {
     pub fn parse(text: &str) -> Result<Self, SerializationError> {
         read_decu50(text)
     }
+
+    pub fn as_u8(&self) -> u8 {
+        self.0
+    }
 }
 
 impl Serialize for DecU50 {

@@ -1,6 +1,7 @@
 use crate::values::{FineTranspose, HexU50, OnOff, RetrigPhase, Transpose};
 
 #[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[builder(default)]
 pub struct FmSynth {
     pub osc1: FmCarrier,
     pub osc2: FmCarrier,

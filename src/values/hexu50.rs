@@ -16,6 +16,10 @@ impl HexU50 {
     pub fn parse(text: &str) -> Result<Self, SerializationError> {
         read_hexu50(text)
     }
+
+    pub fn as_u8(&self) -> u8 {
+        self.0
+    }
 }
 
 impl From<u8> for HexU50 {
@@ -77,7 +81,9 @@ fn map_hexu50_i32(value: HexU50) -> i32 {
 
 /// Read a 0-50 value encoded as unsigned u32 hexadecimal
 fn read_hexu50(text: &str) -> Result<HexU50, SerializationError> {
-    read_hexadecimal_u32(text).and_then(map_u32_i32).map(map_i32_hexu50)
+    read_hexadecimal_u32(text)
+        .and_then(map_u32_i32)
+        .map(map_i32_hexu50)
 }
 
 /// Write a 0-50 value encoded as unsigned u32 hexadecimal with prefix 0x

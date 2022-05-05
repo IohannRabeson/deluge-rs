@@ -28,7 +28,10 @@ impl SamplePath {
     pub fn to_string_lossy(&self) -> String {
         use itertools::Itertools;
 
-        self.0.components().map(|c| c.as_os_str().to_string_lossy()).join("/")
+        self.0
+            .components()
+            .map(|c| c.as_os_str().to_string_lossy())
+            .join("/")
     }
 
     pub(crate) fn to_path(&self) -> &Path {

@@ -87,13 +87,18 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
         let directory_names = file_system
             .get_directory_entries(root_directory)?
             .iter()
-            .filter_map(|path| path.file_name().map(|file_name| file_name.to_string_lossy().to_string()))
+            .filter_map(|path| {
+                path.file_name()
+                    .map(|file_name| file_name.to_string_lossy().to_string())
+            })
             .collect::<BTreeSet<String>>();
 
         for required_directory in CardFolder::iter() {
             if !directory_names.contains(required_directory.directory_name()) {
                 return Err(CardError::MissingRootDirectory(
-                    required_directory.directory_name().to_owned(),
+                    required_directory
+                        .directory_name()
+                        .to_owned(),
                 ));
             }
         }
@@ -160,12 +165,15 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
 
     /// Get the absolute path of a sample on the card
     pub fn absolute_path(&self, path: &SamplePath) -> PathBuf {
-        self.root_directory.as_path().join(path.to_path())
+        self.root_directory
+            .as_path()
+            .join(path.to_path())
     }
 
     /// Get one of the card's directory path
     pub fn get_directory_path(&self, folder: CardFolder) -> PathBuf {
-        self.root_directory.join(folder.directory_name())
+        self.root_directory
+            .join(folder.directory_name())
     }
 
     /// Get the next standard patch path with name and extension
@@ -192,9 +200,15 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
         let folder = patch_type.get_card_folder();
         let mut max_number: Option<u16> = None;
 
-        for path in &self.file_system.get_directory_entries(&self.get_directory_path(folder))? {
+        for path in &self
+            .file_system
+            .get_directory_entries(&self.get_directory_path(folder))?
+        {
             if self.file_system.is_file(path)? {
-                if let Some(file_name) = path.file_name().map(|name| name.to_string_lossy().to_string()) {
+                if let Some(file_name) = path
+                    .file_name()
+                    .map(|name| name.to_string_lossy().to_string())
+                {
                     if let Ok(PatchName::Standard {
                         patch_type: _,
                         number,
@@ -215,7 +229,9 @@ impl<'l, FS: FileSystem> Card<'l, FS> {
 
         Ok(PatchName::Standard {
             patch_type,
-            number: max_number.map(|n| n + 1).unwrap_or(0u16),
+            number: max_number
+                .map(|n| n + 1)
+                .unwrap_or(0u16),
             suffix: None,
         }
         .to_string())

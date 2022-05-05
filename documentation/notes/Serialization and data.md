@@ -16,3 +16,6 @@ Example:
 I think for writing, I must implement some kind of patching to be sure to never loose any informations even if
 DKE does not support them. The idea is to have an in memory representation of the XML file, then modify this in memory representation to write it later. This sounds complex, but this way even if DKE does not support a field for example, the field will simply never be modified by DKE and the data in the file will never be modified as well.  
 This sounds complex but I think this is the only way to avoid loosing patch information.
+
+# Online documentation
+ - https://docs.google.com/document/d/11DUuuE1LBYOVlluPA9McT1_dT4AofZ5jnUD5eHvj7Vs/edit
