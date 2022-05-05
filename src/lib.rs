@@ -1,9 +1,9 @@
 //! A crate to create, read and write Synthstrom Deluge's patches
 //!
 //! This crate provides the data structures [Synth] and [Kit] that represent a Deluge synth patch and a kit patch.
-//! It hides the details from the user, like the fact there are at least differents version of the XML schema
-//! for each patch types.
+//! It hides the details from the user like the differents version of the XML schema.
 //!
+//! #### Reading patches
 //! The crate provide function to read a synth or a kit from a file:
 //! ```no_run
 //! let kit = deluge::read_kit_from_file("Your Card/KITS/YOUR_KIT.XML")?;
@@ -11,6 +11,7 @@
 //! # Ok::<(), deluge::ReadError>(())
 //! ```
 //!
+//! #### Writing patches
 //! It's also possible to write patches. The following example demonstrate how
 //! to create a default kit like the Deluge would do then save it to a file:
 //! ```no_run
@@ -19,9 +20,20 @@
 //! # Ok::<(), deluge::WriteError>(())
 //! ```
 //!
+//! #### Deluge's card structure
 //! To help with the Deluge's card folders structure [Card] is provided. It allows to create a new card, check existing card structure
 //! and get the paths of the important directories such as KITS and SAMPLES.
+//! ```
+//! # use std::path::Path;
+//! # use deluge::{LocalFileSystem, PatchType, CardError, CardFolder};
+//! if let Ok(card) = deluge::Card::open(&LocalFileSystem::default(), Path::new("your card directory")) {
+//!     println!("Kits directory: {:?}", card.get_directory_path(CardFolder::Kits));
+//!     println!("Synths directory: {:?}", card.get_directory_path(CardFolder::Synths));
+//! }
+//! # Ok::<(), CardError>(())
+//! ```
 //! 
+//! #### Strong typing
 //! This crate makes heavy use of the Rust type system to reduce the possibilities of error. There is almost
 //! one type for each different fields. Each value type specifies how to serialize/deserialize and what is the default
 //! value. Some types such as [Transpose] or [ClippingAmount] for example are strong integer with constrained range
