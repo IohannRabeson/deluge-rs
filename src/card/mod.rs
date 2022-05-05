@@ -69,6 +69,11 @@ pub enum CardError {
 /// 
 /// Generic parameter FS allows to specify the filesystem to use, this is useful for unit testing where you do not want to
 /// query the real filesystem.  
+/// 
+/// Notice Card does not implement Copy or Clone on purpose as it does not make sense to have multiple instances of
+/// a the same Deluge card. I recommend to only have one Card instance pointing on a specific directory to prevent
+/// update issues (when one instance writes the other instances can't know if something changed and we can't have 
+/// atomic transactions on a file system I think).
 ///
 #[derive(Debug)]
 pub struct Card<FS: FileSystem> {
