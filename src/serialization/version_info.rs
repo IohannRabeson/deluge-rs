@@ -1,13 +1,6 @@
-use std::str::FromStr;
-
 use xmltree::Element;
 
-use crate::CardFolder;
-
-use super::{
-    format_version::{detect_format_version, FormatVersion},
-    keys, xml,
-};
+use super::{format_version::FormatVersion, keys, patch_type::PatchType, xml};
 
 #[derive(PartialEq, Debug)]
 pub struct VersionInfo {
@@ -16,72 +9,46 @@ pub struct VersionInfo {
     pub format_version: FormatVersion,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum PatchType {
-    Synth,
-    Kit,
-}
-
-impl PatchType {
-    pub fn get_key<'a>(self) -> &'a str {
-        match self {
-            PatchType::Kit => "kit",
-            PatchType::Synth => "sound",
-        }
-    }
-
-    pub fn get_standard_patch_base_name<'a>(self) -> &'a str {
-        match self {
-            PatchType::Kit => KIT_BASE_NAME,
-            PatchType::Synth => SYNTH_BASE_NAME,
-        }
-    }
-
-    pub fn get_card_folder(self) -> CardFolder {
-        match self {
-            PatchType::Kit => CardFolder::Kits,
-            PatchType::Synth => CardFolder::Synths,
-        }
-    }
-}
-
-const KIT_BASE_NAME: &str = "KIT";
-const SYNTH_BASE_NAME: &str = "SYNT";
-
-impl FromStr for PatchType {
-    type Err = ();
-
-    fn from_str(input: &str) -> Result<Self, Self::Err> {
-        match input {
-            KIT_BASE_NAME => Ok(PatchType::Kit),
-            SYNTH_BASE_NAME => Ok(PatchType::Synth),
-            _ => Err(()),
-        }
-    }
-}
-
 pub fn load_version_info(roots: &[Element], patch_type: PatchType) -> VersionInfo {
+    let earliest_compatible_version = load_version(roots, patch_type, keys::EARLIEST_COMPATIBLE_FIRMWARE);
+
     // Yeah it's not the best possible because I'm reading the same information twice.
     // Also it's easier for testing to have `detect_format_version` independent.
     VersionInfo {
-        firmware_version: load_version(roots, patch_type, keys::FIRMWARE_VERSION),
-        earliest_compatible_firmware: load_version(roots, patch_type, keys::EARLIEST_COMPATIBLE_FIRMWARE),
-        format_version: detect_format_version(roots, patch_type).unwrap_or(FormatVersion::Unknown),
+        firmware_version: load_version(roots, patch_type, keys::FIRMWARE_VERSION).as_string(),
+        earliest_compatible_firmware: earliest_compatible_version.as_string(),
+        format_version: earliest_compatible_version.into(),
     }
 }
 
-fn load_version(roots: &[Element], patch_type: PatchType, key: &str) -> Option<String> {
+pub enum VersionFound {
+    XmlChildren(String),
+    XmlAttribute(String),
+    None,
+}
+
+impl VersionFound {
+    pub fn as_string(&self) -> Option<String> {
+        match self {
+            Self::XmlChildren(version) => Some(version.clone()),
+            Self::XmlAttribute(version) => Some(version.clone()),
+            Self::None => None,
+        }
+    }
+}
+
+fn load_version(roots: &[Element], patch_type: PatchType, key: &str) -> VersionFound {
     if let Some(version) = xml::get_opt_element(roots, key).map(xml::get_text) {
-        return Some(version);
+        return VersionFound::XmlChildren(version);
     }
 
     if let Some(node) = xml::get_opt_element(roots, patch_type.get_key()) {
         if let Some(version) = xml::get_opt_attribute(node, key).cloned() {
-            return Some(version);
+            return VersionFound::XmlAttribute(version);
         }
     }
 
-    None
+    VersionFound::None
 }
 
 #[cfg(test)]
