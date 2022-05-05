@@ -67,7 +67,7 @@ fn test_check_root_directories_last_missing() {
 
 #[test]
 fn test_open_card_non_existing_directory() {
-    let fs = &mut MockFileSystem::default();
+    let mut fs = MockFileSystem::default();
 
     fs.expect_directory_exists()
         .times(1)
@@ -84,7 +84,7 @@ fn test_open_card_non_existing_directory() {
 
 #[test]
 fn test_open_card_ok() {
-    let fs = &mut MockFileSystem::default();
+    let mut fs = MockFileSystem::default();
 
     fs.expect_directory_exists()
         .times(1)
@@ -143,7 +143,7 @@ fn test_get_next_patch_name(existing_patch_name: &str, expected_result: Result<&
     fs.expect_is_file()
         .return_once(|_path| Ok(true));
 
-    let card = Card::open(&fs, &Path::new("I_exist")).expect("open mocked card");
+    let card = Card::open(fs, &Path::new("I_exist")).expect("open mocked card");
     let result = card.get_next_standard_patch_name(PatchType::Kit);
 
     assert_eq!(expected_result.map(|s| s.to_string()), result);
@@ -153,7 +153,7 @@ fn test_get_next_patch_name(existing_patch_name: &str, expected_result: Result<&
 /// bigger number in the list of patches.
 #[test]
 fn test_get_next_patch_name_max() {
-    let fs = &mut MockFileSystem::default();
+    let mut fs = MockFileSystem::default();
     let root_directory = Path::new("I_exist");
 
     fs.expect_directory_exists()
@@ -191,7 +191,7 @@ fn test_get_next_patch_name_max() {
     assert_eq!("KIT008", patch_name);
 }
 
-fn create_mocked_card<'l>(filesystem: &'l mut MockFileSystem, root_directory: &'static Path) -> Card<'l, MockFileSystem> {
+fn create_mocked_card(mut filesystem: MockFileSystem, root_directory: &'static Path) -> Card<MockFileSystem> {
     filesystem
         .expect_directory_exists()
         .return_const(true);
@@ -214,8 +214,7 @@ fn create_mocked_card<'l>(filesystem: &'l mut MockFileSystem, root_directory: &'
 #[test_case("root_dir/SAMPLES/A.WAV", Ok("SAMPLES/A.WAV"))]
 #[test_case("OHLALA", Err(CardError::FileNotInCard(PathBuf::from("OHLALA"))))]
 fn test_sample_path(input: &str, expected_result: Result<&str, CardError>) {
-    let mut filesystem = MockFileSystem::new();
-    let card = create_mocked_card(&mut filesystem, Path::new("root_dir"));
+    let card = create_mocked_card(MockFileSystem::new(), Path::new("root_dir"));
     let result = card.sample_path(Path::new(input));
     let expected_result = expected_result.map(|path| SamplePath::new(path).unwrap());
 

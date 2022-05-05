@@ -26,7 +26,7 @@
 //! ```
 //! # use std::path::Path;
 //! # use deluge::{LocalFileSystem, PatchType, CardError, CardFolder};
-//! if let Ok(card) = deluge::Card::open(&LocalFileSystem::default(), Path::new("your card directory")) {
+//! if let Ok(card) = deluge::Card::open(LocalFileSystem::default(), Path::new("your card directory")) {
 //!     println!("Kits directory: {:?}", card.get_directory_path(CardFolder::Kits));
 //!     println!("Synths directory: {:?}", card.get_directory_path(CardFolder::Synths));
 //! }
