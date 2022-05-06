@@ -32,7 +32,7 @@
 //! }
 //! # Ok::<(), CardError>(())
 //! ```
-//! 
+//!
 //! #### Strong typing
 //! This crate makes heavy use of the Rust type system to reduce the possibilities of error. There is almost
 //! one type for each different fields. Each value type specifies how to serialize/deserialize and what is the default

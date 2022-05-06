@@ -15,6 +15,7 @@ mod patch_name;
 #[cfg(test)]
 mod tests;
 
+use core::fmt::Debug;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::{
@@ -22,7 +23,6 @@ use std::{
     path::{Path, PathBuf},
 };
 use strum::IntoEnumIterator;
-use core::fmt::Debug;
 
 pub use card_folder::CardFolder;
 pub use filesystem::{FileSystem, LocalFileSystem};
@@ -38,7 +38,7 @@ pub enum CardError {
 
     #[error("Directory '{0}' already exists")]
     DirectoryAlreadyExists(PathBuf),
-    
+
     #[error("Missing root directory '{0}'")]
     MissingRootDirectory(String),
 
@@ -71,10 +71,10 @@ pub enum CardError {
 /// }
 /// # Ok::<(), CardError>(())
 /// ```
-/// 
+///
 /// Generic parameter FS allows to specify the filesystem to use, this is useful for unit testing where you do not want to
 /// query the real filesystem.  
-/// 
+///
 /// Notice Card does implement Clone but the file system is never duplicated.
 ///
 pub struct Card<FS: FileSystem> {
@@ -84,7 +84,10 @@ pub struct Card<FS: FileSystem> {
 
 impl<FS: FileSystem> Clone for Card<FS> {
     fn clone(&self) -> Self {
-        Self { root_directory: self.root_directory.clone(), file_system: self.file_system.clone() }
+        Self {
+            root_directory: self.root_directory.clone(),
+            file_system: self.file_system.clone(),
+        }
     }
 }
 
@@ -103,7 +106,8 @@ impl<FS: FileSystem> PartialEq for Card<FS> {
 }
 
 impl<FS: FileSystem> Card<FS> {
-    fn check_root_directories(file_system: &FS, root_directory: &Path) -> Result<(), CardError> {
+    /// Check the required directories exist, return an error if not.
+    fn check_required_directories(file_system: &FS, root_directory: &Path) -> Result<(), CardError> {
         let directory_names = file_system
             .get_directory_entries(root_directory)?
             .iter()
@@ -127,14 +131,15 @@ impl<FS: FileSystem> Card<FS> {
     }
 
     /// Creates the card directory and the required folders.
-    /// 
+    ///
     /// The root directory must exists otherwise an error is returned.
     /// The other directories may or may not exist, they will be created as needed.
+    /// Existing files or folder excepted the standard ones are simply ignored.
     pub fn create(file_system: FS, root_directory: &Path) -> Result<Self, CardError> {
         let root_directory = root_directory.to_path_buf();
 
         if !file_system.directory_exists(&root_directory) {
-            return Err(CardError::DirectoryDoesNotExists(root_directory))
+            return Err(CardError::DirectoryDoesNotExists(root_directory));
         }
 
         let card = Self {
@@ -145,8 +150,9 @@ impl<FS: FileSystem> Card<FS> {
         for required_directory in CardFolder::iter() {
             let path = &card.get_directory_path(required_directory);
 
-            if card.file_system.directory_exists(path) {
-                card.file_system.create_directory(path)?;
+            if !card.file_system.directory_exists(path) {
+                card.file_system
+                    .create_directory(path)?;
             }
         }
 
@@ -163,7 +169,7 @@ impl<FS: FileSystem> Card<FS> {
             return Err(CardError::DirectoryDoesNotExists(root_directory));
         }
 
-        Self::check_root_directories(&file_system, &root_directory)?;
+        Self::check_required_directories(&file_system, &root_directory)?;
 
         Ok(Self {
             file_system: Arc::new(file_system),

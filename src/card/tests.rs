@@ -1,3 +1,4 @@
+use mockall::predicate::eq;
 use std::path::{Path, PathBuf};
 use test_case::test_case;
 
@@ -20,7 +21,7 @@ fn test_check_root_directories_all_correct() {
             Ok(paths)
         });
 
-    assert_eq!(Ok(()), Card::check_root_directories(fs, &Path::new("big pullayo")));
+    assert_eq!(Ok(()), Card::check_required_directories(fs, &Path::new("big pullayo")));
 }
 
 #[test]
@@ -40,7 +41,7 @@ fn test_check_root_directories_first_missing() {
 
     assert_eq!(
         Err(CardError::MissingRootDirectory("KITS".into())),
-        Card::check_root_directories(fs, &Path::new("big pullayo"))
+        Card::check_required_directories(fs, &Path::new("big pullayo"))
     );
 }
 
@@ -61,7 +62,7 @@ fn test_check_root_directories_last_missing() {
 
     assert_eq!(
         Err(CardError::MissingRootDirectory("SYNTHS".into())),
-        Card::check_root_directories(fs, &Path::new("big pullayo"))
+        Card::check_required_directories(fs, &Path::new("big pullayo"))
     );
 }
 
@@ -107,15 +108,63 @@ fn test_open_card_ok() {
 #[test]
 fn test_create_card_root_directory_does_not_exists() {
     let mut fs = MockFileSystem::default();
+    let root_directory = Path::new("directory/yo");
 
     fs.expect_directory_exists()
         .times(1)
+        .with(eq(root_directory))
         .return_const(true);
 
     fs.expect_directory_exists()
         .return_const(false);
 
     fs.expect_create_directory()
+        .return_const(Ok(()));
+
+    assert!(Card::create(fs, &Path::new("directory/yo")).is_ok());
+}
+
+#[test]
+fn test_create_card_check_subdirectories() {
+    let mut fs = MockFileSystem::default();
+    let root_directory = Path::new("directory/yo");
+    let samples_directory = Path::new("directory/yo/SAMPLES");
+    let kits_directory = Path::new("directory/yo/KITS");
+    let synths_directory = Path::new("directory/yo/SYNTHS");
+
+    fs.expect_directory_exists()
+        .times(1)
+        .with(eq(root_directory))
+        .return_const(true);
+
+    fs.expect_directory_exists()
+        .times(1)
+        .with(eq(samples_directory))
+        .return_const(false);
+
+    fs.expect_directory_exists()
+        .times(1)
+        .with(eq(kits_directory))
+        .return_const(false);
+
+    fs.expect_directory_exists()
+        .times(1)
+        .with(eq(synths_directory))
+        .return_const(false);
+
+    fs.expect_create_directory()
+        .times(1)
+        .with(eq(samples_directory))
+        .return_const(Ok(()));
+
+    fs.expect_create_directory()
+        .times(1)
+        .with(eq(kits_directory))
+        .return_const(Ok(()));
+
+    fs.expect_create_directory()
+        .times(1)
+        .with(eq(synths_directory))
         .return_const(Ok(()));
 
     assert!(Card::create(fs, &Path::new("directory/yo")).is_ok());

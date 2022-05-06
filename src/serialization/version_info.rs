@@ -74,9 +74,9 @@ impl From<Option<String>> for FormatVersion {
 
 #[cfg(test)]
 mod tests {
-    use test_case::test_case;
     use super::*;
-    
+    use test_case::test_case;
+
     #[test]
     fn test_detect_format_version_sound() {
         assert_eq!(
