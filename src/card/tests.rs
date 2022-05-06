@@ -104,6 +104,45 @@ fn test_open_card_ok() {
     assert!(Card::open(fs, &Path::new("I_m_existings")).is_ok());
 }
 
+#[test]
+fn test_create_card_root_directory_does_not_exists_create_it() {
+    let mut fs = MockFileSystem::default();
+
+    fs.expect_directory_exists()
+        .times(1)
+        .return_const(false);
+    fs.expect_create_directory()
+        .times(4)
+        .return_const(Ok(()));
+
+    assert!(Card::create(fs, &Path::new("I_m_existings")).is_ok());
+}
+
+#[test]
+fn test_create_card_root_directory_does_not_exists_create_it_fails() {
+    let mut fs = MockFileSystem::default();
+
+    fs.expect_directory_exists()
+        .times(1)
+        .return_const(false);
+    fs.expect_create_directory()
+        .times(1)
+        .return_const(Err(CardError::IoError("error".to_string())));
+
+    assert!(Card::create(fs, &Path::new("I_m_existings")).is_err());
+}
+
+#[test]
+fn test_create_card_root_directory_does_exists() {
+    let mut fs = MockFileSystem::default();
+
+    fs.expect_directory_exists()
+        .times(1)
+        .return_const(true);
+
+    assert!(Card::create(fs, &Path::new("I_m_existings")).is_err());
+}
+
 fn create_valid_card(mut fs: MockFileSystem, root_directory: &'static Path) -> MockFileSystem {
     fs.expect_directory_exists()
         .return_const(true);
