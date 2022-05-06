@@ -105,31 +105,20 @@ fn test_open_card_ok() {
 }
 
 #[test]
-fn test_create_card_root_directory_does_not_exists_create_it() {
+fn test_create_card_root_directory_does_not_exists() {
     let mut fs = MockFileSystem::default();
 
     fs.expect_directory_exists()
         .times(1)
+        .return_const(true);
+
+    fs.expect_directory_exists()
         .return_const(false);
+
     fs.expect_create_directory()
-        .times(4)
         .return_const(Ok(()));
 
-    assert!(Card::create(fs, &Path::new("I_m_existings")).is_ok());
-}
-
-#[test]
-fn test_create_card_root_directory_does_not_exists_create_it_fails() {
-    let mut fs = MockFileSystem::default();
-
-    fs.expect_directory_exists()
-        .times(1)
-        .return_const(false);
-    fs.expect_create_directory()
-        .times(1)
-        .return_const(Err(CardError::IoError("error".to_string())));
-
-    assert!(Card::create(fs, &Path::new("I_m_existings")).is_err());
+    assert!(Card::create(fs, &Path::new("directory/yo")).is_ok());
 }
 
 #[test]
@@ -138,7 +127,8 @@ fn test_create_card_root_directory_does_exists() {
 
     fs.expect_directory_exists()
         .times(1)
-        .return_const(true);
+        .return_const(true)
+        .return_const(false);
 
     assert!(Card::create(fs, &Path::new("I_m_existings")).is_err());
 }

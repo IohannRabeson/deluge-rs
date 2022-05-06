@@ -128,15 +128,14 @@ impl<FS: FileSystem> Card<FS> {
 
     /// Creates the card directory and the required folders.
     /// 
-    /// The root directory should not exists yet.
+    /// The root directory must exists otherwise an error is returned.
+    /// The other directories may or may not exist, they will be created as needed.
     pub fn create(file_system: FS, root_directory: &Path) -> Result<Self, CardError> {
         let root_directory = root_directory.to_path_buf();
 
-        if file_system.directory_exists(&root_directory) {
-            return Err(CardError::DirectoryAlreadyExists(root_directory))
+        if !file_system.directory_exists(&root_directory) {
+            return Err(CardError::DirectoryDoesNotExists(root_directory))
         }
-
-        file_system.create_directory(&root_directory)?;
 
         let card = Self {
             file_system: Arc::new(file_system),
@@ -144,7 +143,11 @@ impl<FS: FileSystem> Card<FS> {
         };
 
         for required_directory in CardFolder::iter() {
-            card.file_system.create_directory(&card.get_directory_path(required_directory))?;
+            let path = &card.get_directory_path(required_directory);
+
+            if card.file_system.directory_exists(path) {
+                card.file_system.create_directory(path)?;
+            }
         }
 
         Ok(card)
