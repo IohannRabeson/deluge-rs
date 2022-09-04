@@ -20,7 +20,7 @@ use crate::{
 ///     .osc_type(OscType::Sine)
 ///     .build().unwrap());
 /// ```
-#[derive(Clone, Debug, PartialEq, EnumAsInner)]
+#[derive(Clone, Debug, PartialEq, Eq, EnumAsInner)]
 pub enum SubtractiveOscillator {
     Waveform(WaveformOscillator),
     Sample(SampleOscillator),
@@ -58,7 +58,7 @@ impl From<SampleOscillator> for SubtractiveOscillator {
 ///     .build()
 ///     .unwrap();
 /// ```
-#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct SubtractiveSynth {
     pub osc1: SubtractiveOscillator,
@@ -118,7 +118,7 @@ impl Default for SubtractiveSynth {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct SampleOscillator {
     pub transpose: Transpose,
@@ -156,7 +156,7 @@ impl Default for SampleOscillator {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, enum_as_inner::EnumAsInner)]
+#[derive(Clone, Debug, PartialEq, Eq, enum_as_inner::EnumAsInner)]
 pub enum Sample {
     OneZone(SampleOneZone),
     SampleRanges(Vec<SampleRange>),
@@ -193,13 +193,13 @@ impl Default for Sample {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Default, derive_builder::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, Default, derive_builder::Builder)]
 pub struct SampleOneZone {
     pub file_path: SamplePath,
     pub zone: Option<SampleZone>,
 }
 
-#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 pub struct SampleRange {
     pub range_top_note: Option<u8>,
     pub transpose: Transpose,
@@ -208,7 +208,7 @@ pub struct SampleRange {
     pub zone: SampleZone,
 }
 
-#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 pub struct SampleZone {
     pub start: SamplePosition,
     pub end: SamplePosition,

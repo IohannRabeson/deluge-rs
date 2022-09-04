@@ -29,7 +29,7 @@ pub use row::{CvGateRow, MidiRow, RowKit, SoundRow};
 ///     .unwrap()
 ///     ;
 /// ```
-#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct Kit {
     #[builder(setter(each(name = "add_row")))]
@@ -222,7 +222,7 @@ impl KitBuilder {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct Lpf {
     pub frequency: HexU50,
@@ -238,7 +238,7 @@ impl Default for Lpf {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct Hpf {
     pub frequency: HexU50,

@@ -2,7 +2,7 @@
 
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 
-#[derive(PartialEq, Copy, Clone, Debug)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub struct Int8<const MIN: i8, const MAX: i8, const DEFAULT: i8> {
     val: i8,
 }
@@ -91,7 +91,7 @@ impl<'de, const MIN: i8, const MAX: i8, const DEFAULT: i8> Deserialize<'de> for 
     }
 }
 
-impl<'de, const MIN: i8, const MAX: i8, const DEFAULT: i8> std::fmt::Display for Int8<MIN, MAX, DEFAULT> {
+impl<const MIN: i8, const MAX: i8, const DEFAULT: i8> std::fmt::Display for Int8<MIN, MAX, DEFAULT> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.val)
     }

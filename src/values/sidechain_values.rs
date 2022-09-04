@@ -10,12 +10,12 @@ use std::convert::From;
 /// Type of a table index
 pub type TableIndex = Uint8<0, 51, 0>;
 
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct AttackSidechain {
     index: Uint8<0, 51, 0>,
 }
 
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct ReleaseSidechain {
     index: Uint8<0, 51, 0>,
 }

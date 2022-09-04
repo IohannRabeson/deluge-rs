@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use std::fmt::Write;
 
 use nom::Finish;
 
@@ -44,7 +45,7 @@ impl PatchName {
         let mut buffer = String::with_capacity(7);
 
         buffer.push_str(patch_type.get_standard_patch_base_name());
-        buffer.push_str(&format!("{:03}", number));
+        write!(&mut buffer, "{:03}", number).unwrap();
 
         if let Some(suffix) = suffix {
             buffer.push(suffix);
@@ -58,7 +59,7 @@ impl PatchName {
 
         buffer.push_str(name);
         if let Some(number) = number {
-            buffer.push_str(&format!(" {}", number));
+            write!(&mut buffer, " {}", number).unwrap();
         }
 
         buffer

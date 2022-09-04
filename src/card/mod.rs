@@ -31,7 +31,7 @@ pub use patch_name::PatchName;
 use crate::values::SamplePath;
 use crate::PatchType;
 
-#[derive(thiserror::Error, Debug, PartialEq, Clone)]
+#[derive(thiserror::Error, Debug, PartialEq, Eq, Clone)]
 pub enum CardError {
     #[error("Directory '{0}' does not exists")]
     DirectoryDoesNotExists(PathBuf),
@@ -189,8 +189,7 @@ impl<FS: FileSystem> Card<FS> {
                 &path
                     .strip_prefix(self.root_directory())
                     .unwrap_or_else(|e| panic!("strip prefix of '{:?}': {:?}", self.root_directory(), e))
-                    .to_string_lossy()
-                    .to_string(),
+                    .to_string_lossy(),
             )?),
             false => Err(CardError::FileNotInCard(path.to_path_buf())),
         }

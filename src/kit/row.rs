@@ -10,7 +10,7 @@ use crate::{
 ///  - MIDI
 ///  - CV gate
 /// Each row in a Kit is an output and can be any of the 3 types.
-#[derive(Clone, Debug, PartialEq, enum_as_inner::EnumAsInner)]
+#[derive(Clone, Debug, PartialEq, Eq, enum_as_inner::EnumAsInner)]
 pub enum RowKit {
     Sound(SoundRow),
     Midi(MidiRow),
@@ -32,7 +32,7 @@ impl RowKit {
 }
 
 /// Audio output is a regular synth patch with a name.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SoundRow {
     /// Sound is 320 bytes so I'm boxing it to reduce the size of AudioOutput on the stack.
     /// Box allocates his memory on the heap.
@@ -51,14 +51,14 @@ impl SoundRow {
 }
 
 /// The MIDI output is a MIDI channel and a MIDI note.
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct MidiRow {
     pub channel: MidiChannel,
     pub note: u8,
 }
 
 /// The CV Gate output is the CV Gate channel only
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct CvGateRow {
     pub channel: CvGateChannel,
 }
