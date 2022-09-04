@@ -49,7 +49,7 @@ mod synth;
 mod values;
 
 pub use card::{Card, CardError, CardFolder, FileSystem, LocalFileSystem, PatchName};
-pub use kit::{CvGateRow, Hpf, HpfBuilder, Kit, KitBuilder, Lpf, LpfBuilder, MidiRow, RowKit, SoundRow};
+pub use kit::{CvGateRow, Hpf, HpfBuilder, Kit, KitBuilder, KitBuilderError, Lpf, LpfBuilder, MidiRow, RowKit, SoundRow};
 pub use serialization::{
     deserialize_kit, deserialize_kit_with_version, deserialize_synth, deserialize_synth_with_version, serialize_kit,
     serialize_synth, PatchType, SerializationError, VersionInfo,
@@ -59,7 +59,7 @@ pub use sound::{
     EnvelopeBuilder, Equalizer, EqualizerBuilder, Flanger, FlangerBuilder, FmCarrier, FmCarrierBuilder, FmModulator,
     FmModulatorBuilder, FmSynth, FmSynthBuilder, Lfo1, Lfo1Builder, Lfo2, Lfo2Builder, ModKnob, ModKnobBuilder, ModulationFx,
     PatchCable, PatchCableBuilder, Phaser, PhaserBuilder, RingModSynth, Sample, SampleOneZone, SampleOscillator,
-    SampleOscillatorBuilder, SampleRange, SampleZone, Sidechain, Sound, SoundBuilder, SubtractiveOscillator, SubtractiveSynth,
+    SampleOscillatorBuilder, SampleRange, SampleZone, Sidechain, Sound, SoundBuilder, SoundBuilderError, SubtractiveOscillator, SubtractiveSynth,
     SubtractiveSynthBuilder, SynthEngine, Unison, UnisonBuilder, WaveformOscillator, WaveformOscillatorBuilder,
 };
 pub use synth::Synth;

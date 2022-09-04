@@ -41,7 +41,7 @@ pub use subtractive::{
 /// # use deluge::{SoundBuilder, Sound, SubtractiveOscillator, SubtractiveSynthBuilder, Sample, SynthEngine, SamplePath};
 /// # let path = SamplePath::new("path/to file.wav").unwrap();
 /// # let generator = SubtractiveSynthBuilder::default()
-/// #    .osc1(SubtractiveOscillator::new_sample(Sample::new(path, 0.into(), 1000.into())))
+/// #    .osc1(SubtractiveOscillator::new_sample(Sample::new(path, 0u64.into(), 1000u64.into())))
 /// #    .osc2(SubtractiveOscillator::new_sample(Sample::default()))
 /// #    .osc2_volume(0.into())
 /// #    .build()

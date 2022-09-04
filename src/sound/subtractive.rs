@@ -189,7 +189,7 @@ impl Sample {
 
 impl Default for Sample {
     fn default() -> Self {
-        Sample::new(SamplePath::default(), 0.into(), 9999999.into())
+        Sample::new(SamplePath::default(), 0u64.into(), 9999999u64.into())
     }
 }
 

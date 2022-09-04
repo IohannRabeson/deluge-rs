@@ -13,6 +13,12 @@ impl SamplePosition {
     }
 }
 
+impl From<u32> for SamplePosition {
+    fn from(position: u32) -> Self {
+        Self::new(position as u64)
+    }
+}
+
 impl From<u64> for SamplePosition {
     fn from(position: u64) -> Self {
         Self::new(position)
