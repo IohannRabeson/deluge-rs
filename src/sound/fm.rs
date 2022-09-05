@@ -1,6 +1,6 @@
 use crate::values::{FineTranspose, HexU50, OnOff, RetrigPhase, Transpose};
 
-#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct FmSynth {
     pub osc1: FmCarrier,
@@ -42,7 +42,7 @@ impl Default for FmSynth {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct FmCarrier {
     pub transpose: Transpose,
@@ -62,7 +62,7 @@ impl Default for FmCarrier {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct FmModulator {
     pub transpose: Transpose,

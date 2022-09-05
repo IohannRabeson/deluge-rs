@@ -3,7 +3,7 @@ use crate::{
     WaveformOscillator,
 };
 
-#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct RingModSynth {
     pub osc1: WaveformOscillator,

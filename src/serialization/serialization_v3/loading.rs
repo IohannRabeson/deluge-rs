@@ -993,7 +993,7 @@ mod tests {
             sample_range.file_path.to_string_lossy(),
             "SAMPLES/Artists/Leonard Ludvigsen/Hangdrum/1.wav"
         );
-        assert_eq!(sample_range.zone.start, 0.into());
+        assert_eq!(sample_range.zone.start, 0u64.into());
         assert_eq!(sample_range.zone.end, SamplePosition::new(146506));
         assert_eq!(sample_range.zone.start_loop.unwrap(), SamplePosition::new(19101));
         assert_eq!(sample_range.zone.end_loop.unwrap(), SamplePosition::new(19603));
@@ -1007,7 +1007,7 @@ mod tests {
         );
         assert_eq!(sample_range.transpose, Transpose::new(-12));
         assert_eq!(sample_range.fine_transpose, FineTranspose::default());
-        assert_eq!(sample_range.zone.start, 0.into());
+        assert_eq!(sample_range.zone.start, 0u64.into());
         assert_eq!(sample_range.zone.end, SamplePosition::new(137227));
         assert_eq!(sample_range.zone.start_loop.unwrap(), SamplePosition::new(8089));
         assert_eq!(sample_range.zone.end_loop.unwrap(), SamplePosition::new(8256));

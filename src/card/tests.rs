@@ -21,7 +21,7 @@ fn test_check_root_directories_all_correct() {
             Ok(paths)
         });
 
-    assert_eq!(Ok(()), Card::check_required_directories(fs, &Path::new("big pullayo")));
+    assert_eq!(Ok(()), Card::check_required_directories(fs, Path::new("big pullayo")));
 }
 
 #[test]
@@ -41,7 +41,7 @@ fn test_check_root_directories_first_missing() {
 
     assert_eq!(
         Err(CardError::MissingRootDirectory("KITS".into())),
-        Card::check_required_directories(fs, &Path::new("big pullayo"))
+        Card::check_required_directories(fs, Path::new("big pullayo"))
     );
 }
 
@@ -62,7 +62,7 @@ fn test_check_root_directories_last_missing() {
 
     assert_eq!(
         Err(CardError::MissingRootDirectory("SYNTHS".into())),
-        Card::check_required_directories(fs, &Path::new("big pullayo"))
+        Card::check_required_directories(fs, Path::new("big pullayo"))
     );
 }
 
@@ -79,7 +79,7 @@ fn test_open_card_non_existing_directory() {
 
     assert_eq!(
         Err(CardError::DirectoryDoesNotExists(directory_path.to_path_buf())),
-        Card::open(fs, &directory_path)
+        Card::open(fs, directory_path)
     );
 }
 
@@ -102,7 +102,7 @@ fn test_open_card_ok() {
             Ok(paths)
         });
 
-    assert!(Card::open(fs, &Path::new("I_m_existings")).is_ok());
+    assert!(Card::open(fs, Path::new("I_m_existings")).is_ok());
 }
 
 #[test]
@@ -121,7 +121,7 @@ fn test_create_card_root_directory_does_not_exists() {
     fs.expect_create_directory()
         .return_const(Ok(()));
 
-    assert!(Card::create(fs, &Path::new("directory/yo")).is_ok());
+    assert!(Card::create(fs, Path::new("directory/yo")).is_ok());
 }
 
 #[test]
@@ -167,7 +167,7 @@ fn test_create_card_check_subdirectories() {
         .with(eq(synths_directory))
         .return_const(Ok(()));
 
-    assert!(Card::create(fs, &Path::new("directory/yo")).is_ok());
+    assert!(Card::create(fs, Path::new("directory/yo")).is_ok());
 }
 
 #[test]
@@ -179,7 +179,7 @@ fn test_create_card_root_directory_does_exists() {
         .return_const(true)
         .return_const(false);
 
-    assert!(Card::create(fs, &Path::new("I_m_existings")).is_err());
+    assert!(Card::create(fs, Path::new("I_m_existings")).is_err());
 }
 
 fn create_valid_card(mut fs: MockFileSystem, root_directory: &'static Path) -> MockFileSystem {
@@ -221,7 +221,7 @@ fn test_get_next_patch_name(existing_patch_name: &str, expected_result: Result<&
     fs.expect_is_file()
         .return_once(|_path| Ok(true));
 
-    let card = Card::open(fs, &Path::new("I_exist")).expect("open mocked card");
+    let card = Card::open(fs, Path::new("I_exist")).expect("open mocked card");
     let result = card.get_next_standard_patch_name(PatchType::Kit);
 
     assert_eq!(expected_result.map(|s| s.to_string()), result);
@@ -261,7 +261,7 @@ fn test_get_next_patch_name_max() {
     fs.expect_is_file()
         .return_const::<Result<bool, CardError>>(Ok(true));
 
-    let card = Card::open(fs, &Path::new("I_exist")).expect("open mocked card");
+    let card = Card::open(fs, Path::new("I_exist")).expect("open mocked card");
     let patch_name = card
         .get_next_standard_patch_name(PatchType::Kit)
         .unwrap();

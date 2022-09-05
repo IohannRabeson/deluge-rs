@@ -19,7 +19,7 @@ pub use row::{CvGateRow, MidiRow, RowKit, SoundRow};
 /// # use deluge::{Kit, Sound, KitBuilder, SamplePath, WaveformOscillatorBuilder, OscType};
 /// #
 /// let mut kit = KitBuilder::default()
-///     .add_sound_row(Sound::new_sample(SamplePath::new("sample.WAV").unwrap(), 0.into(), 999.into()))
+///     .add_sound_row(Sound::new_sample(SamplePath::new("sample.WAV").unwrap(), 0u64.into(), 999u64.into()))
 ///     .add_named_sound_row(Sound::new_substractive(
 ///         WaveformOscillatorBuilder::default().osc_type(OscType::Square).build().unwrap().into(),
 ///         WaveformOscillatorBuilder::default().build().unwrap().into(),
@@ -29,7 +29,7 @@ pub use row::{CvGateRow, MidiRow, RowKit, SoundRow};
 ///     .unwrap()
 ///     ;
 /// ```
-#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct Kit {
     #[builder(setter(each(name = "add_row")))]
@@ -120,7 +120,7 @@ impl Kit {
     /// use deluge::{Kit, Sound, SamplePath};
     ///
     /// let mut kit = Kit::default();
-    /// kit.add_named_sound(Sound::new_sample(SamplePath::new("sample.WAV").unwrap(), 0.into(), 999.into()), "My sample");
+    /// kit.add_named_sound(Sound::new_sample(SamplePath::new("sample.WAV").unwrap(), 0u64.into(), 999u64.into()), "My sample");
     /// ```
     pub fn add_named_sound(&mut self, sound: Sound, name: &str) -> &mut Sound {
         &mut self
@@ -161,8 +161,8 @@ impl Default for Kit {
         let osc1 = SubtractiveOscillator::new_sample(Sample::OneZone(SampleOneZone {
             file_path: SamplePath::default(),
             zone: Some(SampleZone {
-                start: 0.into(),
-                end: 9999999.into(),
+                start: 0u64.into(),
+                end: 9999999u64.into(),
                 start_loop: None,
                 end_loop: None,
             }),
@@ -188,7 +188,7 @@ impl KitBuilder {
     /// use deluge::{Kit, Sound, KitBuilder, SamplePath};
     ///
     /// let mut kit = KitBuilder::default()
-    ///     .add_sound_row(Sound::new_sample(SamplePath::new("sample.WAV").unwrap(), 0.into(), 999.into()))
+    ///     .add_sound_row(Sound::new_sample(SamplePath::new("sample.WAV").unwrap(), 0u64.into(), 999u64.into()))
     ///     .build()
     ///     .unwrap()
     ///     ;
@@ -222,7 +222,7 @@ impl KitBuilder {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct Lpf {
     pub frequency: HexU50,
@@ -238,7 +238,7 @@ impl Default for Lpf {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct Hpf {
     pub frequency: HexU50,

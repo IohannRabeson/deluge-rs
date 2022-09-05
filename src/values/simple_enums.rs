@@ -115,7 +115,7 @@ pub enum LfoShape {
     Triangle,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Serialize_repr, Deserialize_repr)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize_repr, Deserialize_repr)]
 #[repr(u8)]
 pub enum SamplePlayMode {
     Cut = 0,
@@ -124,14 +124,14 @@ pub enum SamplePlayMode {
     Stretch = 3,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Serialize_repr, Deserialize_repr)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize_repr, Deserialize_repr)]
 #[repr(u8)]
 pub enum PitchSpeed {
     Linked = 1,
     Independent = 0,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Serialize_repr, Deserialize_repr)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize_repr, Deserialize_repr)]
 #[repr(u8)]
 pub enum SyncLevel {
     Off = 0,
@@ -181,7 +181,7 @@ pub enum ArpeggiatorMode {
     Random,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Serialize_repr, Deserialize_repr)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize_repr, Deserialize_repr)]
 #[repr(u8)]
 pub enum VoicePriority {
     Low = 0,

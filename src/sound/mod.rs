@@ -41,7 +41,7 @@ pub use subtractive::{
 /// # use deluge::{SoundBuilder, Sound, SubtractiveOscillator, SubtractiveSynthBuilder, Sample, SynthEngine, SamplePath};
 /// # let path = SamplePath::new("path/to file.wav").unwrap();
 /// # let generator = SubtractiveSynthBuilder::default()
-/// #    .osc1(SubtractiveOscillator::new_sample(Sample::new(path, 0.into(), 1000.into())))
+/// #    .osc1(SubtractiveOscillator::new_sample(Sample::new(path, 0u64.into(), 1000u64.into())))
 /// #    .osc2(SubtractiveOscillator::new_sample(Sample::default()))
 /// #    .osc2_volume(0.into())
 /// #    .build()
@@ -55,7 +55,7 @@ pub use subtractive::{
 /// [Synth]: crate::Synth
 /// [Kit]: crate::Kit
 /// [SoundBuilder]: crate::SoundBuilder
-#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct Sound {
     pub generator: SynthEngine,
@@ -230,7 +230,7 @@ impl Default for Sound {
 /// let ring_mod_synth_mode = SynthEngine::from(RingModSynth::default());
 /// let fm_synth_mode = SynthEngine::from(FmSynth::default());
 /// ```
-#[derive(Clone, Debug, PartialEq, EnumAsInner)]
+#[derive(Clone, Debug, PartialEq, Eq, EnumAsInner)]
 pub enum SynthEngine {
     Subtractive(SubtractiveSynth),
     RingMod(RingModSynth),
@@ -272,7 +272,7 @@ impl Default for SynthEngine {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct WaveformOscillator {
     pub osc_type: OscType,
@@ -321,7 +321,7 @@ impl Default for WaveformOscillator {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct Unison {
     pub voice_count: UnisonVoiceCount,
@@ -337,7 +337,7 @@ impl Default for Unison {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, derive_builder::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct Arpeggiator {
     pub mode: ArpeggiatorMode,

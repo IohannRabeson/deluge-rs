@@ -2,7 +2,7 @@ use xmltree::Element;
 
 use super::{keys, patch_type::PatchType, xml};
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Eq, Debug)]
 pub struct VersionInfo {
     pub firmware_version: Option<String>,
     pub earliest_compatible_firmware: Option<String>,

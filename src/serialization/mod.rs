@@ -201,7 +201,7 @@ mod tests {
     #[test]
     fn test_load_write_load_synth_028() {
         let file_content = include_str!("../data_tests/SYNTHS/SYNT028.XML");
-        let synth = deserialize_synth(&file_content).unwrap();
+        let synth = deserialize_synth(file_content).unwrap();
         let xml = serialize_synth(&synth).unwrap();
         let reloaded_synth = deserialize_synth(&xml).unwrap();
 
@@ -312,7 +312,7 @@ mod tests {
     #[test]
     fn test_load_write_load_kit_002() {
         let file_content = include_str!("../data_tests/KITS/KIT002.XML");
-        let kit = deserialize_kit(&file_content).unwrap();
+        let kit = deserialize_kit(file_content).unwrap();
         let xml = serialize_kit(&kit).unwrap();
         eprintln!("{}", xml);
         let reloaded_kit = deserialize_kit(&xml).unwrap();
