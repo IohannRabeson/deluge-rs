@@ -119,6 +119,15 @@ impl WriteError {
     }
 }
 
+pub fn detect_patch_type<R: Read>(read: &mut R) -> Option<PatchType> {
+    let mut xml_content = String::new();
+
+    read.read_to_string(&mut xml_content)
+        .map_err(ReadError::ReadError).ok()?;
+
+    serialization::detect_patch_type(&xml_content)
+}
+
 pub fn read_synth<R: Read>(read: &mut R) -> Result<Synth, ReadError> {
     let mut xml_content = String::new();
 
@@ -205,4 +214,14 @@ pub fn write_kit_to_file<P: AsRef<Path>>(kit: &Kit, path: P) -> Result<(), Write
     let mut file = std::fs::File::create(&path).map_err(|e| WriteError::WriteFileError(e, path.as_ref().to_path_buf()))?;
 
     write_kit(kit, &mut file).map_err(|e| WriteError::new_file_error(e, path))
+}
+
+pub fn detect_file_patch_type<P: AsRef<Path>>(path: P) -> Option<PatchType> {
+    let mut file = std::fs::File::open(path.as_ref()).ok()?;
+    let mut xml_content = String::new();
+
+    file.read_to_string(&mut xml_content)
+        .map_err(ReadError::ReadError).ok()?;
+
+    serialization::detect_patch_type(&xml_content)
 }

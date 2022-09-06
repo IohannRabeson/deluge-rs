@@ -20,6 +20,18 @@ mod serialization_v3;
 mod version_info;
 mod xml;
 
+pub fn detect_patch_type(xml: &str) -> Option<PatchType> {
+    if deserialize_kit(xml).is_ok() {
+        return Some(PatchType::Kit)
+    }
+
+    if deserialize_synth(xml).is_ok() {
+        return Some(PatchType::Synth)
+    }
+
+    None
+}
+
 /// Deserialize a kit patch from XML
 pub fn deserialize_kit(xml: &str) -> Result<Kit, SerializationError> {
     Ok(deserialize_kit_with_version(xml)?.0)
@@ -347,5 +359,21 @@ mod tests {
         assert_eq!(264600, sample_ranges[0].zone.end.as_u64());
         assert_eq!(Transpose::new(7), sample_ranges[0].transpose);
         assert_eq!(FineTranspose::new(8), sample_ranges[0].fine_transpose);
+    }
+
+    #[test]
+    fn test_detect_patch_type_kit()
+    {
+        let xml = include_str!("../data_tests/KITS/KIT002.XML");
+
+        assert_eq!(Some(PatchType::Kit), super::detect_patch_type(xml));
+    }
+
+    #[test]
+    fn test_detect_patch_type_synth()
+    {
+        let xml = include_str!("../data_tests/SYNTHS/SYNT170.XML");
+
+        assert_eq!(Some(PatchType::Synth), super::detect_patch_type(xml));
     }
 }
