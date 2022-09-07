@@ -106,6 +106,21 @@ impl<FS: FileSystem> PartialEq for Card<FS> {
 }
 
 impl<FS: FileSystem> Card<FS> {
+    pub fn find_root_card_directory(file_system: &FS, initial_path: &Path) -> Result<Option<PathBuf>, CardError> {
+        let mut current_path = initial_path;
+
+        loop {
+            if Self::check_required_directories(file_system, current_path).is_ok() {
+                return Ok(Some(current_path.to_path_buf()))
+            }
+
+            match current_path.parent() {
+                Some(parent) => current_path = parent,
+                None => return Ok(None),
+            }
+        }
+    }
+
     /// Check the required directories exist, return an error if not.
     fn check_required_directories(file_system: &FS, root_directory: &Path) -> Result<(), CardError> {
         let directory_names = file_system
