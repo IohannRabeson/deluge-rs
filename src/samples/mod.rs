@@ -52,7 +52,7 @@ impl<R: BufRead> Iterator for SamplesReader<R> {
                 }
                 Event::Text(text_bytes) if self.is_in_filename_tag => {
                     if let Ok(text_utf8) = String::from_utf8(text_bytes.to_vec()) {
-                        return SamplePath::new(&text_utf8).ok();
+                        return SamplePath::new(text_utf8).ok();
                     }
                 }
                 Event::Eof => break,

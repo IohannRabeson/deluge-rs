@@ -201,7 +201,7 @@ impl<FS: FileSystem> Card<FS> {
     pub fn sample_path(&self, path: &Path) -> Result<SamplePath, CardError> {
         match path.starts_with(self.root_directory()) {
             true => Ok(SamplePath::new(
-                &path
+                path
                     .strip_prefix(self.root_directory())
                     .unwrap_or_else(|e| panic!("strip prefix of '{:?}': {:?}", self.root_directory(), e))
                     .to_string_lossy(),

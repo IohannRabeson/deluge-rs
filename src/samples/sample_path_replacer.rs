@@ -4,22 +4,51 @@ use quick_xml::{Reader, Writer};
 use std::collections::BTreeMap;
 use std::io::{BufRead, Write};
 
+#[derive(Default)]
 pub struct SamplePathReplacer {
     paths_to_replace: BTreeMap<SamplePath, SamplePath>,
 }
 
 impl SamplePathReplacer {
-    pub fn new() -> Self {
-        Self {
-            paths_to_replace: BTreeMap::new(),
-        }
-    }
-
-    pub fn add_path_replacement(&mut self, original: SamplePath, replacement: SamplePath) {
+    /// Set or reset a path replacement.
+    ///
+    /// # Arguments
+    ///
+    /// * `original`: The original sample path
+    /// * `replacement`: The replacement
+    ///
+    pub fn set_replacement(&mut self, original: SamplePath, replacement: SamplePath) {
         self.paths_to_replace
             .insert(original, replacement);
     }
 
+    /// Rewrite a XML document following the replacements.
+    ///
+    /// # Arguments
+    ///
+    /// * `reader`: The object that implement `Read`, used to read the XML.
+    /// * `writer`: The object that implement `Write`, used to write the produced XML.
+    ///
+    /// returns: An error if the XML read is invalid.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use deluge::{SamplePath, SamplePathReplacer};
+    ///
+    /// let mut replacer = SamplePathReplacer::default();
+    /// let original_xml = b"<example><fileName>Artist/foo.wav</fileName></example>";
+    /// let original = SamplePath::new("Artist/foo.wav").unwrap();
+    /// let replacement = SamplePath::new("Artist/bar.wav").unwrap();
+    ///
+    /// replacer.set_replacement(original, replacement);
+    ///
+    /// let mut result_buffer = Vec::new();
+    ///
+    /// replacer.rewrite(original_xml.as_slice(), &mut result_buffer).unwrap();
+    ///
+    /// assert_eq!(b"<example><fileName>Artist/bar.wav</fileName></example>", result_buffer.as_slice());
+    /// ```
     pub fn rewrite<R, W>(&self, reader: R, writer: W) -> Result<(), quick_xml::Error>
     where
         R: BufRead,
@@ -75,7 +104,7 @@ mod tests {
         use std::io::Cursor;
 
         let file_content = include_bytes!("../data_tests/KITS/KIT030.XML");
-        let transformer = SamplePathReplacer::new();
+        let transformer = SamplePathReplacer::default();
         let mut buffer = Vec::new();
 
         transformer
@@ -95,38 +124,39 @@ mod tests {
         use std::io::Cursor;
 
         let file_content = include_bytes!("../data_tests/KITS/KIT030.XML");
-        let mut transformer = SamplePathReplacer::new();
         let mut buffer = Vec::new();
 
-        transformer.add_path_replacement(
+        let mut transformer = SamplePathReplacer::default();
+
+        transformer.set_replacement(
             SamplePath::new("SAMPLES/ARTISTS/CHAZ/CB4-Cassette808_BD02.wav").unwrap(),
             SamplePath::new("SAMPLES/ARTISTS/CHAZ/CB4-Cassette808_BD02_YO.wav").unwrap(),
         );
-        transformer.add_path_replacement(
+        transformer.set_replacement(
             SamplePath::new("SAMPLES/ARTISTS/CHAZ/CB5-Cassette808_BD03.wav").unwrap(),
             SamplePath::new("SAMPLES/ARTISTS/CHAZ/CB5-Cassette808_BD03_YO.wav").unwrap(),
         );
-        transformer.add_path_replacement(
+        transformer.set_replacement(
             SamplePath::new("SAMPLES/ARTISTS/CHAZ/CB1-BD~1.WAV").unwrap(),
             SamplePath::new("SAMPLES/ARTISTS/CHAZ/CB1-BD~1_YO.WAV").unwrap(),
         );
-        transformer.add_path_replacement(
+        transformer.set_replacement(
             SamplePath::new("SAMPLES/ARTISTS/CHAZ/CB2-BD~1.WAV").unwrap(),
             SamplePath::new("SAMPLES/ARTISTS/CHAZ/CB2-BD~1_YO.WAV").unwrap(),
         );
-        transformer.add_path_replacement(
+        transformer.set_replacement(
             SamplePath::new("SAMPLES/ARTISTS/CHAZ/CB7-Cassette808_Rim_01.wav").unwrap(),
             SamplePath::new("SAMPLES/ARTISTS/CHAZ/CB7-Cassette808_Rim_01_YO.wav").unwrap(),
         );
-        transformer.add_path_replacement(
+        transformer.set_replacement(
             SamplePath::new("SAMPLES/ARTISTS/CHAZ/CB6-Cassette808_CP_01.wav").unwrap(),
             SamplePath::new("SAMPLES/ARTISTS/CHAZ/CB6-Cassette808_CP_01_YO.wav").unwrap(),
         );
-        transformer.add_path_replacement(
+        transformer.set_replacement(
             SamplePath::new("SAMPLES/ARTISTS/CHAZ/CB3-BELL.WAV").unwrap(),
             SamplePath::new("SAMPLES/ARTISTS/CHAZ/CB3-BELL_YO.WAV").unwrap(),
         );
-        transformer.add_path_replacement(
+        transformer.set_replacement(
             SamplePath::new("SAMPLES/ARTISTS/CHAZ/CB8-yo.wav").unwrap(),
             SamplePath::new("SAMPLES/ARTISTS/CHAZ/CB8-yo_YO.wav").unwrap(),
         );

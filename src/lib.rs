@@ -70,6 +70,7 @@ pub use values::{
     RetrigPhase, SamplePath, SamplePlayMode, SamplePosition, SyncLevel, SynthMode, TableIndex, TimeStretchAmount, Transpose,
     UnisonDetune, UnisonVoiceCount, VoicePriority,
 };
+pub use samples::{SamplePathReplacer, read_sample_paths};
 
 use std::{
     io::{Read, Write},
