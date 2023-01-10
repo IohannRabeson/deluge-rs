@@ -22,11 +22,11 @@ mod xml;
 
 pub fn detect_patch_type(xml: &str) -> Option<PatchType> {
     if deserialize_kit(xml).is_ok() {
-        return Some(PatchType::Kit)
+        return Some(PatchType::Kit);
     }
 
     if deserialize_synth(xml).is_ok() {
-        return Some(PatchType::Synth)
+        return Some(PatchType::Synth);
     }
 
     None
@@ -362,16 +362,14 @@ mod tests {
     }
 
     #[test]
-    fn test_detect_patch_type_kit()
-    {
+    fn test_detect_patch_type_kit() {
         let xml = include_str!("../data_tests/KITS/KIT002.XML");
 
         assert_eq!(Some(PatchType::Kit), super::detect_patch_type(xml));
     }
 
     #[test]
-    fn test_detect_patch_type_synth()
-    {
+    fn test_detect_patch_type_synth() {
         let xml = include_str!("../data_tests/SYNTHS/SYNT170.XML");
 
         assert_eq!(Some(PatchType::Synth), super::detect_patch_type(xml));

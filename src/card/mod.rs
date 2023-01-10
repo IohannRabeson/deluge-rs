@@ -111,7 +111,7 @@ impl<FS: FileSystem> Card<FS> {
 
         loop {
             if Self::check_required_directories(file_system, current_path).is_ok() {
-                return Ok(Some(current_path.to_path_buf()))
+                return Ok(Some(current_path.to_path_buf()));
             }
 
             match current_path.parent() {
