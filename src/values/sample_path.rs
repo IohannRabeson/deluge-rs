@@ -12,8 +12,8 @@ impl SamplePath {
     /// Create a new sample path.
     ///
     /// This function returns an error if the path is not a relative one.
-    pub fn new(path: &str) -> Result<Self, CardError> {
-        let path = Path::new(path);
+    pub fn new(path: impl AsRef<str>) -> Result<Self, CardError> {
+        let path = Path::new(path.as_ref());
 
         if !path.is_relative() {
             return Err(CardError::PathNotRelative(path.to_path_buf()));

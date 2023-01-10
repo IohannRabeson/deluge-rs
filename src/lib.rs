@@ -43,6 +43,7 @@
 
 mod card;
 mod kit;
+mod samples;
 mod serialization;
 mod sound;
 mod synth;
@@ -59,8 +60,8 @@ pub use sound::{
     EnvelopeBuilder, Equalizer, EqualizerBuilder, Flanger, FlangerBuilder, FmCarrier, FmCarrierBuilder, FmModulator,
     FmModulatorBuilder, FmSynth, FmSynthBuilder, Lfo1, Lfo1Builder, Lfo2, Lfo2Builder, ModKnob, ModKnobBuilder, ModulationFx,
     PatchCable, PatchCableBuilder, Phaser, PhaserBuilder, RingModSynth, Sample, SampleOneZone, SampleOscillator,
-    SampleOscillatorBuilder, SampleRange, SampleZone, Sidechain, Sound, SoundBuilder, SoundBuilderError, SubtractiveOscillator, SubtractiveSynth,
-    SubtractiveSynthBuilder, SynthEngine, Unison, UnisonBuilder, WaveformOscillator, WaveformOscillatorBuilder,
+    SampleOscillatorBuilder, SampleRange, SampleZone, Sidechain, Sound, SoundBuilder, SoundBuilderError, SubtractiveOscillator,
+    SubtractiveSynth, SubtractiveSynthBuilder, SynthEngine, Unison, UnisonBuilder, WaveformOscillator, WaveformOscillatorBuilder,
 };
 pub use synth::Synth;
 pub use values::{
@@ -123,7 +124,8 @@ pub fn detect_patch_type<R: Read>(read: &mut R) -> Option<PatchType> {
     let mut xml_content = String::new();
 
     read.read_to_string(&mut xml_content)
-        .map_err(ReadError::ReadError).ok()?;
+        .map_err(ReadError::ReadError)
+        .ok()?;
 
     serialization::detect_patch_type(&xml_content)
 }
@@ -221,7 +223,8 @@ pub fn detect_file_patch_type<P: AsRef<Path>>(path: P) -> Option<PatchType> {
     let mut xml_content = String::new();
 
     file.read_to_string(&mut xml_content)
-        .map_err(ReadError::ReadError).ok()?;
+        .map_err(ReadError::ReadError)
+        .ok()?;
 
     serialization::detect_patch_type(&xml_content)
 }
