@@ -2,7 +2,9 @@ use crate::SamplePath;
 use quick_xml::events::{BytesText, Event};
 use quick_xml::{Reader, Writer};
 use std::collections::BTreeMap;
-use std::io::{BufRead, Write};
+use std::io::{BufRead, Read, Write};
+use std::path::Path;
+use std::sync::Arc;
 
 #[derive(Default)]
 pub struct SamplePathReplacer {
@@ -88,6 +90,19 @@ impl SamplePathReplacer {
         }
 
         Ok(())
+    }
+
+    pub fn rewrite_file(&self, file_path: impl AsRef<Path>) -> Result<(), quick_xml::Error>
+    {
+        fn make_err(e: std::io::Error) -> quick_xml::Error { quick_xml::Error::Io(Arc::new(e)) }
+
+        let mut file = std::fs::File::open(file_path).map_err(make_err)?;
+        let mut content = String::new();
+
+        file.read_to_string(&mut content).map_err(make_err)?;
+        file.set_len(0).map_err(make_err)?;
+
+        self.rewrite(std::io::Cursor::new(content), file)
     }
 }
 
