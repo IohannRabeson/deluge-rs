@@ -20,7 +20,7 @@ pub use row::{CvGateRow, MidiRow, RowKit, SoundRow};
 /// #
 /// let mut kit = KitBuilder::default()
 ///     .add_sound_row(Sound::new_sample(SamplePath::new("sample.WAV").unwrap(), 0u64.into(), 999u64.into()))
-///     .add_named_sound_row(Sound::new_substractive(
+///     .add_named_sound_row(Sound::new_subtractive(
 ///         WaveformOscillatorBuilder::default().osc_type(OscType::Square).build().unwrap().into(),
 ///         WaveformOscillatorBuilder::default().build().unwrap().into(),
 ///     ), "SQR1")
@@ -172,7 +172,7 @@ impl Default for Kit {
             zone: None,
         }));
 
-        let mut default_sound = Sound::new_substractive(osc1, osc2);
+        let mut default_sound = Sound::new_subtractive(osc1, osc2);
 
         default_sound.polyphonic = Polyphony::Auto;
         default_sound.mod_knobs[12].control_param = "pitch".to_string();

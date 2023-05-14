@@ -102,7 +102,7 @@ impl Sound {
         }
     }
 
-    pub fn new_substractive(osc1: SubtractiveOscillator, osc2: SubtractiveOscillator) -> Self {
+    pub fn new_subtractive(osc1: SubtractiveOscillator, osc2: SubtractiveOscillator) -> Self {
         Self {
             generator: SynthEngine::from(SubtractiveSynth::new(osc1, osc2)),
             ..Default::default()
