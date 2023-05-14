@@ -19,7 +19,6 @@ xmltree = "0.10.3"
 serde_repr = "0.1.10"
 # strum is to iterate on the enum's values
 strum = { version = "0.24.1", features = ["derive"] }
-strum_macros = "0.24.3"
 nom = "7.1.2"
 enum-as-inner = "0.5.1"
 # For join()
