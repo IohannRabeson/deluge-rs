@@ -1,22 +1,25 @@
-//! Store an unsigned integer in the range [0; 50].
-//! This type of value is formatted as an 32-bits unsigned integer hexadecimal.
 use crate::values::{
     SerializationError, {map_50_i32, map_i32_50, map_i32_u32, map_u32_i32, read_hexadecimal_u32, write_hexadecimal_u32},
 };
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 
+/// Store an unsigned integer in the range [0; 50] represented by an hexadecinal value.
+/// This type of value is formatted as an 32-bits unsigned integer hexadecimal.
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct HexU50(u8);
 
 impl HexU50 {
+    /// Create a new instance of [`HexU50`].
     pub fn new(value: u8) -> Self {
         Self(value)
     }
 
+    /// Parse the 32-bits unsigned integer representation of a [`HexU50`].
     pub fn parse(text: &str) -> Result<Self, SerializationError> {
         read_hexu50(text)
     }
 
+    /// Get the numeric value in the range [0; 50].
     pub fn as_u8(&self) -> u8 {
         self.0
     }

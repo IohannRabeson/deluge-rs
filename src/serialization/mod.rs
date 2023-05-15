@@ -37,6 +37,7 @@ pub fn deserialize_kit(xml: &str) -> Result<Kit, SerializationError> {
     Ok(deserialize_kit_with_version(xml)?.0)
 }
 
+/// Deserialize a kit patch from XML and load the version information.
 pub fn deserialize_kit_with_version(xml: &str) -> Result<(Kit, VersionInfo), SerializationError> {
     let roots = xml::load_xml(xml)?;
     let version_info = version_info::load_version_info(&roots, PatchType::Kit);
@@ -51,11 +52,12 @@ pub fn deserialize_kit_with_version(xml: &str) -> Result<(Kit, VersionInfo), Ser
     Ok((kit, version_info))
 }
 
-/// Deserialize a synth patch from XML
+/// Deserialize a synth patch from XML.
 pub fn deserialize_synth(xml: &str) -> Result<Synth, SerializationError> {
     Ok(deserialize_synth_with_version(xml)?.0)
 }
 
+/// Deserialize a synth patch from XML and load the version information.
 pub fn deserialize_synth_with_version(xml: &str) -> Result<(Synth, VersionInfo), SerializationError> {
     let roots = xml::load_xml(xml)?;
     let version_info = version_info::load_version_info(&roots, PatchType::Synth);

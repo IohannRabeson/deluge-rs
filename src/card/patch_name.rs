@@ -29,13 +29,20 @@ pub type ParseError = nom::error::Error<String>;
 /// ```
 #[derive(Debug, PartialEq, Eq)]
 pub enum PatchName {
+    /// A standard patch name.
     Standard {
+        /// The type of the patch.
         patch_type: PatchType,
+        /// The number.
         number: u16,
+        /// An optional suffix letter.
         suffix: Option<char>,
     },
+    /// A custom patch name.
     Custom {
+        /// The name of the patch.
         name: String,
+        /// An optional variation number.
         number: Option<u16>,
     },
 }
@@ -44,7 +51,7 @@ impl PatchName {
     fn standard_to_string(patch_type: PatchType, number: u16, suffix: Option<char>) -> String {
         let mut buffer = String::with_capacity(7);
 
-        buffer.push_str(patch_type.get_standard_patch_base_name());
+        buffer.push_str(patch_type.get_standard_base_name());
         write!(&mut buffer, "{:03}", number).unwrap();
 
         if let Some(suffix) = suffix {

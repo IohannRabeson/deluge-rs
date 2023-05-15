@@ -12,20 +12,26 @@ use crate::{
 /// Each row in a Kit is an output and can be any of the 3 types.
 #[derive(Clone, Debug, PartialEq, Eq, enum_as_inner::EnumAsInner)]
 pub enum RowKit {
+    /// A row that contains a sound.
     Sound(SoundRow),
+    /// A MIDI row.
     Midi(MidiRow),
+    /// A CV/Gate row.
     CvGate(CvGateRow),
 }
 
 impl RowKit {
+    /// Create a new sound row.
     pub fn new_sound(sound: Sound, name: &str) -> Self {
         RowKit::Sound(SoundRow::new(sound, name))
     }
 
+    /// Create a new MIDI row.
     pub fn new_midi(channel: MidiChannel, note: u8) -> Self {
         RowKit::Midi(MidiRow { channel, note })
     }
 
+    /// Create a new CV/Gate row.
     pub fn new_cv_gate(channel: CvGateChannel) -> Self {
         RowKit::CvGate(CvGateRow { channel })
     }
@@ -42,6 +48,7 @@ pub struct SoundRow {
 }
 
 impl SoundRow {
+    /// Create a new instance of [`SoundRow`].
     pub fn new(sound: Sound, name: &str) -> Self {
         Self {
             sound: Box::new(sound),
@@ -53,17 +60,21 @@ impl SoundRow {
 /// The MIDI output is a MIDI channel and a MIDI note.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct MidiRow {
+    /// The MIDI channel.
     pub channel: MidiChannel,
+    /// The note for this row.
     pub note: u8,
 }
 
 /// The CV Gate output is the CV Gate channel only
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct CvGateRow {
+    /// The CV/Gate channel.
     pub channel: CvGateChannel,
 }
 
 impl CvGateRow {
+    /// Create a new instance of [`CvGateRow`].
     pub fn new(channel: CvGateChannel) -> Self {
         Self { channel }
     }
