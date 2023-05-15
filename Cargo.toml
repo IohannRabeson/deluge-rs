@@ -1,6 +1,6 @@
 [package]
 name = "deluge"
-version = "0.4.1"
+version = "0.1.0"
 description = "Load, edit and write Deluge synth and kit patches"
 edition = "2021"
 
