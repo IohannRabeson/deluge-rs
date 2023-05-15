@@ -32,21 +32,28 @@ pub use row::{CvGateRow, MidiRow, RowKit, SoundRow};
 #[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct Kit {
+    /// The rows stored by this [`Kit`].
     #[builder(setter(each(name = "add_row")))]
     pub rows: Vec<RowKit>,
-
+    /// The selected row for this [`Kit`].
     pub selected_row_index: Option<u32>,
-
+    /// The main volume.
     pub volume: HexU50,
+    /// The main pan.
     pub pan: Pan,
+    /// The reverb amount for this [`Kit`].
     pub reverb_amount: HexU50,
+    /// The filter mode for this [`Kit`].
     pub lpf_mode: LpfMode,
 
     /// The current type of filter controled by the gold buttons
     pub current_filter_type: FilterType,
 
+    /// The global bit crush.
     pub bit_crush: HexU50,
+    /// The global decimation.
     pub decimation: HexU50,
+    /// The global stutter rate.
     pub stutter_rate: HexU50,
 
     /// The modulation FX global for the kit
@@ -69,6 +76,7 @@ pub struct Kit {
 }
 
 impl Kit {
+    /// Create a [`Kit`] by specifying its rows.
     pub fn new(rows: Vec<RowKit>) -> Self {
         let has_rows = rows.is_empty();
 
@@ -95,11 +103,13 @@ impl Kit {
         }
     }
 
+    /// Get the current selected [`RowKit`].
     pub fn current_row(&self) -> Option<&RowKit> {
         self.selected_row_index
             .map(|index| &self.rows[index as usize])
     }
 
+    /// Get the current selected [`RowKit`].
     pub fn current_row_mut(&mut self) -> Option<&mut RowKit> {
         self.selected_row_index
             .map(|index| &mut self.rows[index as usize])
@@ -111,6 +121,7 @@ impl Kit {
         self.rows.last_mut().unwrap()
     }
 
+    /// Add a sound row with a default name.
     pub fn add_sound_row(&mut self, sound: Sound) -> &mut Sound {
         self.add_named_sound(sound, &format!("U{}", self.rows.len() + 1))
     }
@@ -209,23 +220,29 @@ impl KitBuilder {
         self
     }
 
+    /// Add a new sound row with a name.
     pub fn add_named_sound_row(&mut self, sound: Sound, name: &str) -> &mut Self {
         self.add_row(RowKit::new_sound(sound, name))
     }
 
+    /// Add a new MIDI row.
     pub fn add_midi_row(&mut self, channel: MidiChannel, note: u8) -> &mut Self {
         self.add_row(RowKit::new_midi(channel, note))
     }
 
+    /// Add a CV\Gate row.
     pub fn add_gate_row(&mut self, channel: CvGateChannel) -> &mut Self {
         self.add_row(RowKit::new_cv_gate(channel))
     }
 }
 
+/// Low pass filter parameters.
 #[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct Lpf {
+    /// Cutoff frequency.
     pub frequency: HexU50,
+    /// Resonance.
     pub resonance: HexU50,
 }
 
@@ -238,10 +255,13 @@ impl Default for Lpf {
     }
 }
 
+/// High pass filter parameters.
 #[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct Hpf {
+    /// Cutoff frequency.
     pub frequency: HexU50,
+    /// Resonance.
     pub resonance: HexU50,
 }
 

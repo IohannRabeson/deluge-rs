@@ -2,13 +2,20 @@ use xmltree::Element;
 
 use super::{keys, patch_type::PatchType, xml};
 
+/// Store version information.
 #[derive(PartialEq, Eq, Debug)]
 pub struct VersionInfo {
+    /// The firmware version as specified by the XML.
     pub firmware_version: Option<String>,
+    /// The ealiest compatible firmware for a patch as spcified by the XML.
     pub earliest_compatible_firmware: Option<String>,
+    /// The format version detected.
+    ///
+    /// This value is inferred from the XML structure.
     pub format_version: FormatVersion,
 }
 
+/// Load the version information.
 pub fn load_version_info(roots: &[Element], patch_type: PatchType) -> VersionInfo {
     let earliest_compatible_firmware = load_version(roots, patch_type, keys::EARLIEST_COMPATIBLE_FIRMWARE);
 

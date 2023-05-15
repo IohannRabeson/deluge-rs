@@ -2,13 +2,19 @@ use enum_as_inner::EnumAsInner;
 
 use crate::values::{AttackSidechain, ClippingAmount, HexU50, OnOff, ReleaseSidechain, SyncLevel, TableIndex};
 
+/// The delay parameters.
 #[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct Delay {
+    /// Enable or disable the ping pong mode.
     pub ping_pong: OnOff,
+    /// Enable or disable the analog mode.
     pub analog: OnOff,
+    /// The amount of delay.
     pub amount: HexU50,
+    /// The delay rate.
     pub rate: HexU50,
+    /// The sync level.
     pub sync_level: SyncLevel,
 }
 
@@ -24,6 +30,7 @@ impl Default for Delay {
     }
 }
 
+/// The distorsion parameters.
 #[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct Distorsion {
@@ -45,24 +52,24 @@ impl Default for Distorsion {
 #[derive(Clone, Debug, PartialEq, Eq, derive_builder::Builder)]
 #[builder(default)]
 pub struct Equalizer {
-    /// The default must be HexU50(25)!
-    /// About 25 the basses are increased, below they are decreased
     pub bass_level: HexU50,
-    /// Here again the default seems to be HexU50(25) but I'm not sure why
     pub bass_frequency: HexU50,
-    /// The default must be HexU50(25)!
-    /// About 25 the treble are increased, below they are decreased
     pub treble_level: HexU50,
-    /// Here again the default seems to be HexU50(25) but I'm not sure why
     pub treble_frequency: HexU50,
 }
 
 impl Default for Equalizer {
     fn default() -> Self {
         Self {
+            // The default must be HexU50(25)!
+            // About 25 the basses are increased, below they are decreased
             bass_level: 25.into(),
+            // Here again the default seems to be HexU50(25) but I'm not sure why
             bass_frequency: 25.into(),
+            // The default must be HexU50(25)!
+            // About 25 the treble are increased, below they are decreased
             treble_level: 25.into(),
+            // Here again the default seems to be HexU50(25) but I'm not sure why
             treble_frequency: 25.into(),
         }
     }

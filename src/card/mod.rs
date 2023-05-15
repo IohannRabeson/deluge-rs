@@ -31,30 +31,39 @@ pub use patch_name::PatchName;
 use crate::values::SamplePath;
 use crate::PatchType;
 
+/// An error related to a Deluge card.
 #[derive(thiserror::Error, Debug, PartialEq, Eq, Clone)]
 pub enum CardError {
+    /// A directory does not exist.
     #[error("Directory '{0}' does not exists")]
     DirectoryDoesNotExists(PathBuf),
 
+    /// A directory already exists.
     #[error("Directory '{0}' already exists")]
     DirectoryAlreadyExists(PathBuf),
 
+    /// One of the root directory is missing.
     #[error("Missing root directory '{0}'")]
     MissingRootDirectory(String),
 
-    // Store a String instead of std::io::Error to be able to derive PartialEq.
+    /// I/O error.
+    /// Stores a String instead of std::io::Error to be able to derive PartialEq.
     #[error("I/O error: {0}")]
     IoError(String),
 
+    /// The path designate a file not located on the card.
     #[error("The file '{0}' is not located on a Deluge card")]
     FileNotInCard(PathBuf),
 
+    /// The path is not relative.
     #[error("The path '{0}' is not relative")]
     PathNotRelative(PathBuf),
 
+    /// There is no more standard name available.
     #[error("No more standard name available")]
     NoMoreStandardName,
 
+    /// THere is no more postfix letter available.
     #[error("No more postfix letter available")]
     NoMorePostfixLetter,
 }
@@ -106,6 +115,10 @@ impl<FS: FileSystem> PartialEq for Card<FS> {
 }
 
 impl<FS: FileSystem> Card<FS> {
+    /// Find the root directory of the card.
+    ///
+    /// Given a path, this function tries to find the root of a Deluge card
+    /// by checking the presence of the required directories `KITS`, `SYNTHS` and `SAMPLES`.
     pub fn find_root_card_directory(file_system: &FS, initial_path: &Path) -> Result<Option<PathBuf>, CardError> {
         let mut current_path = initial_path;
 
@@ -201,8 +214,7 @@ impl<FS: FileSystem> Card<FS> {
     pub fn sample_path(&self, path: &Path) -> Result<SamplePath, CardError> {
         match path.starts_with(self.root_directory()) {
             true => Ok(SamplePath::new(
-                path
-                    .strip_prefix(self.root_directory())
+                path.strip_prefix(self.root_directory())
                     .unwrap_or_else(|e| panic!("strip prefix of '{:?}': {:?}", self.root_directory(), e))
                     .to_string_lossy(),
             )?),

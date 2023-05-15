@@ -6,6 +6,9 @@ use std::io::{BufRead, Read, Write};
 use std::path::Path;
 use std::sync::Arc;
 
+/// Sample path replacer.
+///
+/// Replace samples by others.
 #[derive(Default)]
 pub struct SamplePathReplacer {
     paths_to_replace: BTreeMap<SamplePath, SamplePath>,
@@ -92,14 +95,17 @@ impl SamplePathReplacer {
         Ok(())
     }
 
-    pub fn rewrite_file(&self, file_path: impl AsRef<Path>) -> Result<(), quick_xml::Error>
-    {
-        fn make_err(e: std::io::Error) -> quick_xml::Error { quick_xml::Error::Io(Arc::new(e)) }
+    /// Replace samples in a patch file.
+    pub fn rewrite_file(&self, file_path: impl AsRef<Path>) -> Result<(), quick_xml::Error> {
+        fn make_err(e: std::io::Error) -> quick_xml::Error {
+            quick_xml::Error::Io(Arc::new(e))
+        }
 
         let mut file = std::fs::File::open(file_path).map_err(make_err)?;
         let mut content = String::new();
 
-        file.read_to_string(&mut content).map_err(make_err)?;
+        file.read_to_string(&mut content)
+            .map_err(make_err)?;
         file.set_len(0).map_err(make_err)?;
 
         self.rewrite(std::io::Cursor::new(content), file)

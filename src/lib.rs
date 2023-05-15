@@ -1,7 +1,7 @@
 //! A crate to create, read and write Synthstrom Deluge's patches
 //!
 //! This crate provides the data structures [Synth] and [Kit] that represent a Deluge synth patch and a kit patch.
-//! It hides the details from the user like the differents version of the XML schema.
+//! It hides the details from the user like the different version of the XML schema.
 //!
 //! #### Reading patches
 //! The crate provide function to read a synth or a kit from a file:
@@ -51,6 +51,7 @@ mod values;
 
 pub use card::{Card, CardError, CardFolder, FileSystem, LocalFileSystem, PatchName};
 pub use kit::{CvGateRow, Hpf, HpfBuilder, Kit, KitBuilder, KitBuilderError, Lpf, LpfBuilder, MidiRow, RowKit, SoundRow};
+pub use samples::{read_sample_paths, SamplePathReplacer};
 pub use serialization::{
     deserialize_kit, deserialize_kit_with_version, deserialize_synth, deserialize_synth_with_version, serialize_kit,
     serialize_synth, PatchType, SerializationError, VersionInfo,
@@ -70,7 +71,6 @@ pub use values::{
     RetrigPhase, SamplePath, SamplePlayMode, SamplePosition, SyncLevel, SynthMode, TableIndex, TimeStretchAmount, Transpose,
     UnisonDetune, UnisonVoiceCount, VoicePriority,
 };
-pub use samples::{SamplePathReplacer, read_sample_paths};
 
 use std::{
     io::{Read, Write},
