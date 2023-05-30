@@ -20,7 +20,7 @@ serde_repr = "0.1.10"
 # strum is to iterate on the enum's values
 strum = { version = "0.24.1", features = ["derive"] }
 nom = "7.1.2"
-enum-as-inner = "0.5.1"
+enum-as-inner = "0.6.0"
 # For join()
 itertools = "0.10.5"
 derive_builder = "0.12.0"
